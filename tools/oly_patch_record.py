@@ -45,6 +45,11 @@ def main():
             row = next(r for r in spec['ranges'] if r['name'] == name and r.get('address') == address)
             at = int(address, 16) - base
             row.update(bytes=len(data), before_sha256=sha(stock_main[at:at + len(data)]), after_sha256=sha(data))
+    # whole-component rows made by resource_aliases: take the built component
+    for group in spec.get('resource_aliases', []):
+        data = (work / 'pass1' / 'decoded' / f"{kind_of(group['component']):04x}.bin").read_bytes()
+        row = next(r for r in spec['ranges'] if r['name'] == group['name'])
+        row.update(bytes=len(data), after_sha256=sha(data))
     spec_path.write_text(json.dumps(spec, indent=2) + '\n')
     # pass 2: component and package hashes with the corrected ranges
     second = oly_patch.build(patch, a.stock, work / 'pass2', decoded=True)

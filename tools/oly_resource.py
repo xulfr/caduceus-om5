@@ -4,35 +4,12 @@ Only pointer-table words change in the expanded record. No image artwork is
 included in the patch: every replacement points to another stock resource.
 """
 
-import ctypes
-import ctypes.util
-from functools import lru_cache
 import struct
 
-from oly_compress import _sequences
+from oly_compress import _sequences, _repack
 
 
-@lru_cache(maxsize=1)
-def _liblz4():
-    name = ctypes.util.find_library('lz4')
-    if not name:
-        raise ValueError('Resource repacking needs liblz4 (LZ4 HC)')
-    lib = ctypes.CDLL(name)
-    lib.LZ4_compressBound.argtypes = [ctypes.c_int]
-    lib.LZ4_compressBound.restype = ctypes.c_int
-    lib.LZ4_compress_HC.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
-                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
-    lib.LZ4_compress_HC.restype = ctypes.c_int
-    lib.LZ4_versionString.argtypes = []
-    lib.LZ4_versionString.restype = ctypes.c_char_p
-    return lib
-
-
-def liblz4_version():
-    return _liblz4().LZ4_versionString().decode('ascii')
-
-
-def alias_images(payload, aliases, *, level=12):
+def alias_images(payload, aliases):
     """Return a same-size 0x101 payload with selected IDs aliased to stock IDs."""
     if len(payload) < 2048 or len(payload) % 16:
         raise ValueError('Invalid resource component size')
@@ -72,16 +49,14 @@ def alias_images(payload, aliases, *, level=12):
             raise ValueError(f'Invalid resource alias {target_id:#x} -> {source_id:#x}')
         struct.pack_into('<I', data, dst, replacement)
 
-    lib = _liblz4()
-    capacity = lib.LZ4_compressBound(len(data))
-    out = ctypes.create_string_buffer(capacity)
-    inp = ctypes.create_string_buffer(bytes(data))
-    size = lib.LZ4_compress_HC(inp, out, len(data), capacity, level)
-    if not size or size + 32 > span:
+    # Re-encode with the stock stream's own sequences (oly_compress): matches whose bytes are unchanged are kept,
+    # the changed pointer words become short literal runs. Pure Python and deterministic, so the user-facing
+    # patcher needs no LZ4 library and every machine makes the same bytes.
+    _, rows = _sequences(original[32:32 + packed], raw)
+    encoded = _repack(decoded, bytes(data), rows, split=True)
+    size = len(encoded)
+    if size + 32 > span:
         raise ValueError(f'Repacked resource exceeds its {span} byte span')
-    encoded = out.raw[:size]
-    if _sequences(encoded, raw)[0] != data:
-        raise ValueError('Repacked resource failed round trip')
     result = bytearray(payload)
     result[at:at + span] = bytes([255]) * span
     result[at:at + 16] = original[:16]

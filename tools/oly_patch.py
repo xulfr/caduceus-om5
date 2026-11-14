@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 from oly_container import parse, replace_payload, reconstruct  # noqa: E402
 from oly_compress import expand_image, repack_image, spans  # noqa: E402
-from oly_resource import alias_images, liblz4_version  # noqa: E402
+from oly_resource import alias_images  # noqa: E402
 
 SCHEMA = 'oly-patch/1'
 KNOWN_BOOT_FAILURES = {
@@ -304,8 +304,6 @@ def build(patch_dir, stock_path, out, tools=None, decoded=False, untested=False)
 
     if toolchain:
         report['tool_versions'] = {n: subprocess.check_output([t, '--version'], text=True).splitlines()[0] for n, t in toolchain.items()}
-    if spec.get('resource_aliases'):
-        report.setdefault('tool_versions', {})['liblz4'] = liblz4_version()
     report['source_sha256'] = {str(p.relative_to(patch_dir)): sha(p.read_bytes()) for p in sorted(patch_dir.rglob('*'))
                                if p.is_file() and '__pycache__' not in p.parts}
     report['camera_access'] = False
