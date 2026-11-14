@@ -2,8 +2,8 @@
 
 **Is it safe?** Not known. It has never run on a camera, and three earlier builds failed. [Safety](SAFETY.md).
 
-**Which cameras?** The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The OM-5 (first
-model) has a separate developer-only donor builder, with hardware compatibility unverified ([roadmap](../ROADMAP.md)).
+**Which cameras?** The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The original OM-5
+has a separate [pre-alpha for testers](OM5_PREALPHA.md), never run on any camera.
 
 **Why only three film slots, when the OM-3 has twenty?** The OM-3's firmware had hundreds of kilobytes of room that
 its project could open up and prove on a camera. The OM-5 Mark II has about six kilobytes spread over ten places.
@@ -12,6 +12,9 @@ a slot's own settings, which costs almost no code. Ten films ride on the card an
 
 **Why no grain, Glow, Halation, split toning, Blacks / Whites?** No room, and each needs its own research on this
 camera's image processor. Films made for the OM-3 that use them lose those parts here.
+
+**Does it work on the original OM-5?** Not yet known. There is a [pre-alpha for testers](OM5_PREALPHA.md) that has
+never run on any camera. Only try it if you accept the risk and want to help.
 
 **Do I need the card in the camera?** Only to choose a film. A chosen film is stored in the camera.
 

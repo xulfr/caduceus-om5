@@ -228,3 +228,21 @@ research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md, numbers in tests/e14
 
 Workspace: as checkpoint 5, plus the E144 stock (patch.fetch_stock with model_code E144, pinned hash matched) and
 the candidate built with `patches/ports/om-5-i-from-ii/build.py --donor-patch firmware/om5ii`.
+
+## Continuation checkpoint 7 — original OM-5 pre-alpha for testers (2026-11-14)
+
+Owner decision: offer the E144 candidate as a **pre-alpha for testers** on the site, built by the tester with the
+existing developer builder (not added to patch.py or the launchers). CLAUDE.md's rule was reworded accordingly.
+
+- docs/OM5_PREALPHA.md → pages/om5-prealpha/ (own red banner via mksite.py `BANNERS`), linked from the tour, README,
+  FAQ, ROADMAP and CHANGELOG ("OM-5 pre-alpha 1", package `70788992…d1b4`).
+- Test order on the page: step 0 flashes OM's own 1.2 (the builder's restore-stock file) to prove the card update
+  works on that camera before anything risky; then start, basics, Caduceus, films, hardware checks; stop and go
+  back at the first fault; report with .github/ISSUE_TEMPLATE/camera-test.md.
+- tools/fetch_stock.py E144 E148: downloads and checks both OM files (uses patch.fetch_stock).
+- The page's build commands were run as written (binutils 2.42 mn10300-elf, jpegtran 2.1.5, `--write-untested-package`):
+  install `70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4`, restore equals OM's E144 1.2.
+- Unknown and stated on the page: whether a failed OM-5 can be restored from the card; whether another jpegtran
+  version reproduces the checksum (the page says to stop and report if not).
+- If a tester reports, record it in a new checkpoint and research note with model, firmware, exact checksum,
+  steps and outcome. Only a recorded camera result may change any "untested" wording.

@@ -20,7 +20,7 @@
 > not the camera. Flashing it can leave a camera unable to start. Read [Safety](docs/SAFETY.md) before anything else.
 > This project is looking for someone willing to make the first camera test: see [the test plan](docs/FIRST_FLASH.md).
 
-Latest: **v0.1.0-alpha2** (2026-11-14, emulator only) · OM-5 Mark II, firmware **1.1** · OM-5: [see below](#om-5-the-first-model)
+Latest: **v0.1.0-alpha2** (2026-11-14, emulator only) · OM-5 Mark II, firmware **1.1** · original OM-5: pre-alpha for testers, [see below](#om-5-the-first-model)
 
 ## What it does
 
@@ -70,8 +70,10 @@ The OM-5 runs a different, older program without these profiles. The
 its application and resources into the E144 layout. It preserves the E144 controller component and
 checks every feature range and resource transformation. It writes no install file by default.
 
-**Developer-only and more experimental still:** hardware compatibility and a successful camera boot
-are unestablished. The user patcher and launchers support E148 only. See [ROADMAP.md](ROADMAP.md).
+**Pre-alpha, for testers only.** It has never run on any camera, and whether an OM-5 can be recovered if it fails
+is unknown. Owners of an original OM-5 who accept that risk and want to help can build it and follow the test
+steps in [docs/OM5_PREALPHA.md](docs/OM5_PREALPHA.md). The double-click patcher and launchers support the
+Mark II only. See [ROADMAP.md](ROADMAP.md).
 
 ## For developers
 

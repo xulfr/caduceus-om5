@@ -1,6 +1,6 @@
 # Original OM-5: second-stage donor builder
 
-**Developer-only, emulator/host checks only. No camera test and no established hardware compatibility.**
+**Pre-alpha for testers ([docs/OM5_PREALPHA.md](../../../docs/OM5_PREALPHA.md)). Emulator/host checks only. No camera test and no established hardware compatibility.**
 This uses the E148 1.1 Caduceus application on the E144 1.2 update layout. It is not a native patch of
 the original OM-5 application, and a successful package build is not evidence of a successful boot.
 

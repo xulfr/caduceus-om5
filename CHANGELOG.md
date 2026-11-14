@@ -1,5 +1,15 @@
 # Changelog
 
+## OM-5 pre-alpha 1 — 2026-11-14
+
+**Original OM-5, E144 firmware 1.2. Never run on any camera; for testers.** Package SHA-256
+`70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4`, built by the tester from OM's two firmware files.
+
+- The OM-5 Mark II program with Caduceus v0.1.0-alpha2, in the original OM-5's update layout with its own
+  controller firmware.
+- Tester page with the risks, a build guide, a step-by-step first test that starts with OM's own firmware, and a
+  camera-test issue template. `tools/fetch_stock.py` downloads and checks OM's files.
+
 ## Unreleased — 2026-11-14
 
 - Original OM-5 developer candidate: ran the film regressions and a menu tour in OM-Emu's Mark II model (all pass,

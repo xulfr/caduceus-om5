@@ -23,9 +23,12 @@ The owner performs any physical test; development sessions prepare and check fil
 ## Second stage: original OM-5 (E144, firmware 1.2)
 
 The [E148-program transplant builder](patches/ports/om-5-i-from-ii/README.md) is included and rebuilt
-using this project's donor patch. It remains developer-only: fitting and checksum validation do not show that
+using this project's donor patch. Fitting and checksum validation do not show that
 the E148 program can drive E144 hardware. This is not the Mark II patch applied to E144 stock.
-No consumer E144 release or installation recommendation until its hardware assumptions are resolved.
+Since 2026-11-14 it is offered as a **pre-alpha for testers** ([docs/OM5_PREALPHA.md](docs/OM5_PREALPHA.md)): built
+by the tester with the developer builder, never run on a camera, with a step 0 that checks the card update with
+OM's own firmware first. It stays out of the one-step patcher. No recommendation to install it until camera
+reports exist.
 Emulator and static work reached so far (2026-11-14): film regressions and a menu tour pass in OM-Emu's
 Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are the controller (010e) protocol,
 renumbered identifiers, one SRAM layout shift and the relocated resource addresses. See

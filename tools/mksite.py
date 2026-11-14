@@ -10,10 +10,15 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = {
     'docs/INSTALL.md': 'install', 'docs/USING.md': 'using', 'docs/FAQ.md': 'faq',
     'docs/SAFETY.md': 'safety', 'docs/FIRST_FLASH.md': 'first-flash',
-    'docs/FORMATS.md': 'formats', 'docs/WHITE_BALANCE.md': 'white-balance',
+    'docs/FORMATS.md': 'formats', 'docs/WHITE_BALANCE.md': 'white-balance', 'docs/OM5_PREALPHA.md': 'om5-prealpha',
     'ROADMAP.md': 'roadmap', 'CHANGELOG.md': 'changelog',
 }
 REPO = 'https://github.com/xulfr/caduceus-om5'
+BANNER = ('<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. '
+          '<a href="../safety/">Read the safety notes.</a></div>')
+BANNERS = {'om5-prealpha': '<div class="banner"><strong>Pre-alpha for the original OM-5: never run on any camera.</strong> '
+           'Recovery from a failure is unknown. For testers who accept that risk. '
+           '<a href="../safety/">Read the safety notes.</a></div>'}
 
 
 def link(target, source):
@@ -41,7 +46,7 @@ def render(source, slug):
 <link rel="stylesheet" href="../site/site.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main">{links}</nav></header>
-<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+{BANNERS.get(slug, BANNER)}
 <main class="doc" id="content">{body}</main>
 <footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="{REPO}/blob/main/{source.relative_to(ROOT).as_posix()}">Page source</a></footer>
 </body></html>

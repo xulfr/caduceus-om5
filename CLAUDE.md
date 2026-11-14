@@ -25,9 +25,14 @@ LOOKS.BIN, full HSL, ND64 and tone controls. Additional effects are optional.
 Do not re-explore the old repositories. Fetch a specific legacy file only when the handover calls
 for it. Rebuild the toolchain, stock workspace and emulator only when a step needs them.
 
+The original OM-5 build is a **pre-alpha for testers** (owner decision, 2026-11-14): built by the tester with
+the developer builder, offered only on its tester page with its warnings and the step-0 restore check. Keep it out
+of patch.py and the launchers, keep `camera_tested` false, and do not call it compatible or recommend installing
+it until camera reports exist.
+
 Keep settings in the existing declared part-1 cells and transient state in allocated RAM. Never
 write patch state into firmware-image addresses. Check section bounds, hook preimages, compression,
-container checksums and the strict builder's recorded hashes. The E144 transplant is developer-only.
+container checksums and the strict builder's recorded hashes.
 
 ## Repository workflow
 
