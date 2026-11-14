@@ -40,6 +40,8 @@ def main():
     for kind in (0x100, 0x101):
         data = patch.expand_image(blocks[kind].payload) if kind == 0x100 else blocks[kind].payload
         (baseline / f'{kind:04x}.bin').write_bytes(data)
+    twins = looks_bin([dict(films[1], name='Twin One'), dict(films[1], name='Twin Two')])
+    twin = lambda i: dict(films[1], name=('Twin One', 'Twin Two')[i], index=i)
     cases = [
         ('four-films', good, True, 'delete', 1, 4, [selected(0), None, None]),
         ('next-film', good, True, 'delete delete', 1, 4, [selected(1), None, None]),
@@ -48,6 +50,12 @@ def main():
         ('ten-films', looks_bin((films * 3)[:10]), True, 'delete', 1, 10, [selected(0), None, None]),
         ('bad-crc', crc_bad, True, 'delete', 2, 0, [None] * 3),
         ('bad-range', range_bad, True, 'delete', 2, 0, [None] * 3),
+        # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
+        ('other-rows', good, True, 'down delete down delete down delete down delete down delete', 1, 4, [None] * 3),
+        ('row-return', good, True, 'down down down down down down delete', 1, 4, [selected(0), None, None]),
+        # Two films that differ only in name: the frame must change on each step (title repaint).
+        ('title-redraw', twins, True, 'delete delete', 1, 2, [twin(1), None, None]),
+        ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),
         ('empty-card', None, True, 'delete', 2, 0, [None] * 3),
         ('no-card', None, False, 'delete', 0, 0, [None] * 3),
     ]
@@ -87,6 +95,18 @@ def main():
         unexpected = [(site, n) for site, n in summaries[-1]['image_stores'] if n > stock_stores.get(site, 0)]
         if unexpected:
             raise AssertionError(f'{name}: image stores beyond stock baseline: {unexpected}')
+        frames = [line.split()[-1] for line in summaries[-1]['steps']]
+        stock_frames = [line.split()[-1] for line in stock_summary['steps']]
+        if name in ('four-films', 'next-film', 'title-redraw', 'ten-films'):
+            # every film step repaints at once: no frame equals the one before it
+            for k in range(1, len(keys.split()) + 1):
+                assert frames[-k] != frames[-k - 1], f'{name}: no repaint after delete {len(keys.split()) - k + 1}'
+        if name == 'other-rows':
+            # tone, shading, sharpness and contrast rows: Delete changes nothing on screen (as stock)
+            for k in (4, 6, 8, 10):
+                assert frames[-11 + k] == frames[-12 + k], f'{name}: Delete acted on row {k // 2}'
+        if name == 'scp-name':
+            assert frames[-1] != stock_frames[-1], 'scp-name: the control panel shows no film name'
         results.append(dict(case=name, status='passed', image_stores_beyond_stock=0))
         print(f'{name}: passed', flush=True)
     if not results:

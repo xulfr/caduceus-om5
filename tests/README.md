@@ -1,6 +1,6 @@
 # Checks
 
-Run from the repository root with Python 3.10+ and Node.js (the emulator currently requires Node 26).
+Run from the repository root with Python 3.10+ and Node.js (the emulator asks for Node 26; the alpha2 run used Node 22.23 without changes).
 
 ```sh
 python -m pip install -r requirements-dev.txt
@@ -30,7 +30,11 @@ python tests/run_emulator.py --emu generated/om-emu --build generated/strict --s
 Use a new output directory for each run; `--case NAME` selects an individual case. The suite retains
 raw session logs, screenshots, expectations and results.json. It checks four and ten films, stepping,
 wraparound, independent slots, all H/L and saturation values, tone and WB records, names, bad CRC,
-out-of-range records, mounted empty card and no card. Medium-mounted status and section-ready bits are
+out-of-range records, mounted empty card and no card. Since alpha2 it also checks that each film step
+repaints the screen (two films that differ only in name must give different frames), that the trash button
+does nothing on the tone, Shading, Sharpness and Contrast rows, that it steps again after returning to the
+Picture Mode row, and that the super control panel's frame differs from stock once a slot holds a film.
+Results of the last run are in `alpha2-results.json`. Medium-mounted status and section-ready bits are
 injected because the emulator does not reproduce that hardware lifecycle.
 
 The same session is run on unmodified stock first. Every store into the image is logged. Any PC/address

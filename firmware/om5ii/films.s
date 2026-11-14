@@ -26,11 +26,14 @@
 FL_STATE = 64                   /* 0 not tried, 1 bank loaded, 2 tried: no file / bad file */
 FL_N     = 65                   /* films in the bank */
 FL_BUSY  = 66                   /* a film is being written */
+FL_DIRTY = 67                   /* the title label must repaint at the next page layout */
 FL_NAME  = 68                   /* 3 x 26 bytes: UTF-16 names handed to the GUI */
 FL_BANK  = 152                  /* the file */
 FL_HDR   = 32
 FL_REC   = 80                   /* 64-byte record + 16-byte name */
 FL_MAX   = 10
+PANEL_ROW = 136                 /* panel updater object: kind of the highlighted row */
+LABEL_ID = 130                  /* text label: the string id it last laid out */
 FL_TAG   = 0x464c               /* 'FL': word 0 of a slot's name cells = FL_TAG << 16 | index << 8 */
 
 .section .hook_str,"ax"
@@ -60,6 +63,40 @@ fl_str_cp:
  cmp 0,a0
  beq fl_str_stock
  ret [d2],8
+
+/* ---- section 6: before the page controller lays its children out (hsl.s
+ * pages_hook; a3 = the controller, child 15 = the title label). The label
+ * skips a text it already shows by string id, and a film step keeps the id,
+ * so after a step forget the id once. Preserves d0, d1, a0, a1.
+ * call pg_title,[d2,d3,a2,a3],36 */
+.section .ext6,"ax"
+.global pg_title
+pg_title:
+ mov d0,(4,sp)
+ mov d1,(8,sp)
+ mov a0,(12,sp)
+ mov a1,(16,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pg_t_out
+ movbu (FL_DIRTY,a0),d0
+ cmp 0,d0
+ beq pg_t_out
+ clr d0
+ movbu d0,(FL_DIRTY,a0)
+ mov a3,a0
+ mov 15,d0
+ call child_get,[],0
+ cmp 0,a0
+ beq pg_t_out
+ mov -1,d0
+ movhu d0,(LABEL_ID,a0)
+pg_t_out:
+ mov (4,sp),d0
+ mov (8,sp),d1
+ mov (12,sp),a0
+ mov (16,sp),a1
+ ret [d2,d3,a2,a3],36
 
 /* ---- section 10 ---- */
 .section .ext10,"ax"
@@ -226,6 +263,17 @@ fl_delete:
  movbu (FL_BUSY,a2),d0
  cmp 0,d0
  bne fl_d_no
+ /* only with the highlight on the Picture Mode row: the panel's own record
+  * of the row's kind (4 = the mode strip; the sliders and pages read 0) */
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq fl_d_no
+ mov (4,a0),a0
+ cmp 0,a0
+ beq fl_d_no
+ movbu (PANEL_ROW,a0),d0
+ cmp 4,d0
+ bne fl_d_no
  mov 111,d0
  call stock_get,[],4
  sub 54,d0
@@ -390,6 +438,22 @@ fl_d_nw:
  call active_write,[d2],8
  clr d0
  movbu d0,(FL_BUSY,a2)
+ /* Show it now: mark the title for repainting (pg_title, below), then run
+  * the screen's own panel update, as the screen does after a press that
+  * changed a value (stock 0x60ec8ea9). It re-reads the values, invalidates
+  * what changed and lets the page lay itself out again. */
+ mov 1,d0
+ movbu d0,(FL_DIRTY,a2)
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq fl_d_done
+ mov (4,a0),a0
+ cmp 0,a0
+ beq fl_d_done
+ mov (a0),a1
+ mov (a1),a1
+ calls (a1)
+fl_d_done:
  mov 1,d0
  ret [d2,d3,a2,a3],44
 fl_d_no:

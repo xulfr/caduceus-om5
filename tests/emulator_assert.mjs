@@ -10,6 +10,8 @@ export default function(g) {
   const state = Buffer.from(g.__M.dbgRead(0xa1e27d80 - 1 + h, 80));
   assert.equal(state[64], expect.state, 'film load state');
   assert.equal(state[65], expect.count, 'film count');
+  assert.equal(state[66], 0, 'no film write in progress');
+  assert.equal(state[67], 0, 'title repaint request consumed by the page layout');
   for (let p = 0; p < 3; p++) {
     const base = [916, 924, 972][p], film = expect.slots[p];
     if (!film) { assert.equal(R(base) >>> 16, 0, `slot ${p} untouched`); continue; }

@@ -562,6 +562,7 @@ display_signed:
  * or child 2 (tone curve) for Color Profile 1-3 only. Registers: d2 = data
  * struct, a3 = direct-screen controller; the stock ret restores them. */
 pages_hook:
+ call pg_title,[d2,d3,a2,a3],36      /* films.s: repaint the title after a film step */
  call direct_layout,[d2,d3,a2,a3],160
  mov 111,d0
  call stock_get,[],4

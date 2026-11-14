@@ -84,6 +84,7 @@ fread = 0x606aa54e;        /* a0 buffer, d0 item size, d1 count, a1 handle -> d0
 MS_A = 0x61e43b88;         /* medium status words: 0xf000 = MOUNT OK */
 MS_B = 0x61e43b90;
 MS_C = 0x61e43b98;
+scr_obj = 0x61e588f4;      /* the direct-setting screen object; +4 = its panel updater (vtable entry 0) */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(st_ptr == 0x613f2ed8, "wb.ld binds st_ptr")

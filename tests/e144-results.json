@@ -4,7 +4,7 @@
   "donor": "OM-5 II / E148 1100 with Caduceus films, HSL, WB, monochrome profiles and ND64",
   "camera_tested": false,
   "hardware_compatibility_established": false,
-  "package_sha256": "8e47087017812786b1f87036da8c8b79ba69cc34e4abcbcf894f8e28ce78b12b",
+  "package_sha256": "70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4",
   "package_bytes": 92274688,
   "restore_sha256": "a0c91f3ac7caaf0925b2af609e711183cf3b5982b3333224bcef26c0c5943d11",
   "jpegtran_version": "libjpeg-turbo version 2.1.5 (build 20240408)",
@@ -22,7 +22,7 @@
     "writes_outside_recipient_update_slots": false
   },
   "date": "2026-11-14",
-  "donor_package_sha256": "a76c064f6f797f2b91719f27fb3f7d0132a12e06cf143627a4b083b540187614",
+  "donor_package_sha256": "2eac7af1d82b119acba3952e8dac1dd6b8faec3cbaf1fcbfa9fcced600167ca9",
   "pictures": {
     "unique_jpegs_optimised": 113,
     "used_bytes": 7056352,

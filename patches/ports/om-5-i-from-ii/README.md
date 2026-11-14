@@ -55,7 +55,7 @@ Run the independent output checks with:
 ```sh
 OM5I_STOCK=/path/to/OLY_E_144_1200_0000_0000.BIN \
 OM5_STOCK=/path/to/OLY_E_148_1100_0000_0000.BIN \
-OM5I_BUILD=generated/e144 OM5II_BUILD=generated/alpha1-strict \
+OM5I_BUILD=generated/e144 OM5II_BUILD=generated/strict \
   python3 -m unittest discover -s tests -p test_e144.py -v
 ```
 
