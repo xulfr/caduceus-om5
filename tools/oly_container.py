@@ -1,58 +1,53 @@
 #!/usr/bin/env python3
-"""Offline Olympus update inspection. No device access or flashing.
+"""Olympus / OM 'OE' update containers: split an update file into its components and put it back.
 
-Container/transform reference: Altsoph and mx3, CHDK thread 2471:
-https://chdk.setepontos.com/d/2471-olympus-emjustylus-series-fw-analysis
-Independently implemented and checked against all four supplied PEN-F blocks.
+Written for this project from the format as Caduceus's decoder states it (cakelesscoder/caduceus-ep7 and
+androidfanman/caduceus-om3 firmware/oe_container.py, Apache-2.0):
+
+  component = 32-byte header | scrambled payload (length from the header, a multiple of 16) | 32-byte trailer
+  header:  'OE', 2 model bytes, ..., u32 address at +8, u32 payload length at +12, u16 version at +16,
+           u16 kind at +20, 4 zero bytes at +28
+  trailer: the header's first 28 bytes again, then a u32 that makes the sum of every little-endian u32 word of
+           header + decoded payload + trailer zero (mod 2^32)
+  payload: in each 16-byte group, decoded[i] = stored[PERM[i]] ^ 0xff
+
+Nothing here knows whether a payload is safe to run on a camera.
 """
-
-import argparse
-from array import array
 from dataclasses import dataclass
 import hashlib
-import json
-from pathlib import Path
-import re
 import struct
-import sys
 
-
-DECODE_ORDER = (1, 3, 0, 2, 6, 4, 7, 5, 11, 10, 9, 8, 13, 14, 12, 15)
-INVERT = bytes(i ^ 0xFF for i in range(256))
+PERM = (1, 3, 0, 2, 6, 4, 7, 5, 11, 10, 9, 8, 13, 14, 12, 15)
+INV = tuple(PERM.index(i) for i in range(16))
+_FLIP = bytes(b ^ 0xFF for b in range(256))
 
 
 def sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def decode(data):
+def _permute(data, order):
     if len(data) % 16:
-        raise ValueError("payload is not a multiple of 16 bytes")
-    result = bytearray(len(data))
-    for output_index, input_index in enumerate(DECODE_ORDER):
-        result[output_index::16] = data[input_index::16].translate(INVERT)
-    return bytes(result)
+        raise ValueError('payload length must be a multiple of 16')
+    view = memoryview(bytes(data))
+    out = bytearray(len(data))
+    for i, src in enumerate(order):
+        out[i::16] = view[src::16]
+    return out
+
+
+def decode(data):
+    return bytes(_permute(data, PERM).translate(_FLIP))
 
 
 def encode(data):
-    if len(data) % 16:
-        raise ValueError("payload is not a multiple of 16 bytes")
-    result = bytearray(len(data))
-    for input_index, output_index in enumerate(DECODE_ORDER):
-        result[output_index::16] = data[input_index::16].translate(INVERT)
-    return bytes(result)
+    return bytes(_permute(bytes(data).translate(_FLIP), INV))
 
 
 def sum32(data):
     if len(data) % 4:
-        raise ValueError("checksum data is not a multiple of 4 bytes")
-    words = array("I")
-    if words.itemsize != 4:
-        raise ValueError("host unsigned int is not 32 bits")
-    words.frombytes(data)
-    if sys.byteorder != "little":
-        words.byteswap()
-    return sum(words) & 0xFFFFFFFF
+        raise ValueError('length must be a multiple of 4')
+    return sum(v[0] for v in struct.iter_unpack('<I', data)) & 0xFFFFFFFF
 
 
 @dataclass(frozen=True)
@@ -60,164 +55,59 @@ class Block:
     index: int
     offset: int
     header: bytes
-    payload: bytes
+    payload: bytes      # decoded
     trailer: bytes
 
     @property
     def address(self):
-        return struct.unpack_from("<I", self.header, 8)[0]
+        return struct.unpack_from('<I', self.header, 8)[0]
 
     @property
     def kind(self):
-        return struct.unpack_from("<H", self.header, 20)[0]
-
-    @property
-    def filename(self):
-        return f"{self.index:02d}_{self.kind:04x}_{self.address + 32:08x}.decoded.bin"
-
-    def metadata(self):
-        return {
-            "index": self.index,
-            "container_offset": hex(self.offset),
-            "payload_container_offset": hex(self.offset + 32),
-            "payload_size": len(self.payload),
-            "signature": self.header[:2].decode("ascii"),
-            "model_bytes": self.header[2:4].hex(),
-            "version_raw_le_u16": hex(struct.unpack_from("<H", self.header, 16)[0]),
-            "kind": hex(self.kind),
-            "header_address": hex(self.address),
-            "container_payload_address": hex(self.address + 32),
-            "address_note": "container address, NOT necessarily a code/disassembly address; PEN-F main code has a separate mapping",
-            "header_hex": self.header.hex(),
-            "trailer_hex": self.trailer.hex(),
-            "decoded_sha256": sha256(self.payload),
-            "checksum_valid": True,
-            "decoded_file": self.filename,
-        }
+        return struct.unpack_from('<H', self.header, 20)[0]
 
 
 def parse(data):
+    """Every component of an update file, payloads decoded and checksums checked."""
+    blocks, offset = [], 0
     if not data:
-        raise ValueError("empty image")
-    blocks = []
-    offset = 0
-    model = None
+        raise ValueError('empty file')
     while offset < len(data):
-        if len(data) - offset < 64:
-            raise ValueError(f"truncated block at {offset:#x}")
         header = data[offset:offset + 32]
-        if header[:2] != b"OE":
-            raise ValueError(f"unsupported signature at {offset:#x}; this tool covers scrambled OE blocks only")
-        if struct.unpack_from("<I", header, 20)[0] == 0:
-            raise ValueError(f"unscrambled block is unsupported at {offset:#x}")
-        if model is None:
-            model = header[2:4]
-        elif model != header[2:4]:
-            raise ValueError(f"mixed model identifiers at {offset:#x}")
-        size = struct.unpack_from("<I", header, 12)[0]
-        if not size or size % 16:
-            raise ValueError(f"invalid payload size at {offset:#x}")
-        end = offset + size + 64
-        if end > len(data):
-            raise ValueError(f"payload exceeds image at {offset:#x}")
+        if len(header) < 32 or header[:2] != b'OE':
+            raise ValueError(f'no OE component at {offset:#x}')
+        size = struct.unpack_from('<I', header, 12)[0]
+        end = offset + 64 + size
+        if not size or size % 16 or end > len(data):
+            raise ValueError(f'bad component length at {offset:#x}')
         trailer = data[end - 32:end]
-        if header[:28] != trailer[:28]:
-            raise ValueError(f"header/trailer mismatch at {offset:#x}")
-        if header[28:32] != b"\0" * 4:
-            raise ValueError(f"unexpected header checksum field at {offset:#x}")
+        if trailer[:28] != header[:28] or header[28:32] != bytes(4):
+            raise ValueError(f'header and trailer disagree at {offset:#x}')
+        if blocks and header[2:4] != blocks[0].header[2:4]:
+            raise ValueError(f'another model at {offset:#x}')
         payload = decode(data[offset + 32:end - 32])
         if (sum32(header) + sum32(payload) + sum32(trailer)) & 0xFFFFFFFF:
-            raise ValueError(f"checksum mismatch at {offset:#x}")
-        blocks.append(Block(len(blocks), offset, header, payload, trailer))
+            raise ValueError(f'checksum wrong at {offset:#x}')
+        blocks.append(Block(len(blocks), offset, bytes(header), payload, bytes(trailer)))
         offset = end
     return blocks
 
 
 def reconstruct(blocks):
-    """Preserve original metadata/checksums; only valid for unchanged payloads."""
-    return b"".join(b.header + encode(b.payload) + b.trailer for b in blocks)
+    return b''.join(b.header + encode(b.payload) + b.trailer for b in blocks)
 
 
 def replace_payload(block, payload):
-    """Replace a same-sized decoded payload and repair its additive checksum.
-
-    Does not assert that code is executable or safe to flash. Container metadata
-    stays unchanged. The exact historical 3100 patch is an independent fixture
-    for this operation in penf_experiments.py.
-    """
-    if len(payload) != len(block.payload) or len(payload) % 16:
-        raise ValueError("replacement must preserve the aligned payload size")
-    if block.header[:28] != block.trailer[:28]:
-        raise ValueError("unexpected header/trailer metadata")
-    trailer = bytearray(block.trailer)
-    trailer[28:32] = b"\0" * 4
-    checksum = -(sum32(block.header) + sum32(payload) + sum32(trailer)) & 0xFFFFFFFF
-    struct.pack_into("<I", trailer, 28, checksum)
+    """The same component with another decoded payload of the same length; the checksum word is made again."""
+    if len(payload) != len(block.payload):
+        raise ValueError('a replacement payload keeps the component length')
+    trailer = bytearray(block.trailer[:28] + bytes(4))
+    check = -(sum32(block.header) + sum32(payload) + sum32(bytes(trailer))) & 0xFFFFFFFF
+    struct.pack_into('<I', trailer, 28, check)
     return Block(block.index, block.offset, block.header, bytes(payload), bytes(trailer))
 
 
-def string_records(block, code_base=None):
-    # ASCII diagnostics are leads, not proof of execution or feature support.
-    for match in re.finditer(rb"[\x20-\x7e]{6,}", block.payload):
-        record = {
-            "block": block.index,
-            "decoded_offset": hex(match.start()),
-            "container_address": hex(block.address + 32 + match.start()),
-            "text": match.group().decode("ascii"),
-        }
-        if block.index == 0 and code_base is not None:
-            record["analysis_address"] = hex(code_base + match.start())
-        yield record
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("image", type=Path)
-    parser.add_argument("--out", type=Path, help="new directory for decoded blocks and reports")
-    parser.add_argument("--code-base", type=lambda s: int(s, 0), help="explicit analysis base for block 0; no inference from container address")
-    parser.add_argument("--expect-sha256", help="require an exact input SHA-256")
-    args = parser.parse_args()
-    data = args.image.read_bytes()
-    if args.expect_sha256 and sha256(data) != args.expect_sha256.lower():
-        raise ValueError("source SHA-256 differs from the expected build")
-    blocks = parse(data)
-    repacked = reconstruct(blocks)
-    if repacked != data:
-        raise ValueError("decode/re-encode did not reproduce the source exactly")
-    report = {
-        "source": str(args.image),
-        "source_size": len(data),
-        "source_sha256": sha256(data),
-        "roundtrip_sha256": sha256(repacked),
-        "roundtrip_identical": True,
-        "block0_analysis_base": None if args.code_base is None else hex(args.code_base),
-        "scope": "offline container integrity only; not a bootability or recovery test",
-        "blocks": [b.metadata() for b in blocks],
-    }
-    if args.out:
-        if args.out.resolve() == args.image.parent.resolve():
-            raise ValueError("output must be separate from original firmware directory")
-        args.out.mkdir(parents=True, exist_ok=False)
-        (args.out / "manifest.json").write_text(json.dumps(report, indent=2) + "\n")
-        pattern = re.compile(
-            r"hue|satura|chroma|color.?profil|colou?r.?creat|monochro|lumin|lightness|"
-            r"firmware|version|[er]122|rom.?ver|hsl|hsv|3\.1|rcu|updat", re.I
-        )
-        with (args.out / "strings.jsonl").open("w") as all_strings, \
-             (args.out / "leads.jsonl").open("w") as leads:
-            for block in blocks:
-                (args.out / block.filename).write_bytes(block.payload)
-                for record in string_records(block, args.code_base):
-                    line = json.dumps(record, ensure_ascii=False) + "\n"
-                    all_strings.write(line)
-                    if pattern.search(record["text"]):
-                        leads.write(line)
-        # Deliberately do not create a file named like an SD-card update.
-    print(json.dumps(report, indent=2))
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except (ValueError, OSError) as exc:
-        sys.exit(f"error: {exc}")
+if __name__ == '__main__':
+    import sys
+    for b in parse(open(sys.argv[1], 'rb').read()):
+        print(f'{b.index}: kind {b.kind:#06x} address {b.address:#010x} {len(b.payload)} bytes {sha256(b.payload)}')
