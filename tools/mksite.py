@@ -48,7 +48,7 @@ def render(source, slug):
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main">{links}</nav></header>
 {BANNERS.get(slug, BANNER)}
 <main class="doc" id="content">{body}</main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="{REPO}/blob/main/{source.relative_to(ROOT).as_posix()}">Page source</a></footer>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="{REPO}/blob/main/{source.relative_to(ROOT).as_posix()}">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
 </body></html>
 '''
 

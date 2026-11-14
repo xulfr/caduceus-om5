@@ -144,9 +144,21 @@ Details in [CLAUDE.md](CLAUDE.md).
 - **E148 / E144**: OM's internal codes for the OM-5 Mark II and the original OM-5.
 - **Boot loop**: the camera keeps restarting and never becomes usable.
 
-## Licence and credits
+## Credits
 
-Apache-2.0. Part of the [Caduceus](https://github.com/cakelesscoder/caduceus-ep7) family
-([E-P7](https://github.com/cakelesscoder/caduceus-ep7), [OM-3](https://github.com/androidfanman/caduceus-om3)).
-See [NOTICE](NOTICE) for what this builds on. No OM firmware is in this repository. Not affiliated with OM Digital
+This project stands on the work of three upstream projects. Thank you to their authors.
+
+- **[fishcu/oly_fw_analysis](https://github.com/fishcu/oly_fw_analysis)** by **fishcu**: the Olympus firmware research (on the PEN-F) that showed how
+  these cameras' firmware can be read, changed and rebuilt. The OM-5 Mark II work here began in a fork of it.
+- **[cakelesscoder/caduceus-ep7](https://github.com/cakelesscoder/caduceus-ep7)** by **cakelesscoder**: Caduceus itself, for the PEN E-P7. The idea of film
+  looks loaded from a file on the card, the way the patch waits for the first half-press, how the installer asks
+  OM's server for the official firmware, and the description of the update file format.
+- **[androidfanman/caduceus-om3](https://github.com/androidfanman/caduceus-om3)** by **androidfanman**: Caduceus for the OM-3. The look record layout that
+  `LOOKS.BIN` reuses, the film looks in LookLab's library, LookLab's preview, and the layout of this site and its guides.
+
+Exactly what was taken from each is listed in [NOTICE](NOTICE).
+
+## Licence
+
+Apache-2.0, as the Caduceus family. No OM firmware is in this repository. Not affiliated with OM Digital
 Solutions.
