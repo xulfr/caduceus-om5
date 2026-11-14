@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-14",
+  "scope": "emulator and static analysis only; no camera",
+  "candidate_package_sha256": "70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4",
+  "emulator_commit": "bdb33470705b3be28db52cbe080c31d74db727d8",
+  "om_emu_e144_model": "refused: its handlers are bound to OM-5 1.2 code (PlayError at 0x501104e2, UI_IN record count); stock OM-5 1.2 boots in it",
+  "om_emu_e148_model_with_candidate_main_and_resources": {
+    "film_regressions": [
+      {
+        "case": "four-films",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "next-film",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "slot-two",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "wrap",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "ten-films",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "bad-crc",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "bad-range",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "other-rows",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "row-return",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "title-redraw",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "scp-name",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "empty-card",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      },
+      {
+        "case": "no-card",
+        "status": "passed",
+        "image_stores_beyond_stock": 0
+      }
+    ],
+    "menu_tour_frames_identical_to_alpha2": 23,
+    "flash_resource_reads_observed": 0,
+    "note": "OM-Emu places the resource block itself; the candidate's 21 relocated resource addresses are not exercised"
+  },
+  "static_pairing_e144_to_e148": {
+    "function_starts": 20298,
+    "paired": 17468,
+    "instructions_paired": 4195380,
+    "conflicts": 68,
+    "differing_high_constants": 100,
+    "by_kind": {
+      "resource range bounds (0x86...)": 7,
+      "identifier-like 0x80xxxxxx/0x88xxxxxx": 91,
+      "SRAM 0x8ff00xxx": 2
+    }
+  },
+  "sram_window": {
+    "accesses_each": 708,
+    "paired_same": 445,
+    "moved": [
+      {
+        "a": "0x6040d585",
+        "b": "0x60411fd3",
+        "a_value": "0x8ff00450",
+        "b_value": "0x8ff00410"
+      }
+    ],
+    "only_in_e144": [
+      "0x8ff00490"
+    ],
+    "module_using_0x8ff00490_on_e144": "0x61518f97 0x61519353 0x6151967a 0x61519728 0x6151a28c (0x8ff00450 at the E148 counterparts 0x6151b702..0x6151cac7)"
+  },
+  "controller_010e": {
+    "bytes": 262080,
+    "used": 220160,
+    "equal_at_same_offset_percent": 55.9,
+    "note": "the candidate keeps OM-5 1.2's controller firmware with the Mark II application"
+  }
+}

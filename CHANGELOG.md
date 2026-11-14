@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — 2026-11-14
+
+- Original OM-5 developer candidate: ran the film regressions and a menu tour in OM-Emu's Mark II model (all pass,
+  frames identical to alpha2), recorded that OM-Emu's OM-5 model cannot run it, and compared the two stock programs
+  statically (SRAM layout, renumbered identifiers, controller firmware). Still developer-only and untested.
+
 ## v0.1.0-alpha2 — 2026-11-14
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.**

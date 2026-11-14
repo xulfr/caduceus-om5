@@ -205,3 +205,26 @@ Open (none blocks a first camera test; the test itself is the owner's decision, 
 - tests/github-actions.yml still needs installing by a credential with workflow scope.
 - Free loaded-tail space now: section 6 about 490 bytes, section 10 about 900; others as at session 1.
 - Everything under "Physical validation remains open" in ROADMAP.md.
+
+## Continuation checkpoint 6 — original OM-5 candidate, emulator and static (2026-11-14)
+
+Owner asked to take the E144 candidate as far as possible without hardware. Result:
+research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md, numbers in tests/e144-emulator-static.json.
+
+- OM-Emu `OM_EMU_MODEL=E144` boots stock OM-5 1.2 but refuses the candidate (PlayError at 0x501104e2): its
+  handlers are bound to OM-5 code. Not a camera result.
+- `OM_EMU_MODEL=E148` with the candidate's decoded 0100/0101 (`tools/dev/sess.mjs` takes any main/resource pair):
+  13/13 film regressions pass (`python3 tests/run_emulator.py --build E144_BUILD_DIR ...`, E148 stock as the
+  image-store baseline), and a 23-step tour is frame-identical to alpha2. OM-Emu does not read resources through
+  the relocated flash addresses (watch: zero reads), so that edit stays unverified.
+- Static: `node tools/dev/xbuild.mjs OM_EMU_DIR E144_main.bin E148_main.bin OUT.json` and
+  `python3 tools/dev/sram_compare.py E144_main.bin E148_main.bin` (expanded stock mains). 100 differing constants:
+  7 resource bounds already relocated by the builder, 91 renumbered identifiers kept at Mark II values, 2 SRAM.
+  SRAM 0x8ff00000: one 0x40 shift (OM-5 0x450/0x490 = Mark II 0x410/0x450).
+- Controller 010e: 55.9 % equal bytes; the candidate keeps OM-5's. Biggest unknown.
+- Next steps, all optional and none a substitute for a camera: trace whether any renumbered identifier crosses to
+  the controller; find readers of SRAM 0x8ff00410..0x8ff004a0 outside the main program; an OM-Emu E144 model that
+  runs Mark II code. The candidate remains developer-only; do not offer an install.
+
+Workspace: as checkpoint 5, plus the E144 stock (patch.fetch_stock with model_code E144, pinned hash matched) and
+the candidate built with `patches/ports/om-5-i-from-ii/build.py --donor-patch firmware/om5ii`.

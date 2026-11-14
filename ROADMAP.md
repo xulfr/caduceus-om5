@@ -26,6 +26,10 @@ The [E148-program transplant builder](patches/ports/om-5-i-from-ii/README.md) is
 using this project's donor patch. It remains developer-only: fitting and checksum validation do not show that
 the E148 program can drive E144 hardware. This is not the Mark II patch applied to E144 stock.
 No consumer E144 release or installation recommendation until its hardware assumptions are resolved.
+Emulator and static work reached so far (2026-11-14): film regressions and a menu tour pass in OM-Emu's
+Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are the controller (010e) protocol,
+renumbered identifiers, one SRAM layout shift and the relocated resource addresses. See
+`research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md`.
 
 ## Deferred
 

@@ -46,6 +46,15 @@ The shared GPIO table and 180 matching parameter descriptors are static evidence
 IBIS, charging/USB, retained settings, calibration, controller protocol, bootloader acceptance and
 recovery are unresolved. Do not use the Mark II install instructions for this transplant.
 
+## Emulator and static findings (2026-11-14)
+
+OM-Emu's original OM-5 model refuses this program (its handlers are tied to OM-5 1.2 code). In OM-Emu's Mark II
+model, which uses the same board family, the candidate passes all 13 film regressions and draws a 23-step tour
+identically to the Mark II build. The relocated resource addresses are not exercised there. A static comparison
+finds one on-chip SRAM layout shift and about 90 renumbered identifiers between the two programs. Details, limits
+and next steps: [research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md](../../../research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md).
+None of this shows that the camera would boot it.
+
 ## Reproducible verification
 
 `build.json` records the donor hash, source/tool versions, preserved ranges and resource statistics.

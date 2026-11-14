@@ -30,7 +30,11 @@ The owner performs any physical test; development sessions prepare and check fil
 <p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/patches/ports/om-5-i-from-ii/README.md">E148-program transplant builder</a> is included and rebuilt
 using this project's donor patch. It remains developer-only: fitting and checksum validation do not show that
 the E148 program can drive E144 hardware. This is not the Mark II patch applied to E144 stock.
-No consumer E144 release or installation recommendation until its hardware assumptions are resolved.</p>
+No consumer E144 release or installation recommendation until its hardware assumptions are resolved.
+Emulator and static work reached so far (2026-11-14): film regressions and a menu tour pass in OM-Emu's
+Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are the controller (010e) protocol,
+renumbered identifiers, one SRAM layout shift and the relocated resource addresses. See
+<code>research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md</code>.</p>
 <h2 id="deferred">Deferred</h2>
 <p>Dedicated FILM carousel entries, more than three active slots, film metadata in EXIF, Blacks/Whites,
 split toning, extra grain, Glow and Halation. Films, HSL, tone and ND64 take priority. Do not remove
