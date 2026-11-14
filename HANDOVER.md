@@ -21,7 +21,7 @@ Must-haves: film slots from LOOKS.BIN made by the web app, full HSL, ND64, tone 
 - References (read-only): `androidfanman/caduceus-om3` v0.29.1 (site layout, LookLab = `webapp/`, patch.py that
   downloads stock firmware from OM's server, FORMATS.md), `cakelesscoder/caduceus-ep7`.
 - Session cannot create GitHub repos. This tree is stored as branch `caduceus-om5` of `xulfr/oly_fw_analysis`
-  (orphan branch) until the owner creates `xulfr/caduceus-om5` and it is pushed there.
+  (orphan branch, superseded): the real repo is now `xulfr/caduceus-om5`.
 
 ## Workspace recipe (about 5 minutes, all scripted in session 1)
 - Toolchain: binutils 2.42 `--target=mn10300-elf` from archive.ubuntu.com `binutils_2.42.orig.tar.xz`
@@ -37,11 +37,40 @@ Must-haves: film slots from LOOKS.BIN made by the web app, full HSL, ND64, tone 
 - `tools/dev/xm.py ADDR`: finds the E148 counterpart of an E147 (OM-3) code address by instruction shape.
   Needs expanded mains in /home/user/work/dec (`oly_compress.expand_image` of component 0x100).
 
-## What exists in this tree
-- `firmware/om5ii/`: hsl.s, wb.s, layout.ld, wb.ld, color_profiles.py, nd64.py, patch.json (the 12 Nov base:
-  Color Profile 1-3 restored, Hue/Lightness, per-profile WB, Monochrome Profile 1-3, tone curve pages, Live ND32/64)
-  plus **films.s (new, session 1)**.
-- `card/mklooks.py`: LOOKS.BIN maker (format below). `tools/`: oly_patch.py builder, recorder, boot audit.
+## State at the end of session 1 (2026-11-14) — READ THIS PART FIRST
+Repo: github.com/xulfr/caduceus-om5, branch main (everything is pushed). Owner wants: regular commits + pushes,
+no status chatter, just finish the work.
+
+Done and pushed:
+- firmware/om5ii: base patch + films.s. Strict build + hash record: `tools/dev/build.sh NAME`.
+  Current package `a76c064f…7614` = releases/v0.1.0-alpha1/patch.json (camera_tested false).
+- patch.py (user patcher: downloads stock, applies release, pure Python, asks the user to type UNTESTED),
+  launchers, tools/mkrelease.py, tools/oly_container.py rewritten (Apache), resource repack pure Python.
+- card/mklooks.py, releases/v0.1.0-alpha1/LOOKS.BIN (10 starter films), looklab/films.json (67-film library).
+- LookLab: looklab/index.html + app.js (no build step; writes the same bytes as mklooks.py; browser-checked).
+- Docs: README, NOTICE, docs/{SAFETY,FIRST_FLASH,INSTALL,USING,FAQ,FORMATS,WHITE_BALANCE}.md, research/OM5II-*.md.
+- pages/site/site.css (shared style, has tour classes .hero .steps .step .facts .screen), pages/showcase/img/*.png
+  (true-colour emulator screens: film-title, wheel-sat, wheel-hue, tone, film-slot2, mono, color-profile).
+  Emulator PNGs are YCbCr in RGB channels: convert with PIL `Image.merge('YCbCr', im.split()).convert('RGB')`.
+
+NOT done yet (next, in order):
+1. Site: root `index.html` tour (hero + steps using the screenshots + comparison table + untested banner), and
+   `tools/mksite.py` to turn docs/*.md, ROADMAP.md, CHANGELOG.md into pages/{install,using,faq,safety,first-flash,
+   formats,roadmap,changelog}/index.html with the shared header/nav (LookLab's header shows the nav links used).
+   Add `.nojekyll`. Tell the owner to enable GitHub Pages (main, root).
+2. ROADMAP.md, CHANGELOG.md, CLAUDE.md (project rules: status words camera-tested / emulator only; never present
+   emulator results as camera results; owner flashes, sessions only prepare files).
+3. tests/: LOOKS.BIN writer parity (python vs looklab/app.js via node), patch.py reproduces the release hash,
+   emulator film checks from session 1 (see "Emulator results" below).
+4. OM-5 (E144): move `patches/ports/om-5-i-from-ii` + `tools/om5i_donor_patch.py`, `om5_donor_resources.py`,
+   `om5_transplant_audit.py` from xulfr/oly_fw_analysis (branch fix/om5ii-no-image-stores), rebuild on this build
+   with `--donor-patch`, document as second-stage.
+5. Firmware gaps: redraw after a film step (title/values only refresh when the highlight moves); Delete on the
+   Sharpness/Contrast/Shading/Tone rows also steps the film; film name on the super control panel; re-run the
+   "card mounted but no LOOKS.BIN" emulator case. Ask the owner whether candidate `42fcf6de…` was ever flashed.
+
+Workspace is gone after the session: rebuild it with the recipe below (toolchain build ~3 min, firmware download
+from OM's server, clone xulfr/om-emu branch fix/e148-ipi-stride, expand mains into /home/user/work/dec).
 
 ## Films layer (films.s) — design and emulator status
 - FILM 1-3 = the three Color Profile slots. `C:\OM5MOD\LOOKS.BIN`, magic `OM5F`: 32-byte header (u32 total,
@@ -66,15 +95,3 @@ Must-haves: film slots from LOOKS.BIN made by the web app, full HSL, ND64, tone 
   0x900c, re-writing setting 111); Delete on the Sharpness/Contrast/Shading/Tone rows also steps the film;
   empty-card run not yet re-checked (grep choked on binary output, re-run); free loaded-tail space left:
   sec3 384, sec4 656, sec5 ~850, sec6 ~550, sec7 ~250, sec9 568, sec10 ~1000 bytes.
-
-## Still to do (in order)
-1. Replace oly_container.py (licence), add README/NOTICE/CLAUDE.md, FORMATS/INSTALL/USING/FAQ/SAFETY docs,
-   move research/OM5II-*.md incident reports over.
-2. User-facing `patch.py` (downloads stock, applies a release `patch.json` of byte edits, no toolchain) and
-   Mac/Windows launchers; keep the "untested" gate until a camera result exists.
-3. LookLab for OM-5: fork caduceus-om3 `webapp/`, add an OM-5 mode that writes the `OM5F` file (10 films,
-   12-character names, only the fields above), build into `looklab/`.
-4. Site: `index.html` tour + `pages/` (install, using, faq, roadmap, changelog) in the OM-3 style, with emulator
-   screenshots; prominent experimental banner.
-5. OM-5 (E144): carry `patches/ports/om-5-i-from-ii` (donor transplant builder) and rebuild on the films build.
-6. Regression tests in `tests/` from the session-1 emulator checks; then a first-flash plan with the owner.
