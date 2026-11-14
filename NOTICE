@@ -1,0 +1,30 @@
+Caduceus for OM-5 — film looks and a colour editor for the OM SYSTEM OM-5 Mark II (firmware 1.1) and OM-5,
+part of the Caduceus family
+Copyright 2026 xulfr and contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository contains no OM Digital Solutions / Olympus firmware. The patcher (patch.py) works on the official
+firmware file that each user downloads themselves; releases/*/patch.json hold only the bytes this project writes
+(its own code, hooks, and the picture-mode tables rearranged to list the profiles).
+
+Based on:
+- Caduceus (cakelesscoder/caduceus-ep7, Apache-2.0, Copyright 2026 cakelesscoder), firmware patches for the Olympus
+  PEN E-P7: the idea of looks loaded from a card file, the heap state block armed at the first half-press, the
+  official-firmware download request in patch.py, and the update container format as its decoder states it.
+- Caduceus for OM-3 (androidfanman/caduceus-om3, Apache-2.0, Copyright 2026 androidfanman): the LOOKS record layout
+  that the OM5F file reuses, the film looks in looklab/films.json (adapted: see that file's note), the preview
+  numbers in LookLab (fitted to the OM-3 by that project), and the layout of this project's site and guides.
+- The OM-5 Mark II colour-profile, Hue / Lightness, white balance, Monochrome Profile and Live ND work written for
+  xulfr/oly_fw_analysis (a fork of fishcu/oly_fw_analysis) by xulfr; fishcu's PEN-F research showed the way.
+  No file of fishcu's is included here.
+
+Sample photos in looklab/samples are public domain (CC0 1.0); see looklab/samples/CREDITS.md.
+
+Developer tools in tools/dev drive OM-Emu (github.com/flatpanda/om-emu; the E148 work is in xulfr/om-emu), which is
+not included and keeps its own licence. The camera screens on the site are pictures drawn by OM-Emu running this
+project's firmware; the menu design is OM Digital Solutions'.
+
+"OM SYSTEM", "Olympus", "OM-5" and "OM-3" are trademarks of their owners, as are the film names used for the looks
+(Kodak, Fujifilm, CineStill and others). The looks are interpretations, not the manufacturers' own. Not affiliated
+with OM Digital Solutions or any film maker.
