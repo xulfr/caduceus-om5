@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Safety · Caduceus for OM-5</title>
+<link rel="stylesheet" href="../site/site.css"></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/" aria-current="page">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="safety">Safety</h1>
+<p><strong>Short version: nobody has seen this run on a camera. If you flash it, you are the first test.</strong></p>
+<h2 id="what-is-known">What is known</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Emulator (OM-Emu, OM-5 Mark II firmware 1.1)</td>
+<td>The camera starts, the Picture Mode screens work, films load from the card and reach the slot's settings, nothing writes into the firmware image.</td>
+</tr>
+<tr>
+<td>Real OM-5 Mark II</td>
+<td><strong>Nothing for this build.</strong></td>
+</tr>
+<tr>
+<td>Earlier builds on a real OM-5 Mark II</td>
+<td><strong>Three failures</strong>, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after.</td>
+</tr>
+<tr>
+<td>Going back</td>
+<td>After each failure OM's firmware was put back from the card (hold <strong>OK</strong>, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did.</td>
+</tr>
+</tbody>
+</table>
+<p>The third failure was traced to the patch storing its working values inside the firmware's own memory, which OM's
+program never does (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md">the analysis</a>). This build keeps them in a
+block of ordinary memory instead and touches nothing until the first half-press of the shutter button. The first
+two failures were builds with a different loading scheme that is no longer used; their exact cause was never found.</p>
+<p>The emulator did not predict any of the three failures. It has no real loader, no second processor, no image
+processor. Passing it means "no fault that the emulator can show".</p>
+<h2 id="what-can-go-wrong">What can go wrong</h2>
+<ul>
+<li><strong>The camera does not start, or starts and then freezes.</strong> Then put OM's firmware back (below). So far that has
+  worked every time, on one camera. Nothing proves it always will: the part of the firmware that reads the card
+  update lives in the same program this project changes.</li>
+<li><strong>The camera cannot be recovered from the card.</strong> Then it needs OM service, and they may charge, or decline.</li>
+<li><strong>Warranty.</strong> Unofficial firmware may affect it.</li>
+<li><strong>Photos.</strong> Whether Hue, Lightness and the films reach the JPEG exactly as intended has never been checked on a
+  camera. Shoot RAW + JPEG for anything that matters.</li>
+</ul>
+<p>No responsibility is accepted for any damage or loss.</p>
+<h2 id="before-you-flash">Before you flash</h2>
+<ol>
+<li>Fully charged battery. Do not interrupt the update.</li>
+<li>Keep <code>card/restore/DCOLYMP/E1489999.BIN</code>, and a second SD card with that <code>DCOLYMP</code> folder already on it.</li>
+<li>Read <a href="../first-flash/">the first-flash plan</a>: it goes in steps, the first of which changes nothing.</li>
+<li>Note your camera's settings (or save them with OM Workspace): going back resets nothing, but a full reset may be
+   part of recovery.</li>
+</ol>
+<h2 id="going-back-to-oms-firmware">Going back to OM's firmware</h2>
+<ol>
+<li>Copy the <code>DCOLYMP</code> folder from <code>card/restore</code> to the top of an SD card (so the card has <code>DCOLYMP/E1489999.BIN</code>).</li>
+<li>Camera off. Card in <strong>slot 1</strong>. Hold <strong>OK</strong> and switch on. Let go when the orange light is steady.</li>
+<li>Steady light = writing (about two minutes; touch nothing). Blinking = done. Switch off, then on.</li>
+<li>If the light blinks fast straight away, the file was refused: check the file and its place on the card. If the
+   camera just starts normally, OK was not held early enough: try again.</li>
+<li>A steady <strong>red</strong> light, or nothing: switch off, take the battery out for a minute, try again, and again with the
+   second card. That is what recovered the first failure.</li>
+</ol>
+<p>Before going back from a working install, set a normal picture mode (Natural) in every custom mode C1–C4, so no
+saved mode points at a Color Profile that OM's firmware hides.</p></main>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/SAFETY.md">Page source</a></footer>
+</body></html>

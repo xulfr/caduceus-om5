@@ -2,7 +2,7 @@
 
 Read this first in a new session. It replaces re-deriving the context.
 
-## Goal (owner: Tom / xulfr)
+## Goal (owner: xulfr)
 A dedicated, stripped-down `caduceus-om5` repository (Apache-2.0, as the Caduceus family) with OM-5 Mark II (E148 fw 1.1)
 first, OM-5 (E144 fw 1.2) second, a GitHub Pages site like androidfanman.github.io/caduceus-om3 (tour, install, using,
 FAQ, LookLab), and films loaded from one `LOOKS.BIN`. Owner will hand the project to the community.
@@ -95,3 +95,11 @@ from OM's server, clone xulfr/om-emu branch fix/e148-ipi-stride, expand mains in
   0x900c, re-writing setting 111); Delete on the Sharpness/Contrast/Shading/Tone rows also steps the film;
   empty-card run not yet re-checked (grep choked on binary output, re-run); free loaded-tail space left:
   sec3 384, sec4 656, sec5 ~850, sec6 ~550, sec7 ~250, sec9 568, sec10 ~1000 bytes.
+
+## Continuation checkpoint 1 — website (2026-11-14)
+
+Completed the root tour, screenshot captions, comparison table, untested banner, shared guide generator,
+keyboard focus styling and `.nojekyll`. `python tools/mksite.py` renders the Markdown guides with local
+navigation and heading anchors. Install `requirements-dev.txt` first. ROADMAP and CHANGELOG pages will
+be generated at checkpoint 2 when their sources are added. GitHub Pages: enable **Deploy from a branch**,
+**main**, **/(root)** in repository Settings → Pages. No firmware workspace was needed for this step.

@@ -1,6 +1,6 @@
 # E148 per-Color Profile white balance
 
-This is an emulator-tested port of the [OM-3 per-profile WB design](../om-3/WHITE_BALANCE.md).
+This is an emulator-tested port of the [OM-3 per-profile WB design](https://github.com/androidfanman/caduceus-om3).
 It intercepts the E148 native settings commit at `0x602d19b6`, using the E148
 stock getter (`0x602d000d`), UI writer (`0x60855cdc`) and active-setting accessors.
 The overlay uses picture-mode setting 111: values 54, 55 and 56 identify Color

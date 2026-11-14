@@ -44,6 +44,11 @@ footer { border-top: 1px solid var(--line); padding: 1.5rem clamp(1rem, 4vw, 2.5
 .btn:disabled { opacity: .45; cursor: default; }
 
 /* tour */
+.skip { position: absolute; left: 1rem; top: -5rem; padding: .6rem; background: var(--panel); z-index: 10; }
+.skip:focus { top: .5rem; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.eyebrow { font: 600 .8rem var(--mono); color: var(--accent); letter-spacing: .05em; }
+caption { text-align: left; color: var(--soft); margin-bottom: .5rem; }
 .hero { padding: clamp(2.5rem, 7vw, 5rem) clamp(1rem, 4vw, 2.5rem) 2rem; max-width: 70rem; margin: 0 auto; display: grid; gap: 2rem; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; }
 .hero p.lede { font-size: 1.2rem; color: var(--soft); max-width: 32rem; }
 .hero .cta { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.4rem; }

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The first camera test · Caduceus for OM-5</title>
+<link rel="stylesheet" href="../site/site.css"></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="the-first-camera-test">The first camera test</h1>
+<p>For whoever tests this first. Stop at the first thing that is not as written, put OM's firmware back
+(<a href="../safety/">Safety</a>), and report it (what you pressed, what the screen and the lights did).</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Do</th>
+<th>Expect</th>
+<th>Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Flash <strong>OM's own 1.1</strong> from <code>card/restore</code> (hold OK, switch on).</td>
+<td>Steady light, then blinking; a normal start.</td>
+<td>Your card, your timing and the card update work, before anything is changed.</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Flash <code>card/DCOLYMP/E1489999.BIN</code>. <strong>No <code>OM5MOD</code> folder on the card yet.</strong> Switch on. Do not touch the shutter button.</td>
+<td>The normal shooting screen. Menu, playback and the super control panel work.</td>
+<td>The changed program loads and starts. Nothing of ours is active before the first half-press.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>OK › Picture Mode. Move along the list <strong>without</strong> a half-press first.</td>
+<td>Color Profile 1–3 and Monochrome Profile 1–3 are in the list, after Color Creator. Selecting one works; their Saturation wheel works; the trash button does nothing.</td>
+<td>The tables and screens. This is where the third build froze.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Switch off, on. Half-press once. Take a photo in Natural. Play it back.</td>
+<td>A normal photo.</td>
+<td>Arming (one small block of memory is taken at the first half-press).</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Picture Mode › Color Profile 1 › the colour wheel. Press the trash button.</td>
+<td>Saturation → Hue → Lightness. Set a strong Hue and Lightness on one colour, take a photo of something that colour, compare with Natural.</td>
+<td>The editor and that Hue / Lightness reach the photo.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Switch off, on, several times; leave it on Color Profile 1 while you do.</td>
+<td>It starts every time, still on Color Profile 1 with your values.</td>
+<td>Starting with a profile saved: the suspected cause of the loop after the third failure.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Copy <code>OM5MOD</code> (with <code>LOOKS.BIN</code>) to the card. Switch on, half-press, Picture Mode › Color Profile 1, press the trash button (not inside the colour wheel). Move the highlight away and back.</td>
+<td>The title is the first film's name; its values are in the rows.</td>
+<td>Films.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Take the card out, put another in, switch off and on.</td>
+<td>Color Profile 1 still has the film and its name.</td>
+<td>The film lives in the camera.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Live ND: ND32 and ND64, on a tripod. Custom modes C1–C4 with a Color Profile. Monochrome Profile 1.</td>
+<td>They work.</td>
+<td>The rest.</td>
+</tr>
+</tbody>
+</table>
+<p>Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
+nobody else should flash it.</p></main>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FIRST_FLASH.md">Page source</a></footer>
+</body></html>

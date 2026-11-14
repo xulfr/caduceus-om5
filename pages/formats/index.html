@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>File formats · Caduceus for OM-5</title>
+<link rel="stylesheet" href="../site/site.css"></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="file-formats">File formats</h1>
+<h2 id="com5modlooksbin-om5f-version-1"><code>C:\OM5MOD\LOOKS.BIN</code> (OM5F, version 1)</h2>
+<p>Little-endian. 32 + 80 × n bytes, n = 1..10 (at most 832 bytes).</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Size</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>4</td>
+<td>magic <code>OM5F</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>total length</td>
+</tr>
+<tr>
+<td>8</td>
+<td>4</td>
+<td>CRC-32 (zlib) of bytes 12..end</td>
+</tr>
+<tr>
+<td>12</td>
+<td>2</td>
+<td>version 1</td>
+</tr>
+<tr>
+<td>14</td>
+<td>2</td>
+<td>film count n</td>
+</tr>
+<tr>
+<td>16</td>
+<td>16</td>
+<td>zero</td>
+</tr>
+<tr>
+<td>32</td>
+<td>80 × n</td>
+<td>films: a 64-byte record, then a 16-byte name</td>
+</tr>
+</tbody>
+</table>
+<p>Record (signed bytes; the offsets are those of the OM-3 project's <code>LOOKS.BIN</code> record):</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Field</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Hue, 12 colours</td>
+<td>−7..7</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Lightness, 12 colours</td>
+<td>−7..7</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Saturation, 12 colours</td>
+<td>−5..5</td>
+</tr>
+<tr>
+<td>36</td>
+<td>WB shift on</td>
+<td>0 / 1</td>
+</tr>
+<tr>
+<td>37, 38</td>
+<td>WB A/B, G/M</td>
+<td>−7..7</td>
+</tr>
+<tr>
+<td>41</td>
+<td>Contrast</td>
+<td>−2..2</td>
+</tr>
+<tr>
+<td>42</td>
+<td>Sharpness</td>
+<td>−2..2</td>
+</tr>
+<tr>
+<td>43</td>
+<td>Shading</td>
+<td>−5..5</td>
+</tr>
+<tr>
+<td>44, 45, 46</td>
+<td>Shadows, Midtones, Highlights</td>
+<td>−7..7</td>
+</tr>
+</tbody>
+</table>
+<p>Colours run clockwise from Yellow, as on the camera's wheel: Yellow, Orange, Orange-red, Red, Magenta, Violet,
+Blue, Blue-cyan, Cyan, Green-cyan, Green, Yellow-green. Bytes 39, 40 and 47..63 are not read (write zero).
+Name: ASCII, zero-padded; the camera shows the first 12 characters.</p>
+<p>The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
+that fails is ignored as a whole. Writers: <code>card/mklooks.py</code>, LookLab (<code>looklab/app.js</code>), byte-identical.</p>
+<h2 id="where-a-film-lives-in-the-camera">Where a film lives in the camera</h2>
+<p>A film is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
+part 1 of the same cells (<code>0x4831</code> tag, hsl.s), Contrast 908 + p, Sharpness 904 + p, Shading 912 + p, Highlights /
+Midtones / Shadows 976 + 3p .. 978 + 3p, the WB shift in the current WB mode's shift settings (wb.s then keeps the
+profile's WB record). Its name and number are in part 1 of four otherwise unused cells: 916–919 (slot 1), 924–927
+(slot 2), 972–975 (slot 3): word 0 = <code>0x464C</code> &lt;&lt; 16 | number &lt;&lt; 8, words 1–3 = 12 name bytes.</p></main>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FORMATS.md">Page source</a></footer>
+</body></html>

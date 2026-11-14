@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using it · Caduceus for OM-5</title>
+<link rel="stylesheet" href="../site/site.css"></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/" aria-current="page">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="using-it">Using it</h1>
+<blockquote>
+<p>Everything here is from the emulator. None of it has been seen on a camera yet (<a href="../safety/">Safety</a>).</p>
+</blockquote>
+<p><strong>After switching on, half-press the shutter button once.</strong> Until then the camera behaves exactly as OM's
+firmware (the Color Profiles are in the list, but their extra controls are asleep and no film file is read).</p>
+<h2 id="the-slots">The slots</h2>
+<p><strong>OK › Picture Mode.</strong> After Color Creator:</p>
+<ul>
+<li><strong>Color Profile 1, 2, 3</strong>: your three film slots.</li>
+<li><strong>Monochrome Profile 1, 2, 3</strong>: OM's monochrome profiles (filter, toning, grain, tone), as on the OM-3 and PEN-F.</li>
+</ul>
+<p>Each Color Profile has its own rows (press down from the list):</p>
+<table>
+<thead>
+<tr>
+<th>Row</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Colour wheel</td>
+<td>12 colours. <strong>INFO</strong>: one colour / all. <strong>Trash button: Saturation → Hue → Lightness.</strong> Saturation −5..+5, Hue and Lightness −5..+5 on the camera (films can hold −7..+7).</td>
+</tr>
+<tr>
+<td>Tone curve</td>
+<td>Shadows, Midtones, Highlights, −7..+7 (INFO moves between them).</td>
+</tr>
+<tr>
+<td>Shading</td>
+<td>−5..+5</td>
+</tr>
+<tr>
+<td>Sharpness, Contrast</td>
+<td>−2..+2</td>
+</tr>
+</tbody>
+</table>
+<p>Each Color Profile also remembers its own <strong>white balance</strong>: the mode, the Kelvin value and the A/B, G/M shift you
+set while it is selected come back when you select it again. All other picture modes share one white balance.</p>
+<p><strong>Hold OK</strong> on a row resets it, as on OM's own picture modes.</p>
+<h2 id="films">Films</h2>
+<ol>
+<li>Make <code>LOOKS.BIN</code> in <a href="https://xulfr.github.io/caduceus-om5/looklab/">LookLab</a> (or use the starter file) and put
+   it in a folder <code>OM5MOD</code> at the top of the card.</li>
+<li>Switch on, half-press once. The camera reads the file (up to ten films).</li>
+<li><strong>Picture Mode › Color Profile 1</strong> (or 2, 3). Press the <strong>trash button</strong>: the slot takes a film. Press again:
+   the next film. After the last film it starts again at the first.</li>
+<li><strong>Move the highlight to another picture mode and back</strong>: the title now shows the film's name and the rows show
+   its values. (The screen does not redraw by itself yet.)</li>
+</ol>
+<p>The first press on an empty slot gives film 1 on Color Profile 1, film 2 on Color Profile 2, film 3 on Color
+Profile 3.</p>
+<p>What a film sets: the 12 colours' Saturation, Hue and Lightness, the tone curve, Contrast, Sharpness, Shading and
+the white-balance shift (A/B, G/M, on the white-balance mode you are using).</p>
+<p><strong>The film is now the slot's own settings.</strong> It is saved with the camera's settings, it is there after switching
+off, with another card or with no card, and it goes with a custom mode (C1–C4) you save. You can change any of its
+values on the camera. The card is needed again only to choose another film.</p>
+<p>Things to know:</p>
+<ul>
+<li><strong>In the colour wheel the trash button switches Saturation / Hue / Lightness</strong> and leaves the film alone. On the
+  list and on the other rows it steps the film, which <strong>overwrites the slot's values</strong>, including changes you made.</li>
+<li>A <code>LOOKS.BIN</code> that is damaged, or has a value out of range, is ignored as a whole.</li>
+<li>The film file is read once per switch-on. After changing the file, switch off and on.</li>
+<li>A full reset, or resetting the custom mode, clears the slots and the names.</li>
+</ul>
+<h2 id="live-nd">Live ND</h2>
+<p>In the camera's Live ND setting, ND32 and ND64 are added after ND16. Whether the camera completes 32- and
+64-frame exposures has not been seen on a camera.</p></main>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/USING.md">Page source</a></footer>
+</body></html>
