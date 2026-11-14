@@ -1,0 +1,33 @@
+{
+  "schema": "om5i-donor-patch/1",
+  "target": "OM-5 I / E144 1200 slot map",
+  "donor": "OM-5 II / E148 1100 with Caduceus films, HSL, WB, monochrome profiles and ND64",
+  "camera_tested": false,
+  "hardware_compatibility_established": false,
+  "package_sha256": "8e47087017812786b1f87036da8c8b79ba69cc34e4abcbcf894f8e28ce78b12b",
+  "package_bytes": 92274688,
+  "restore_sha256": "a0c91f3ac7caaf0925b2af609e711183cf3b5982b3333224bcef26c0c5943d11",
+  "jpegtran_version": "libjpeg-turbo version 2.1.5 (build 20240408)",
+  "common_resources": {
+    "banks": 11,
+    "unchanged_leaf_records": 557,
+    "delta": 1441792,
+    "sha256": "c5bf3c4bef19d086f5ee33537dd0a0e1c026e02777f6670c2785334946d3e048"
+  },
+  "preservation": {
+    "recipient_component_metadata": true,
+    "recipient_010e_exact": true,
+    "donor_startup_library_exact": true,
+    "donor_feature_ranges_exact": true,
+    "writes_outside_recipient_update_slots": false
+  },
+  "date": "2026-11-14",
+  "donor_package_sha256": "a76c064f6f797f2b91719f27fb3f7d0132a12e06cf143627a4b083b540187614",
+  "pictures": {
+    "unique_jpegs_optimised": 113,
+    "used_bytes": 7056352,
+    "capacity": 7339968,
+    "free_bytes": 283616
+  },
+  "picture_ids": 116
+}

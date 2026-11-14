@@ -65,11 +65,13 @@ The OM-5 Mark II's firmware has far less free room than the OM-3's, so this buil
 
 ## OM-5 (the first model)
 
-The OM-5 runs a different, older program without these profiles. The only route found is to run the Mark II's
-program on it, with its resources repacked to fit. A builder for that exists
-(`xulfr/oly_fw_analysis`, `patches/ports/om-5-i-from-ii`) and is being moved here; it is **more experimental still**:
-nothing shows that the Mark II's program drives the OM-5's hardware correctly. It will follow only after the
-Mark II build has run on a camera. See [ROADMAP.md](ROADMAP.md).
+The OM-5 runs a different, older program without these profiles. The
+[second-stage builder](patches/ports/om-5-i-from-ii/README.md) rebuilds this project's E148 donor and fits
+its application and resources into the E144 layout. It preserves the E144 controller component and
+checks every feature range and resource transformation. It writes no install file by default.
+
+**Developer-only and more experimental still:** hardware compatibility and a successful camera boot
+are unestablished. The user patcher and launchers support E148 only. See [ROADMAP.md](ROADMAP.md).
 
 ## For developers
 

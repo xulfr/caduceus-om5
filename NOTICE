@@ -16,7 +16,8 @@ Based on:
   that the OM5F file reuses, the film looks in looklab/films.json (adapted: see that file's note), the preview
   numbers in LookLab (fitted to the OM-3 by that project), and the layout of this project's site and guides.
 - The OM-5 Mark II colour-profile, Hue / Lightness, white balance, Monochrome Profile and Live ND work written for
-  xulfr/oly_fw_analysis (a fork of fishcu/oly_fw_analysis) by xulfr; fishcu's PEN-F research showed the way.
+  xulfr/oly_fw_analysis (a fork of fishcu/oly_fw_analysis) by xulfr; the E144 donor builder, resource packing and transplant audit also originate in that work.
+  fishcu's PEN-F research showed the way.
   No file of fishcu's is included here.
 
 Sample photos in looklab/samples are public domain (CC0 1.0); see looklab/samples/CREDITS.md.

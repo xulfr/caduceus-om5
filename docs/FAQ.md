@@ -3,7 +3,7 @@
 **Is it safe?** Not known. It has never run on a camera, and three earlier builds failed. [Safety](SAFETY.md).
 
 **Which cameras?** The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The OM-5 (first
-model) is planned as a separate, even more experimental build ([roadmap](../ROADMAP.md)).
+model) has a separate developer-only donor builder, with hardware compatibility unverified ([roadmap](../ROADMAP.md)).
 
 **Why only three film slots, when the OM-3 has twenty?** The OM-3's firmware had hundreds of kilobytes of room that
 its project could open up and prove on a camera. The OM-5 Mark II has about six kilobytes spread over ten places.
@@ -28,5 +28,4 @@ characters.
 **Can OM update the camera afterwards?** Yes; an official update replaces all of this.
 
 **Who makes this?** Volunteers. It builds on Caduceus for the E-P7 (cakelesscoder) and for the OM-3
-(androidfanman), and on fishcu's PEN-F research. The first owner no longer has an OM-5; the project is the
-community's to carry on.
+(androidfanman), and on fishcu's PEN-F research. The project is open for the community to carry on.

@@ -10,6 +10,9 @@
 - Included the previously missing starter LOOKS.BIN in the release and aligned writer validation.
 - Made developer build/run wrappers portable and removed automatic deletion and implicit hash re-recording.
 
+- Imported the E144 donor builder, rebuilt with the Caduceus films donor, and added independent output checks.
+  E144 remains developer-only, with no default install output and no established hardware compatibility.
+
 ## v0.1.0-alpha1 — 2026-11-14
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.**

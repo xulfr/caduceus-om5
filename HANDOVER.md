@@ -132,3 +132,22 @@ has logs/screens. Existing WSL GNU MN103 binutils 2.43 reproduced the 2.42 refer
 toolchain was needed. Native Node 26.13.0 runs the emulator. tools/dev/build.sh and run.sh now use supplied
 paths and preserve errors/output; builds no longer delete directories or silently re-record hashes.
 Next: import only the E144 files named in the session-1 list, rebuild with this donor, then firmware UX gaps.
+
+## Continuation checkpoint 4 — original OM-5 builder (2026-11-14)
+
+Imported exactly patches/ports/om-5-i-from-ii/{README.md,build.py} and tools/{om5i_donor_patch.py,
+om5_donor_resources.py,om5_transplant_audit.py} from the named legacy branch. Updated the default donor
+to firmware/om5ii and rebuilt with --donor-patch firmware/om5ii. No old repository checkout was explored.
+
+E144 candidate: 92,274,688 bytes, SHA-256
+8e47087017812786b1f87036da8c8b79ba69cc34e4abcbcf894f8e28ce78b12b.
+Donor: alpha1 a76c064f6f797f2b91719f27fb3f7d0132a12e06cf143627a4b083b540187614.
+The build preserves all donor feature ranges (films included), E144 headers/slots/controller, all 557
+common-resource leaves and all 116 picture IDs. JPEGs compare pixel-identically after lossless optimization.
+Independent tests reconstruct the complete package and verify the recorded hash and exact stock restore.
+Three E144 tests pass; compact evidence is tests/e144-results.json. No install file was written.
+
+Local generated/e144-alpha1/ has decoded outputs, restore and build report. WSL dependencies added:
+libjpeg-turbo-progs 2.1.5 and python3-pil. E144 official stock is hash-verified in generated/stock/.
+This remains developer-only: no successful E144 boot or hardware compatibility is established.
+Next: film redraw, row-specific Delete behaviour and SCP naming. Empty-card regression already passes.
