@@ -16,9 +16,12 @@ The owner performs any physical test; development sessions prepare and check fil
 <li>Implemented: LookLab, Python card writer, strict source builder, hash-checked release patcher,
   safety gate, tour and guides. These do not establish hardware compatibility.</li>
 <li>Implemented: automated Python/JavaScript writer parity, release reproduction and emulator film regressions.</li>
-<li>Firmware gaps: refresh the title and values immediately after a film change; restrict film stepping
-  to the Picture Mode selector; show film names on the super control panel; repeat the mounted-card,
-  missing-file check.</li>
+<li>Implemented in v0.1.0-alpha2 (emulator only): the title and values repaint on each film step; the
+  trash button steps films only on the Picture Mode row; the super control panel shows the film name
+  while its Picture Mode cell is highlighted; the mounted-card, missing-file case is a regression test.</li>
+<li>Open, cosmetic: after returning from the lower rows the stock title reads "Picture Mode" rather than
+  the film name; in the emulator the super control panel's Picture Mode cell draws no icon for a
+  Color Profile.</li>
 <li>Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   <a href="../first-flash/">first camera test plan</a> and record the exact package hash.</li>

@@ -1,6 +1,22 @@
 # Changelog
 
-## Unreleased — 2026-11-14
+## v0.1.0-alpha2 — 2026-11-14
+
+**OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.**
+
+- A film step now repaints the Picture Mode screen at once: the title takes the new film's name and
+  the rows its values, through the screen's own panel update.
+- The trash button steps films only while the highlight is on the Picture Mode row. On the tone,
+  Shading, Sharpness and Contrast rows it does nothing; in the colour wheel it still switches
+  Saturation / Hue / Lightness.
+- Checked that the super control panel shows the film's name while its Picture Mode cell is highlighted.
+- Emulator regressions added for the repaint, the rows, the return to the Picture Mode row and the
+  control panel name. The E144 developer candidate was rebuilt on this donor.
+
+Known limitations: after returning from the lower rows the title reads "Picture Mode" until the mode
+changes; the emulator limits listed under alpha1 are unchanged.
+
+## Development before alpha2 — 2026-11-14
 
 - Added the GitHub Pages tour with labelled emulator screenshots, feature comparison and safety banner.
 - Added reproducible Markdown guide generation with shared navigation and local guide links.

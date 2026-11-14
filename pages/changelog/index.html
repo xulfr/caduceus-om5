@@ -7,7 +7,21 @@
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
 <div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="changelog">Changelog</h1>
-<h2 id="unreleased-2026-11-14">Unreleased — 2026-11-14</h2>
+<h2 id="v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</h2>
+<p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.</strong></p>
+<ul>
+<li>A film step now repaints the Picture Mode screen at once: the title takes the new film's name and
+  the rows its values, through the screen's own panel update.</li>
+<li>The trash button steps films only while the highlight is on the Picture Mode row. On the tone,
+  Shading, Sharpness and Contrast rows it does nothing; in the colour wheel it still switches
+  Saturation / Hue / Lightness.</li>
+<li>Checked that the super control panel shows the film's name while its Picture Mode cell is highlighted.</li>
+<li>Emulator regressions added for the repaint, the rows, the return to the Picture Mode row and the
+  control panel name. The E144 developer candidate was rebuilt on this donor.</li>
+</ul>
+<p>Known limitations: after returning from the lower rows the title reads "Picture Mode" until the mode
+changes; the emulator limits listed under alpha1 are unchanged.</p>
+<h2 id="development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</h2>
 <ul>
 <li>Added the GitHub Pages tour with labelled emulator screenshots, feature comparison and safety banner.</li>
 <li>Added reproducible Markdown guide generation with shared navigation and local guide links.</li>

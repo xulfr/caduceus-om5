@@ -151,3 +151,57 @@ Local generated/e144-alpha1/ has decoded outputs, restore and build report. WSL 
 libjpeg-turbo-progs 2.1.5 and python3-pil. E144 official stock is hash-verified in generated/stock/.
 This remains developer-only: no successful E144 boot or hardware compatibility is established.
 Next: film redraw, row-specific Delete behaviour and SCP naming. Empty-card regression already passes.
+
+## Continuation checkpoint 5 — firmware gaps closed, v0.1.0-alpha2 (2026-11-14)
+
+**Owner statement (2026-11-14): the 12 November candidate (`42fcf6de…`) was NOT flashed to the camera.** So the
+record stands at three boot loops (4, 5, 8 Nov) and no build after them tried on a camera. Nothing in this
+repository is camera-tested.
+
+Done (all emulator only, package `2eac7af1d82b119acba3952e8dac1dd6b8faec3cbaf1fcbfa9fcced600167ca9`,
+releases/v0.1.0-alpha2/patch.json, camera_tested false; alpha1 kept and still reproduced by the tests):
+- **Redraw after a film step.** `fl_delete` now ends with the screen's own panel update (`(0x61e588f4)` → `+4` →
+  vtable entry 0 = 0x60e49c2b) and sets P+67 (`FL_DIRTY`). `pg_title` (films.s, section 6, first call in hsl.s
+  `pages_hook`) consumes the flag and sets the title label's stored string id (child 15, +130) to 0xffff so the
+  layout that follows repaints the title. Why each earlier idea failed is in
+  research/OM5II-PICTURE-MODE-SCREEN.md (read it before touching this screen again).
+- **Rows.** A film steps only when the panel's record of the highlighted row (updater + 136) reads 4, the
+  Picture Mode strip. Tone / Shading / Sharpness / Contrast rows: Delete does nothing. Wheel: axis switch as before.
+- **Super control panel.** No code needed: its top line uses the string getter, so it shows the film's name
+  while the Picture Mode cell is highlighted. Now a regression case.
+- **Empty card** case was already closed at checkpoint 3 and passes again.
+- tests/run_emulator.py: 13 cases pass (new: other-rows, row-return, title-redraw, scp-name), each against a
+  stock baseline for image stores; tests/alpha2-results.json. Unit tests: 12 pass with OM5_STOCK and the E144
+  paths set. Strict build and both releases reproduce byte for byte.
+- E144 developer candidate rebuilt on this donor: 92,274,688 bytes, SHA-256
+  `70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4`; tests/e144-results.json; three E144
+  tests pass. Still developer-only, no install file, no hardware compatibility established.
+- New developer tools: `T+` / `T-` tokens in tools/dev/sess.mjs, tools/dev/calls.mjs (call log),
+  tools/dev/trace.mjs (registers at chosen addresses), tools/dev/calltree.py (tree / chain / events views).
+- Docs, tour, ROADMAP, CHANGELOG and generated pages say what changed and keep the untested warnings.
+- The name was checked across files, images and commit metadata: only "xulfr" appears.
+
+Workspace used here (gone after the session; about 10 minutes to rebuild):
+- `/home/user/work/toolchain/install/bin`: binutils 2.42, `configure --target=mn10300-elf --disable-nls
+  --disable-werror --disable-gdb --disable-sim --disable-gprof --disable-gprofng`, `make MAKEINFO=true`.
+- Stock files through `patch.fetch_stock` (E148 as the release says; E144 with model_code `E144`, file
+  `OLY_E_144_1200_0000_0000.BIN`); both hashes matched the pinned values.
+- `xulfr/om-emu` branch fix/e148-ipi-stride at bdb3347; Node 22.23.4 ran it. `apt-get update` first, then
+  `libjpeg-turbo-progs` (2.1.5, same as checkpoint 4) for the E144 build; `pip install Markdown==3.7 pillow`.
+- Dev loop: copy firmware/om5ii to a scratch directory and run tools/oly_patch_record.py there (it rewrites
+  patch.json), run sessions on `WORK/strict/decoded`; only record into the repository when the change is final
+  (`tools/dev/build.sh DIR --record`, then a strict `tools/dev/build.sh DIR2`, then tools/mkrelease.py).
+- A full tests/run_emulator.py run takes about 45 minutes here (two sessions per case).
+
+Calling convention trap that cost time: `call` and `calls` store the return address at the CALLER's `(0,sp)`.
+A function that makes calls needs its frame to start with a free word: `call f,[a2],8` (4 for a2 + 4), never
+`[a2],4`, or the nested call overwrites the saved register.
+
+Open (none blocks a first camera test; the test itself is the owner's decision, plan in docs/FIRST_FLASH.md):
+- After going down the rows and back up, the stock title reads "Picture Mode" (string 203), also after a film
+  step there. The name returns when the mode changes. Updater + 140 holds that id if someone wants to change it.
+- In the emulator the super control panel's Picture Mode cell draws no icon for a Color Profile (base patch
+  resource question, not looked at).
+- tests/github-actions.yml still needs installing by a credential with workflow scope.
+- Free loaded-tail space now: section 6 about 490 bytes, section 10 about 900; others as at session 1.
+- Everything under "Physical validation remains open" in ROADMAP.md.

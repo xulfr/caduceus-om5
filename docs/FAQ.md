@@ -18,8 +18,10 @@ camera's image processor. Films made for the OM-3 that use them lose those parts
 **Can I use an OM-3 `LOOKS.BIN`?** No, the file is different (`OM5F`, see [formats](FORMATS.md)). LookLab's library
 has the OM-3 project's films, adapted.
 
-**The film's name did not appear.** Move the highlight to another picture mode and back. Names have at most 12
-characters.
+**The film's name did not appear.** The name is the title of the Picture Mode screen while the highlight is on the
+strip of picture modes, and the top line of the super control panel while its Picture Mode cell is highlighted.
+After visiting the rows below, the title reads "Picture Mode" until you move along the strip. Names have at most
+12 characters.
 
 **Does it change RAW files?** No. Like any picture mode it changes the JPEG, and the preview.
 

@@ -33,8 +33,7 @@ set while it is selected come back when you select it again. All other picture m
 2. Switch on, half-press once. The camera reads the file (up to ten films).
 3. **Picture Mode › Color Profile 1** (or 2, 3). Press the **trash button**: the slot takes a film. Press again:
    the next film. After the last film it starts again at the first.
-4. **Move the highlight to another picture mode and back**: the title now shows the film's name and the rows show
-   its values. (The screen does not redraw by itself yet.)
+4. The title changes to the film's name at once and the rows show its values.
 
 The first press on an empty slot gives film 1 on Color Profile 1, film 2 on Color Profile 2, film 3 on Color
 Profile 3.
@@ -48,8 +47,12 @@ values on the camera. The card is needed again only to choose another film.
 
 Things to know:
 
-- **In the colour wheel the trash button switches Saturation / Hue / Lightness** and leaves the film alone. On the
-  list and on the other rows it steps the film, which **overwrites the slot's values**, including changes you made.
+- **The trash button steps the film only on the Picture Mode row** (the strip of picture modes). A step
+  **overwrites the slot's values**, including changes you made. In the colour wheel the trash button switches
+  Saturation / Hue / Lightness; on the tone, Shading, Sharpness and Contrast rows it does nothing.
+- If you go down to the other rows and come back up, the camera's title reads "Picture Mode" instead of the mode's
+  name. The trash button still steps the film there; the name shows again when you move along the strip.
+- On the super control panel the film's name is the top line while the Picture Mode cell is highlighted.
 - A `LOOKS.BIN` that is damaged, or has a value out of range, is ignored as a whole.
 - The film file is read once per switch-on. After changing the file, switch off and on.
 - A full reset, or resetting the custom mode, clears the slots and the names.

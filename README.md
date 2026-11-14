@@ -20,7 +20,7 @@
 > not the camera. Flashing it can leave a camera unable to start. Read [Safety](docs/SAFETY.md) before anything else.
 > This project is looking for someone willing to make the first camera test: see [the test plan](docs/FIRST_FLASH.md).
 
-Latest: **v0.1.0-alpha1** (2026-11-14, emulator only) · OM-5 Mark II, firmware **1.1** · OM-5: [see below](#om-5-the-first-model)
+Latest: **v0.1.0-alpha2** (2026-11-14, emulator only) · OM-5 Mark II, firmware **1.1** · OM-5: [see below](#om-5-the-first-model)
 
 ## What it does
 
