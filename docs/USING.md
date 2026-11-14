@@ -56,5 +56,5 @@ Things to know:
 
 ## Live ND
 
-**Menu › Computational Modes › Live ND**: ND32 and ND64 are added after ND16. Whether the camera completes 32- and
+In the camera's Live ND setting, ND32 and ND64 are added after ND16. Whether the camera completes 32- and
 64-frame exposures has not been seen on a camera.

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LookLab · Caduceus for OM-5</title>
+<meta name="description" content="Make film looks for the OM-5 Mark II with Caduceus for OM-5 and save them as LOOKS.BIN.">
+<link rel="stylesheet" href="../pages/site/site.css">
+<style>
+  .lab { display: grid; grid-template-columns: 17rem minmax(0, 1fr) 24rem; gap: 1rem; padding: 1rem clamp(.6rem, 2vw, 1.5rem) 3rem; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
+  .card h2 { font-size: 1rem; margin: 0 0 .6rem; }
+  .card h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .07em; color: var(--soft); margin: 1.3rem 0 .4rem; }
+  #films { list-style: none; margin: 0 0 .8rem; padding: 0; }
+  #films li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0 .4rem; padding: .45rem .5rem; border-radius: 8px; cursor: pointer; }
+  #films li:hover { background: var(--code); }
+  #films li.on { background: var(--accent); color: var(--accent-ink); }
+  #films .num { font: 600 .85rem var(--mono); opacity: .7; }
+  #films .hint { grid-column: 2; font-size: .72rem; opacity: .75; }
+  .hint { color: var(--soft); font-size: .82rem; margin: .3rem 0; }
+  #films li.on .hint { color: inherit; }
+  .tools { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .tools button, .tools select, .file { font: inherit; font-size: .88rem; padding: .4em .7em; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  .tools button:disabled { opacity: .4; cursor: default; }
+  select { max-width: 100%; }
+  #lib { width: 100%; margin-bottom: .6rem; }
+  .file input { display: none; }
+  #view { width: 100%; height: auto; border-radius: 8px; display: block; background: #000; touch-action: none; cursor: pointer; }
+  .viewbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .7rem; }
+  .namerow { display: grid; grid-template-columns: auto 1fr auto; gap: .6rem; align-items: center; }
+  .namerow input { font: inherit; padding: .4em .6em; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
+  .tabs { display: flex; gap: .3rem; }
+  .tabs button { flex: 1; font: inherit; font-size: .88rem; padding: .4em; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  .tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .grid { display: grid; gap: .15rem; }
+  .row { display: grid; grid-template-columns: 7.6rem 1fr 2.4rem; gap: .5rem; align-items: center; font-size: .88rem; }
+  .row output { font: .85rem var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .row input[type=range] { width: 100%; accent-color: var(--accent); }
+  .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; margin-right: .45rem; vertical-align: -1px; }
+  .check { font-size: .9rem; display: block; margin: .3rem 0; }
+  .msg { min-height: 1.5em; font-size: .9rem; color: var(--soft); margin: .7rem 0 0; }
+  .msg.bad { color: #c62828; font-weight: 600; }
+  .save { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+  @media (max-width: 1100px) { .lab { grid-template-columns: 15rem minmax(0, 1fr); } .lab .edit { grid-column: 1 / -1; } }
+  @media (max-width: 700px) { .lab { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../">Caduceus for OM-5 <small>LookLab</small></a>
+  <nav><a href="../">Tour</a><a href="../pages/install/">Install</a><a href="../pages/using/">Using it</a><a href="./" aria-current="page">LookLab</a><a href="../pages/faq/">FAQ</a><a href="../pages/safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav>
+</header>
+<div class="banner">The firmware these films are for <a href="../pages/safety/">has not run on a camera yet</a>. The preview uses colour numbers measured on the OM-3: treat it as a guide to direction, not exact colour.</div>
+<div class="lab">
+  <section class="card" aria-label="Your films">
+    <h2>Your films <span class="hint" id="count"></span></h2>
+    <ol id="films"></ol>
+    <select id="lib" aria-label="Add a film from the library"></select>
+    <div class="tools">
+      <button id="add" type="button">New</button><button id="dup" type="button">Duplicate</button><button id="del" type="button">Remove</button>
+      <button id="up" type="button" aria-label="Move up">↑</button><button id="down" type="button" aria-label="Move down">↓</button>
+    </div>
+    <p class="hint">Up to ten films. On the camera the trash button steps a Color Profile slot through them in this order.</p>
+    <div class="save">
+      <button class="btn" id="savebin" type="button">Save LOOKS.BIN</button>
+      <label class="file">Open LOOKS.BIN<input id="openbin" type="file" accept=".bin,.BIN"></label>
+      <button class="file" id="starter" type="button">Starter films</button>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+  <section class="card" aria-label="Preview">
+    <div class="viewbar">
+      <select id="sample" aria-label="Sample photo"></select>
+      <label class="file">Your own photo<input id="photo" type="file" accept="image/*"></label>
+      <span class="hint">Press and hold the picture to see it without the film. Nothing is uploaded.</span>
+    </div>
+    <canvas id="view" width="900" height="600"></canvas>
+  </section>
+  <section class="card edit" aria-label="The film's settings">
+    <div id="editor"></div>
+    <div class="save"><button class="file" id="reset" type="button">Reset this film</button></div>
+  </section>
+</div>
+<footer>Sample photos are public domain (<a href="samples/CREDITS.md">credits</a>). Film names say what inspired each look; they are not the film makers' products. Film looks adapted from <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a>.</footer>
+<script src="app.js"></script>
+</body>
+</html>
