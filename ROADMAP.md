@@ -9,7 +9,7 @@ The owner performs any physical test; development sessions prepare and check fil
   tone curve, per-profile white balance, ND32/ND64 menu entries, and films from one `LOOKS.BIN`.
 - Implemented: LookLab, Python card writer, strict source builder, hash-checked release patcher,
   safety gate, tour and guides. These do not establish hardware compatibility.
-- Next: automated Python/JavaScript writer parity, release reproduction and emulator film regressions.
+- Implemented: automated Python/JavaScript writer parity, release reproduction and emulator film regressions.
 - Firmware gaps: refresh the title and values immediately after a film change; restrict film stepping
   to the Picture Mode selector; show film names on the super control panel; repeat the mounted-card,
   missing-file check.

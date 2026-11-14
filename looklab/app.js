@@ -34,6 +34,9 @@ function looksBin(films) {
   out.set([0x4f, 0x4d, 0x35, 0x46]);                         // 'OM5F'
   dv.setUint32(4, out.length, true); dv.setUint16(12, 1, true); dv.setUint16(14, films.length, true);
   films.forEach((f, k) => {
+    f = { ...blank(), ...f };
+    for (const key of ['hue', 'light', 'sat']) if (!Array.isArray(f[key]) || f[key].length !== 12) throw new Error(`${key} needs 12 values`);
+    if (f.wb !== null && (!Array.isArray(f.wb) || f.wb.length !== 2)) throw new Error('WB needs two values');
     const p = nameProblem(f.name); if (p) throw new Error(`${f.name || 'Film ' + (k + 1)}: ${p}`);
     const o = 32 + 80 * k, put = (at, v, n) => { if (!Number.isInteger(v) || Math.abs(v) > n) throw new Error(`${f.name}: a value is out of range`); dv.setInt8(o + at, v); };
     for (let i = 0; i < 12; i++) { put(i, f.hue[i], RANGE.hue); put(12 + i, f.light[i], RANGE.light); put(24 + i, f.sat[i], RANGE.sat); }
@@ -55,10 +58,13 @@ function readLooks(buf) {
   const films = [];
   for (let k = 0; k < n; k++) {
     const o = 32 + 80 * k, g = (at) => dv.getInt8(o + at), arr = (at) => Array.from({ length: 12 }, (_, i) => g(at + i));
+    if (g(36) !== 0 && g(36) !== 1) throw new Error('Invalid WB flag');
+    if (Math.abs(g(37)) > 7 || Math.abs(g(38)) > 7) throw new Error('Invalid WB shift');
     let name = ''; for (let i = 0; i < NAME_MAX && b[o + 64 + i]; i++) name += String.fromCharCode(b[o + 64 + i]);
     films.push({ name, hue: arr(0), light: arr(12), sat: arr(24), wb: g(36) ? [g(37), g(38)] : null, contrast: g(41), sharpness: g(42), shading: g(43),
       shadows: g(44), midtones: g(45), highlights: g(46) });
   }
+  looksBin(films); // Validate every imported value before it enters the editor.
   return films;
 }
 

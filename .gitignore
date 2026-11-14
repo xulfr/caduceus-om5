@@ -2,4 +2,5 @@ __pycache__/
 generated/
 *.BIN
 !card/*.BIN
+!releases/*/LOOKS.BIN
 node_modules/

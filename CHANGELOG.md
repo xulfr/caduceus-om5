@@ -6,6 +6,10 @@
 - Added reproducible Markdown guide generation with shared navigation and local guide links.
 - Added the roadmap and development rules for the community handover.
 
+- Added format parity, corruption, release-integrity, guide-link and firmware emulator regression tests.
+- Included the previously missing starter LOOKS.BIN in the release and aligned writer validation.
+- Made developer build/run wrappers portable and removed automatic deletion and implicit hash re-recording.
+
 ## v0.1.0-alpha1 — 2026-11-14
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.**

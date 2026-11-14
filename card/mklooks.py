@@ -15,25 +15,25 @@ MAGIC, VERSION, MAX, REC, NAME = b'OM5F', 1, 10, 64, 16
 def record(f):
     def arr(key, lo):
         v = f.get(key, [0] * 12)
-        if len(v) != 12 or any(not lo <= x <= -lo for x in v):
+        if len(v) != 12 or any(type(x) is not int or not lo <= x <= -lo for x in v):
             raise ValueError(f'{f.get("name")}: {key} needs 12 values {lo}..{-lo}')
         return v
     def one(key, lo):
         x = f.get(key, 0)
-        if not lo <= x <= -lo:
+        if type(x) is not int or not lo <= x <= -lo:
             raise ValueError(f'{f.get("name")}: {key} {x} outside {lo}..{-lo}')
         return x
     r = bytearray(REC)
     r[0:36] = struct.pack('36b', *arr('hue', -7), *arr('light', -7), *arr('sat', -5))
     wb = f.get('wb')
-    if wb:
-        if len(wb) != 2 or any(not -7 <= x <= 7 for x in wb):
+    if wb is not None:
+        if len(wb) != 2 or any(type(x) is not int or not -7 <= x <= 7 for x in wb):
             raise ValueError(f'{f.get("name")}: wb needs [A/B, G/M], each -7..7')
         r[36:39] = struct.pack('3b', 1, *wb)
     r[41:47] = struct.pack('6b', one('contrast', -2), one('sharpness', -2), one('shading', -5),
                            one('shadows', -7), one('midtones', -7), one('highlights', -7))
     name = f.get('name', '').encode('ascii')
-    if not 0 < len(name) <= 12 or any(not 32 <= c < 127 for c in name):
+    if not 0 < len(name) <= 12 or name.strip() != name or any(not 32 <= c < 127 for c in name):
         raise ValueError(f'{f.get("name")!r}: a name is 1 to 12 plain characters')
     return bytes(r) + name.ljust(NAME, b'\0')
 

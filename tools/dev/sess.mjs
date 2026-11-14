@@ -11,6 +11,7 @@
 // --peekP     print the heap state block's fields after each step
 // --cells=ID:N  read N setting cells (part 1) from ID through the firmware's reader, into the JSON summary
 // --gap=LO-HI log every access to a memory range (both aliases); --scan=LO-HI:VALUE list words equal to VALUE
+// PRE / POST: optional modules called before keys / after keys; thrown assertions fail the session.
 // --status    print the file layer's drive status
 // A PNG of the composite is written per step (channel order is the compositor's, not display RGB).
 // This is bounded emulation: no ISP, no C3D wheel, no real loader, cache or second CPU. Not a camera test.
@@ -87,6 +88,7 @@ try {
     else press(tok);
     { const line = `${tok}: ${st()} ${shot(tok.replace(':', '_'))}${peek()}${peekP()}`; log.push(line); console.log(line); } n++; report(tok);
   }
+  if (process.env.POST) await (await import(pathToFileURL(path.resolve(process.env.POST)).href)).default(globalThis);
 if (opts.includes('--watch')) console.log('  [handle word accesses by pc] ' + ([...handle].map(([k, v]) => k + ' x' + v).join('; ') || 'none'));
   if (sample) console.log('  sample watch record: ' + JSON.stringify(sample));
 const scanOpt = opts.find((o) => o.startsWith('--scan='));

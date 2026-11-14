@@ -109,3 +109,26 @@ be generated at checkpoint 2 when their sources are added. GitHub Pages: enable 
 Added ROADMAP.md, CHANGELOG.md and CLAUDE.md, and generated their guide pages. The rules explicitly
 separate emulator-only evidence from camera testing and retain the untested gate. No firmware workspace
 has been rebuilt. Next is the format/release/emulator regression suite, then the E144 builder.
+
+## Continuation checkpoint 3 — regression tests (2026-11-14)
+
+Nine unit/integration tests pass with OM5_STOCK set, including byte-for-byte release reproduction.
+Nine emulator cases pass: four/ten films, next/wrap, independent slots, CRC/range rejection, mounted empty
+card and no card. Assertions check all H/L pairs, saturation, tone, name cells/string getter and WB record.
+Results: tests/alpha1-results.json. The mounted-empty-card gap is now closed in emulation.
+
+Stock initialization writes from PC 0x60d52ed0 to six image addresses also occur with unmodified stock.
+Each test compares a matching stock session and rejects additional PC/address pairs or increased counts.
+The exercised patch adds no image stores; this is not physical-loader evidence.
+
+The original release LOOKS.BIN had been ignored by Git; it is now included and checked against both writers.
+Aligned validation and rejected malformed imported records. Added a source CI template and site-link tests. GitHub rejected active workflow creation because the
+existing OAuth credential lacks workflow scope; tests/github-actions.yml is ready to install manually. Visually
+checked tour and install guide in a browser. Updated the WB document's stale state/loaded-bit references.
+
+Workspace (local generated/, ignored): stock/ contains hash-verified official E148; alpha1-strict/ contains
+the matching source build; om-emu/ is bdb33470705b3be28db52cbe080c31d74db727d8; tests-alpha1-matched/
+has logs/screens. Existing WSL GNU MN103 binutils 2.43 reproduced the 2.42 reference exactly, so no new
+toolchain was needed. Native Node 26.13.0 runs the emulator. tools/dev/build.sh and run.sh now use supplied
+paths and preserve errors/output; builds no longer delete directories or silently re-record hashes.
+Next: import only the E144 files named in the session-1 list, rebuild with this donor, then firmware UX gaps.

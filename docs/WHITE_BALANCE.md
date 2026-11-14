@@ -7,17 +7,16 @@ The overlay uses picture-mode setting 111: values 54, 55 and 56 identify Color
 Profile 1–3. Other picture modes share a separate WB record.
 
 Each record uses four part-1 cells: Color Profile 1 at IDs 904–907, Profile 2
-at 908–911, Profile 3 at 912–915, and non-COLOR at 920–923. IDs 916–919 are
-reserved by the inherited four-profile layout, although E148's restored selector
-offers three profiles. A record holds WB mode, custom Kelvin, signed A/B and
+at 908–911, Profile 3 at 912–915, and non-COLOR at 920–923. IDs 916–919 hold the first film slot's name
+and index; 924–927 and 972–975 hold the other two film slots. A record holds WB mode, custom Kelvin, signed A/B and
 G/M corrections, and an XOR check word. The first use of a profile inherits the
 current WB configuration. Native tint tables and one-touch measurements remain
 shared.
 
 The extension occupies the loaded section-2 tail at `0x605af5cc`. The busy
-guard uses `0xa0ca7ff8`. Both it and the UI writer are in section 6, which
+guard uses byte 12 of the allocated heap state block. Both it and the UI writer are in section 6, which
 boot loads after section 2, so the wrapper takes the stock path until
-section 6's loaded bit (`0x20` of `0xa26e2698`) is set. The same commit hook
+section 6's completed-initialization bit (`0x20` of `0xa26e2694`) is set. The same commit hook
 also refreshes the effective settings after a Color Profile setting changes
 (see the README). The refresh writes effective IDs 916–927 in part 0; the WB
 records stay in part 1. In OM-Emu the 9/9 recall test covered first-use
