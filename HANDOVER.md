@@ -103,3 +103,9 @@ keyboard focus styling and `.nojekyll`. `python tools/mksite.py` renders the Mar
 navigation and heading anchors. Install `requirements-dev.txt` first. ROADMAP and CHANGELOG pages will
 be generated at checkpoint 2 when their sources are added. GitHub Pages: enable **Deploy from a branch**,
 **main**, **/(root)** in repository Settings → Pages. No firmware workspace was needed for this step.
+
+## Continuation checkpoint 2 — project documentation (2026-11-14)
+
+Added ROADMAP.md, CHANGELOG.md and CLAUDE.md, and generated their guide pages. The rules explicitly
+separate emulator-only evidence from camera testing and retain the untested gate. No firmware workspace
+has been rebuilt. Next is the format/release/emulator regression suite, then the E144 builder.

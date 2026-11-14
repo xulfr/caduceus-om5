@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog · Caduceus for OM-5</title>
+<link rel="stylesheet" href="../site/site.css"></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="changelog">Changelog</h1>
+<h2 id="unreleased-2026-11-14">Unreleased — 2026-11-14</h2>
+<ul>
+<li>Added the GitHub Pages tour with labelled emulator screenshots, feature comparison and safety banner.</li>
+<li>Added reproducible Markdown guide generation with shared navigation and local guide links.</li>
+<li>Added the roadmap and development rules for the community handover.</li>
+</ul>
+<h2 id="v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</h2>
+<p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.</strong></p>
+<ul>
+<li>Established the standalone Apache-2.0 project, with attribution in NOTICE.</li>
+<li>Restored three Color Profiles and three Monochrome Profiles; added Hue and Lightness editing,
+  tone controls, per-profile white balance and ND32/ND64 menu entries.</li>
+<li>Added up to ten films from <code>OM5MOD/LOOKS.BIN</code>, assigned independently to the three Color Profile
+  slots with the trash button. Film names appear in the Picture Mode title.</li>
+<li>Added LookLab's 67-film library, local preview and binary writer, plus the Python writer.</li>
+<li>Added a pure-Python release patcher that checks stock and result hashes and requires acknowledgement
+  of the untested build. No OM firmware is distributed in the repository.</li>
+<li>Added safety, installation, first-test and format documentation, and the prior failure analyses.</li>
+</ul>
+<p>Known limitations: film changes need a highlight move to redraw; trash also changes films on other
+profile rows; no super control panel film name. The emulator cannot validate boot loading, the second
+processor, the image processor, physical persistence or actual exposures. Earlier builds in the
+source project's history caused three camera boot loops. See <a href="../safety/">Safety</a>.</p></main>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/CHANGELOG.md">Page source</a></footer>
+</body></html>
