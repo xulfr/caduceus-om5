@@ -1,6 +1,6 @@
 # Questions
 
-**Is it safe?** No. The latest build (alpha5) boot-looped on the owner's camera on 15 November 2026, as three earlier builds did; the installer refuses it. Alpha6 did the same; every release is refused. [Safety](SAFETY.md).
+**Is it safe?** No. The latest build (alpha5) boot-looped on the owner's camera on 15 November 2026, as three earlier builds did; the installer refuses it. Alpha6 did the same; both are refused. Alpha7 has not run on a camera. [Safety](SAFETY.md).
 
 **Which cameras?** The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The original OM-5
 has a separate [pre-alpha for testers](OM5_PREALPHA.md), never run on any camera.

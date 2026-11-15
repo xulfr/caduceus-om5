@@ -37,12 +37,28 @@ The cause is in what the alpha5/alpha6 main program does on a normal start that 
    alignment, `0xfb` opcodes, section order and branches into hook sites; no defect was found on paper.
 3. **Stock code meeting the added table entries** with whatever picture-mode state the camera holds.
 
-## Alpha7 (unreleased, blocked, not camera-tested)
+## Alpha7 (not camera-tested)
 
-Source at this commit; package `e0b76026842440e93b769a936a1f115aca1ed4d7941c28788eaf11c72b63dbd8`. It keeps the length rule and gates every hook on the armed state, so before
-the first half-press each hook replays OM's instructions only (addresses 1, not 2 or 3). Emulator: gating probe,
-unarmed execution trace, startup probe, static rules and build audit pass; the 19-case regression was started and
-**not finished**. Do not flash it on this evidence.
+Package `c6f3a8fa5e68082498dc2ea148dfc8e50f2dcf349ad9f30d91c3ffffa330243a`, `releases/v0.1.0-alpha7`. It keeps the length rule and changes the main program:
+
+- **Every hook is gated on the armed state.** Before the first half-press each hook replays OM's displaced
+  instructions and returns: refresh tail, capture builder, mode-list copies, custom-mode reset, WB and
+  profile-setting commits, the Picture Mode page updater; the editor, Delete, labels and the string getter were
+  already gated. This removes explanation 1 for project code. `tests/unarmed_pcs.py` traces an unarmed emulator
+  session and accepts only gates and replays.
+- **The armed state is checked, not trusted.** `st_ptr` reads the handle from RAM (uncached alias; the main program
+  runs on more than one CPU, each with its own cache), and accepts it only if it is inside the pool, 4-aligned and
+  the block carries the magic `CADU` that `arm_gate` writes. Alpha5/alpha6 accepted any in-range value read through
+  the cache. Arming writes the handle through the cache and to RAM. This narrows explanation 2 (a wrong or stale
+  handle at start-up would have made alpha5/alpha6 act as armed, write into the heap and enter section 10).
+- **At the arming half-press** (`arm_refresh`, section 10): a profile number left without its family (903 / 989
+  non-zero while 111's family is another mode, which makes 111 read 63) is cleared, and the camera's own refresh
+  runs for a context that is on a profile, holds a tone save, or was just repaired.
+
+Not addressed: explanation 3 (OM's code meeting the added table entries with a stored profile), and the string
+getter hook itself, which still runs for every string. If alpha7 loops, those two are what is left.
+
+Emulator and host checks are listed in `tests/alpha7-results.json`.
 
 ## The one test that separates 1 from 2
 

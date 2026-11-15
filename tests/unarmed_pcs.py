@@ -10,7 +10,7 @@ import bisect, subprocess, sys
 from pathlib import Path
 
 ALLOWED = {
-    'st_ptr', 'st_ptr_out', 'st_axis', 'st_getb', 'st_getb_out',          # the handle read
+    'st_ptr', 'st_ptr_none', 'st_ptr_out', 'st_axis', 'st_getb', 'st_getb_out',          # the handle read
     'wb_load', 'wb_original',                                             # stock commit
     'refresh_case', 'refresh_guard', 'refresh_stock', 'rt_tail',          # stock refresh tail
     'fl_str', 'fl_str_stock', 'fl_str_cp',                                # stock string getter

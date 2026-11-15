@@ -84,6 +84,11 @@ EXPECT=applied POST=tests/unarmed_assert.mjs OM_EMU_DIR=... bash tools/dev/run.s
 python3 tools/dev/static_rules.py BUILD STOCK.BIN
 ```
 
+`tests/unarmed_pcs.mjs` (PRE, with `PCS=file`) records every executed address inside the patch during a session
+without `s1`; `python3 tests/unarmed_pcs.py BUILD file` accepts only gates and replays of OM's instructions.
+`PRE=tests/stale_number.mjs` with keys `wait:300 s1` sets 903 = 1 (111 then reads 63); after `s1` 111 must read its
+mode again and 903 must be 0. `tests/startup_assert.mjs` also checks handle alignment and the block magic.
+
 The first pair checks that a Color Profile selected before any half-press does not run the project's refresh and
 that the arming half-press applies it. The static rules are camera lessons an emulator does not show: no `0xfb`
 opcode, aligned data tables, safe compressed stream lengths. Emulator and host only.

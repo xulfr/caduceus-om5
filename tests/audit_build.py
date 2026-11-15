@@ -48,7 +48,10 @@ def main():
         n = sum(x != y for x, y in zip(previous[start:end], current[start:end]))
         if n:
             changed[r['name']] = {'bytes': n, 'section': owners[r['name']]}
-    assert all(covered[i] or (x == y == z) for i, (x, y, z) in enumerate(zip(original, previous, current))), 'unexplained edit'
+    # Outside the declared ranges the build must equal stock. Bytes the previous build patched there and this one
+    # leaves as stock (a section that got shorter) are counted, not refused.
+    assert all(covered[i] or x == z for i, (x, z) in enumerate(zip(original, current))), 'unexplained edit'
+    back_to_stock = sum(1 for i, (y, z) in enumerate(zip(previous, current)) if not covered[i] and y != z)
     # Native compressed-section descriptors and every end-selector instruction
     # must remain stock, independently of the patch manifest's declarations.
     start = 0x600284fc - BASE
@@ -69,7 +72,7 @@ def main():
     result = {'camera_tested': False, 'package_sha256': report['package_sha256'],
               'previous_expanded_sha256': patch.sha256(previous),
               'expanded_sha256': patch.sha256(current), 'changed_ranges': changed,
-              'all_edits_declared': True, 'native_loader_bounds_unchanged': True,
+              'all_edits_declared': True, 'previous_bytes_back_to_stock': back_to_stock, 'native_loader_bounds_unchanged': True,
               'resources_unchanged': True, 'nd_selector_cases': cases,
               'section_tail_space': {r['name']: next(s['end'] for s in regions if s['id'] == owners[r['name']])
                                      - int(r['address'], 16) - r['bytes']

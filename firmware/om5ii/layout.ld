@@ -68,6 +68,7 @@ wc_get = 0x602f514d;
 /* Heap state block (hsl.s .st8). The handle is the padding halfword after the
  * HLS event manager's task id (object 0x6218c250, id at +0xac, next field +0xb0). */
 st_handle = 0x6218c2fe;
+st_handle_u = 0xa218c2fe;   /* the same halfword in RAM, past any CPU's cache */
 hls_tid = 0x6218c2fc;
 ST_POOL = 0xa1e27d80;      /* class-1 heap pool 0xa1e27d80..0xa1e32ac0 (free() 0x6002385f) */
 ST_HANDLE_MAX = 43329;     /* pool span 44352 - block 1024 + 1 */

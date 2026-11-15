@@ -18,6 +18,8 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
+ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised (P+56 spare) */
+ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
 /* INFO keeps its native individual/all role. Delete (trash) switches axis:
@@ -997,45 +999,31 @@ creset_orig:
  cmp 1,d3
  jmp creset_resume
 
-/* Once, at the half-press that arms the patch. The start-up refresh ran the
- * stock tail only (rt_tail), so run the refresh now for a context that is on a
- * profile (apply it) or still holds a tone save (undo it: the mode was changed
- * before arming). Any other context is left alone. The refresh takes the
- * context in d0 and its picture mode in d1. call arm_refresh,[d2,d3],12 */
-arm_refresh:
+/* Reset-in-progress flag. call ...,[d2,a2],12. Preserves d0,d1,a0,a1. */
+st_reset_on:
+ mov 1,d2
+ bra st_reset_put
+st_reset_off:
  clr d2
-arm_refresh_ctx:
- mov 111,d0                      /* context 0: the live setting; context 1: its store 2 (as wb.s) */
- cmp 0,d2
- bne arm_refresh_one
- call stock_get,[],4
- bra arm_refresh_mode
-arm_refresh_one:
- mov d0,a0
- mov d2,d0
- mov 2,d1
- call refresh_get,[d2],8
-arm_refresh_mode:
- mov d0,d3
- sub 54,d0
- cmp 6,d0
- bcs arm_refresh_run
- mov d2,d0
- asl 2,d0
- add 964,d0
- mov 1,d1
- call active_read,[d2],8
- cmp 0x544f4e45,d0               /* TONE_SAVED */
- bne arm_refresh_next
-arm_refresh_run:
- mov d2,d0
- mov d3,d1
- call pm_refresh,[d2],88
-arm_refresh_next:
- inc d2
- cmp 2,d2
- bne arm_refresh_ctx
- ret [d2,d3],12
+st_reset_put:
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq st_reset_out
+ movbu d2,(ST_RESET,a0)
+st_reset_out:
+ mov a2,a0
+ ret [d2,a2],12
+/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all. */
+st_set_editor:
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq st_set_editor_out
+ mov a2,(ST_EDITOR,a0)
+st_set_editor_out:
+ mov a2,a0
+ ret [a2],8
 
 /* Mode store: E148's mode-recall lists (0x604daf4c) carry 111 but not 903,
  * the Color Profile number that turns 111's stored family 11 into 54..56
@@ -1427,14 +1415,24 @@ rs_stock:
 .global st_ptr
 st_ptr:
  mov d0,(4,sp)
- movhu (st_handle),d0
- mov 0,a0
+ /* The handle is read from RAM (uncached alias): hooks may run on another
+  * CPU, whose cache need not hold what the arming CPU wrote. A handle counts
+  * only if it is in the pool, the block is 4-aligned and carries the magic
+  * arm_gate wrote, so a stale or foreign value reads as "not armed". */
+ movhu (st_handle_u),d0
  cmp 0,d0
- beq st_ptr_out
+ beq st_ptr_none
  cmp ST_HANDLE_MAX,d0
- bhi st_ptr_out
+ bhi st_ptr_none
  add ST_POOL-1,d0
  mov d0,a0
+ and 3,d0
+ bne st_ptr_none
+ mov (ST_MAGIC,a0),d0
+ cmp ST_MAGIC_VALUE,d0
+ beq st_ptr_out
+st_ptr_none:
+ mov 0,a0
 st_ptr_out:
  mov (4,sp),d0
  ret [],8
@@ -1455,32 +1453,6 @@ st_getb:
 st_getb_out:
  mov (4,sp),a0
  ret [],12
-/* Reset-in-progress flag. call ...,[d2,a2],12. Preserves d0,d1,a0,a1. */
-st_reset_on:
- mov 1,d2
- bra st_reset_put
-st_reset_off:
- clr d2
-st_reset_put:
- mov a0,a2
- call st_ptr,[],8
- cmp 0,a0
- beq st_reset_out
- movbu d2,(ST_RESET,a0)
-st_reset_out:
- mov a2,a0
- ret [d2,a2],12
-/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all. */
-st_set_editor:
- mov a0,a2
- call st_ptr,[],8
- cmp 0,a0
- beq st_set_editor_out
- mov a2,(ST_EDITOR,a0)
-st_set_editor_out:
- mov a2,a0
- ret [a2],8
-
 /* Half-press trigger (HLS_EVENT task, 0x602f0b95): the displaced stock call
  * runs first on the same frame; d0 and PSW are dead at the resume point
  * (0x602f0b9a reloads d0 and tests it). */
@@ -1489,14 +1461,14 @@ arm_hook:
  mov (16,sp),d0
  cmp 0x02000100,d0
  bne arm_back
- movhu (st_handle),d0
- cmp 0,d0
+ call st_ptr,[],8
+ cmp 0,a0
  bne arm_ext
  call arm_gate,[d2,d3,a2,a3],36
- movhu (st_handle),d0
- cmp 0,d0
+ call st_ptr,[],8
+ cmp 0,a0
  beq arm_back
- call arm_refresh,[d2,d3],12
+ call arm_refresh,[d2,d3],16     /* section 10: armed implies all ten sections initialised */
 /* Extension vector: a further layer (Caduceus) may put one entry here. It is
  * called only once armed, hence with every section initialised, on each
  * half-press, in the HLS_EVENT task. It is entered by calls and may use
@@ -1552,9 +1524,91 @@ arm_clear:
  inc4 a0
  cmp a2,a0
  bne arm_clear
+ mov ST_MAGIC_VALUE,d0
+ mov d0,(ST_MAGIC-1024,a2)
+ /* Publish through the cache of this CPU and straight to RAM, so every
+  * reader (st_ptr) sees it at once and a later write-back agrees. */
  movhu d2,(st_handle)
+ movhu d2,(st_handle_u)
 arm_out:
  ret [d2,d3,a2,a3],36
+.section .ext10,"ax"
+/* Once, at the half-press that arms the patch. The start-up refresh ran the
+ * stock tail only (rt_tail), so run the refresh now for a context that is on a
+ * profile (apply it) or still holds a tone save (undo it: the mode was changed
+ * before arming). Any other context is left alone. The refresh takes the
+ * context in d0 and its picture mode in d1. call arm_refresh,[d2,d3],16;
+ * (4,sp) = a number was cleared. */
+arm_refresh:
+ /* A profile number without its family: OM's own firmware (or its Reset)
+  * changes 111 and leaves 903 / 989, and 111 then reads as an unknown mode
+  * (63). Clear a number whose family is not selected, then refresh. */
+ clr d0
+ mov d0,(4,sp)
+ mov 111,d0
+ call raw_get,[],4
+ extbu d0
+ mov d0,d3                       /* stored family: 11 Color Profile, 12 Monochrome Profile */
+ mov 903,d2
+ cmp 11,d3
+ beq arm_fix_next
+arm_fix:
+ mov d2,d0
+ call stock_get,[],4
+ cmp 0,d0
+ beq arm_fix_next
+ mov d2,d0
+ clr d1
+ mov 1,a0
+ call stock_ui_write,[d2,d3,a2,a3],20
+ mov 1,d0
+ mov d0,(4,sp)
+arm_fix_next:
+ cmp 989,d2
+ beq arm_fix_done
+ mov 989,d2
+ cmp 12,d3
+ bne arm_fix
+arm_fix_done:
+ clr d2
+arm_refresh_ctx:
+ mov 111,d0                      /* context 0: the live setting; context 1: its store 2 (as wb.s) */
+ cmp 0,d2
+ bne arm_refresh_one
+ call stock_get,[],4
+ bra arm_refresh_mode
+arm_refresh_one:
+ mov d0,a0
+ mov d2,d0
+ mov 2,d1
+ call refresh_get,[d2],8
+arm_refresh_mode:
+ mov d0,d3
+ sub 54,d0
+ cmp 6,d0
+ bcs arm_refresh_run
+ cmp 0,d2
+ bne arm_refresh_save
+ mov (4,sp),d0                   /* context 0 after a cleared number: its mode changed */
+ cmp 0,d0
+ bne arm_refresh_run
+arm_refresh_save:
+ mov d2,d0
+ asl 2,d0
+ add 964,d0
+ mov 1,d1
+ call active_read,[d2],8
+ cmp 0x544f4e45,d0               /* TONE_SAVED */
+ bne arm_refresh_next
+arm_refresh_run:
+ mov d2,d0
+ mov d3,d1
+ call pm_refresh,[d2],88
+arm_refresh_next:
+ inc d2
+ cmp 2,d2
+ bne arm_refresh_ctx
+ ret [d2,d3],16
 .section .extvec,"a"
 .global ext_halfpress
 ext_halfpress:
