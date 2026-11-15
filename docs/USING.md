@@ -4,6 +4,8 @@
 
 **After switching on, half-press the shutter button once.** Until then the camera behaves exactly as OM's
 firmware (the Color Profiles are in the list, but their extra controls are asleep and no look file is read).
+A profile that was selected when the camera was switched off is applied at that half-press; a photo taken
+before any half-press (by remote control, for example) uses the camera's stock values.
 
 ## The slots
 

@@ -74,3 +74,16 @@ preservation, fresh starter creation, write failure and failed recovery preparat
 
 `github-actions.yml` can be installed as `.github/workflows/tests.yml` by a credential with workflow
 permission. It runs the source suite without firmware; no active workflow is claimed here.
+
+## Start-up gating and static rules (alpha7)
+
+```sh
+K='ok ok right right right right right right right right menu menu'
+EXPECT=inert   POST=tests/unarmed_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh BUILD OUT1 "$K"
+EXPECT=applied POST=tests/unarmed_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh BUILD OUT2 "$K s1"
+python3 tools/dev/static_rules.py BUILD STOCK.BIN
+```
+
+The first pair checks that a Color Profile selected before any half-press does not run the project's refresh and
+that the arming half-press applies it. The static rules are camera lessons an emulator does not show: no `0xfb`
+opcode, aligned data tables, safe compressed stream lengths. Emulator and host only.

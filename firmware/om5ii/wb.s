@@ -15,6 +15,17 @@ wb_load:
  movbu (loaded_bits),d2
  btst 0x20,d2
  beq wb_original
+ /* Not armed (no half-press since power-on): the stock commit for every
+  * setting. The state block is in the heap (see hsl.s); a0/a1 are kept and
+  * a2 = the block for wb_commit. */
+ add -8,sp
+ mov a0,(4,sp)
+ call st_ptr,[],8
+ mov a0,a2
+ mov (4,sp),a0
+ add 8,sp
+ cmp 0,a2
+ beq wb_original
  mov d0,d2
  add -904,d2
  cmp 126,d2
@@ -35,16 +46,7 @@ wb_not_profile:
 /* Replaces the first five bytes of the native commit routine. Its caller
  * already saved d2,d3,a2,a3 in a 20-byte frame. Nested commits use stock. */
 wb_commit:
- /* The busy flag is in the heap state block (see hsl.s). Not armed yet
-  * (no half-press since power-on): stock commit. a0/a1 are kept. */
- add -8,sp
- mov a0,(4,sp)
- call st_ptr,[],8
- mov a0,a2
- mov (4,sp),a0
- add 8,sp
- cmp 0,a2
- beq wb_original
+ /* a2 = the state block (wb_load). Nested commits use stock. */
  movbu (ST_BUSY,a2),d2
  cmp 0,d2
  bne wb_original

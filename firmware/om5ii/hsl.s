@@ -859,7 +859,10 @@ apply_values:
   * snapshot +28735 / +28765). Job record +10 is the dispatcher's block
   * key (always 11 here), not a profile. These are read when the block is
   * built, like the H/L cells, so a profile change between the snapshot
-  * and the build is not covered. */
+  * and the build is not covered. Nothing before the first half-press. */
+ call st_ptr,[],8
+ cmp 0,a0
+ beq apply_done
  mov 38017,d0
  clr d1
  mov 0,a0
@@ -929,6 +932,9 @@ creset:
  movbu (loaded_bits),d0
  btst 0x20,d0
  beq creset_stock
+ call st_ptr,[],8
+ cmp 0,a0
+ beq creset_stock
  mov 41,d0
  call raw_get,[],4
  extbu d0
@@ -984,6 +990,46 @@ creset_orig:
  cmp 1,d3
  jmp creset_resume
 
+/* Once, at the half-press that arms the patch. The start-up refresh ran the
+ * stock tail only (rt_tail), so run the refresh now for a context that is on a
+ * profile (apply it) or still holds a tone save (undo it: the mode was changed
+ * before arming). Any other context is left alone. The refresh takes the
+ * context in d0 and its picture mode in d1. call arm_refresh,[d2,d3],12 */
+arm_refresh:
+ clr d2
+arm_refresh_ctx:
+ mov 111,d0                      /* context 0: the live setting; context 1: its store 2 (as wb.s) */
+ cmp 0,d2
+ bne arm_refresh_one
+ call stock_get,[],4
+ bra arm_refresh_mode
+arm_refresh_one:
+ mov d0,a0
+ mov d2,d0
+ mov 2,d1
+ call refresh_get,[d2],8
+arm_refresh_mode:
+ mov d0,d3
+ sub 54,d0
+ cmp 6,d0
+ bcs arm_refresh_run
+ mov d2,d0
+ asl 2,d0
+ add 964,d0
+ mov 1,d1
+ call active_read,[d2],8
+ cmp 0x544f4e45,d0               /* TONE_SAVED */
+ bne arm_refresh_next
+arm_refresh_run:
+ mov d2,d0
+ mov d3,d1
+ call pm_refresh,[d2],88
+arm_refresh_next:
+ inc d2
+ cmp 2,d2
+ bne arm_refresh_ctx
+ ret [d2,d3],12
+
 /* Mode store: E148's mode-recall lists (0x604daf4c) carry 111 but not 903,
  * the Color Profile number that turns 111's stored family 11 into 54..56
  * (E147's lists carry 903 in the same row as 111), nor 989, the Monochrome
@@ -1003,6 +1049,9 @@ pm_set:
  call wc_set,[],4
  cmp 111,d2
  bne pm_set_done
+ call st_ptr,[],8                /* not armed: the stock copy only */
+ cmp 0,a0
+ beq pm_set_done
  mov 903,d2
 pm_set_loop:
  mov d3,a0
@@ -1029,6 +1078,9 @@ pm_put:
  call active_write,[d2],8
  cmp 111,d2
  bne pm_put_done
+ call st_ptr,[],8                /* not armed: the stock copy only */
+ cmp 0,a0
+ beq pm_put_done
  mov 903,d2
 pm_put_loop:
  mov d2,d0
@@ -1103,6 +1155,16 @@ pm_num_keep:
 TONE_SAVED = 0x544f4e45
 .section .ext5,"ax"
 rt_tail:
+ /* Not armed (no half-press since power-on): the stock tail and nothing else,
+  * whatever the settings hold. Start-up never runs the profile code below. */
+ call st_ptr,[],8
+ cmp 0,a0
+ bne rt_armed
+ mov (12,sp),a0
+ clr d0
+ mov d3,(76,a0)
+ ret [d2,d3,a2,a3],96
+rt_armed:
  mov (12,sp),a0
  clr d0
  mov d3,(76,a0)
@@ -1427,6 +1489,7 @@ arm_hook:
  movhu (st_handle),d0
  cmp 0,d0
  beq arm_back
+ call arm_refresh,[d2,d3],12
 /* Extension vector: a further layer (Caduceus) may put one entry here. It is
  * called only once armed, hence with every section initialised, on each
  * half-press, in the HLS_EVENT task. It is entered by calls and may use

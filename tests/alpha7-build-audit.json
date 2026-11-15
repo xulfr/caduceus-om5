@@ -1,0 +1,53 @@
+{
+  "camera_tested": false,
+  "package_sha256": "fe6262be1a21d5f073f1f89f1acddbd37de6711d3eb6bf1a2edcf216801de42b",
+  "previous_expanded_sha256": "cc0efda8eea117f72f8a5c041aba216c5f50c198fe5b6bc08a80fff907c176a0",
+  "expanded_sha256": "f7b0da979970868ffb5c61f103e4403f1af4d1064919966d7b8c44dde392ac94",
+  "changed_ranges": {
+    "creset_hook": {
+      "bytes": 2,
+      "section": 2
+    },
+    "pm_s1": {
+      "bytes": 1,
+      "section": 2
+    },
+    "pm_s2": {
+      "bytes": 1,
+      "section": 2
+    },
+    "pm_s4": {
+      "bytes": 1,
+      "section": 2
+    },
+    "pm_s5": {
+      "bytes": 2,
+      "section": 2
+    },
+    "ext8": {
+      "bytes": 572,
+      "section": 8
+    },
+    "ext5": {
+      "bytes": 650,
+      "section": 5
+    },
+    "wb_extension": {
+      "bytes": 71,
+      "section": 2
+    },
+    "st8": {
+      "bytes": 145,
+      "section": 8
+    }
+  },
+  "all_edits_declared": true,
+  "native_loader_bounds_unchanged": true,
+  "resources_unchanged": true,
+  "nd_selector_cases": 768,
+  "section_tail_space": {
+    "ext6": 416,
+    "ext7": 192,
+    "ext10": 926
+  }
+}

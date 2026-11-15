@@ -2,6 +2,19 @@
 
 ## Camera result — 2026-11-15
 
+## v0.1.0-alpha7 — 2026-11-15 (not camera-tested)
+
+- Keeps alpha6's compressed-block fix (below).
+- New: until the first shutter half-press after power-on, every hook only replays OM's own instructions. The
+  picture-mode refresh, the mode-list copies, the custom-mode reset, the WB and profile-setting commits and the
+  capture builder no longer do anything of ours during start-up, whatever settings an earlier build left behind.
+  The half-press that arms Caduceus applies a profile that was left selected.
+- So profiles and looks are active from the first half-press after power-on. A photo taken before any half-press
+  (remote control, for example) uses the camera's stock values.
+- Emulator: 19 look/menu cases, the startup probe and a new gating check; host tests reproduce alpha1–7.
+  Package `fe6262be…e42b`. Why: [stream length and start-up note](research/OM5II-STREAM-LENGTH-2026-11-15.md).
+- Alpha6 was never flashed and is superseded; the installer offers alpha7.
+
 ## v0.1.0-alpha6 — 2026-11-15 (not camera-tested)
 
 - Same camera code as alpha5, byte for byte. Only the way the program is compressed in the update file changes.

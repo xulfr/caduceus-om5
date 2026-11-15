@@ -21,7 +21,7 @@ class ReleaseTests(unittest.TestCase):
         # alpha5 boot-looped on a camera (15 Nov 2026); alpha1-4 share its startup code.
         for source in sorted((ROOT / 'releases').glob('*/patch.json')):
             name = source.parent.name
-            if name not in {f'v0.1.0-alpha{n}' for n in range(1, 6)}:
+            if name not in {f'v0.1.0-alpha{n}' for n in range(1, 7)}:
                 continue
             self.assertTrue(json.loads(source.read_text()).get('blocked'), name)
             result = subprocess.run([sys.executable, str(ROOT / 'patch.py'), '--release', name,
@@ -39,7 +39,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIsNotNone(oc.length_fault(2048 * 5 + 2017))    # loader would drop the last byte
         for good in (2250095, 2501620, 764647, 2254191, 2505716, 764680):
             self.assertIsNone(oc.length_fault(good), good)
-        rel = json.loads((ROOT / 'releases/v0.1.0-alpha6/patch.json').read_text())
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha7/patch.json').read_text())
         self.assertEqual(rel['main']['stream_length'], 'stock-page')
         self.assertIn('lz4_recipe', rel['resource'])
         self.assertFalse(rel['camera_tested'])

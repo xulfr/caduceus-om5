@@ -13,7 +13,7 @@ export default function(g) {
   const hooks = new Map([malloc, getTid].map(pc => [pc, lab.hooks.get(pc)]));
   let allocations = 0, taskCalls = 0, taskResult = 0, taskId = 1, allocation = 0;
   let owned = 0;
-  const gate = () => g.__call(0x613f2f7f, {}, [0xf0, 36]);
+  const gate = () => g.__call(0x613f2f86, {}, [0xf0, 36]);
   try {
     half(handle, 0); half(tid, 1);
     lab.hook_rt(getTid, (h, r) => { taskCalls++; half(r.a0, taskId); h.finish(r, { d0: taskResult }); }, 'audit-get-tid');

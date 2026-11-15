@@ -75,6 +75,7 @@ trig = 0x602f0cc2;
 trig_resume = 0x602f0b9a;
 get_tid = 0x600317b4;
 malloc = 0x60023818;
+pm_refresh = 0x602e082f;   /* d0 context; call ...,[d2],88 (wb.s uses the same) */
 /* films.s */
 str_lang = 0x60d52eec;
 str_back = 0x60d52edb;

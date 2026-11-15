@@ -395,3 +395,29 @@ own 1.1, so it is normal. Owner asked for code inspection only, no smaller camer
   the rule (its builder must pass `stream_length`); `_pad` has no synthetic unit test (covered by build round trips);
   a stale 903/989 from the 8 Nov run may show picture mode 63 on the first start (choose a mode once).
 - Workspace: checkpoint-10 recipe; toolchain `/home/user/work/toolchain/install/bin`, OM-Emu `bdb3347`, Node 22.23.4.
+
+## Continuation checkpoint 14 — start-up gating, alpha7 (2026-11-15)
+
+- The stream-length lead is weaker than checkpoint 13 says: the restore ran with alpha5 installed, so section 7 was
+  decoded on that start, and a lost stream end would hit the filler, not the patch code (details in the research
+  note). A second explanation fits too: settings left by the 8 Nov run (tone save, 903/989, part-1 cells) made
+  alpha5's start-up run the project's refresh/list/builder code. Neither is proven.
+- Alpha7 keeps the stream rule and gates **every** hook on the armed state: before the first half-press each hook
+  replays OM's displaced instructions only (`rt_tail`, `apply_values`, `pm_set`/`pm_put`, `creset`, `wb_load`).
+  `arm_refresh` (ext8) runs the stock refresh once at arming for a context on a profile or holding a tone save;
+  the refresh takes the context in d0 **and the picture mode in d1**.
+- Package `fe6262be1a21d5f073f1f89f1acddbd37de6711d3eb6bf1a2edcf216801de42b`, `releases/v0.1.0-alpha7`
+  (expanded main `f7b0da97…ac94`, resource `6b93ba21…7a22`). Alpha6 is marked superseded (`blocked`).
+- Commands: `OM5_STOCK=… bash tools/dev/build.sh WORK/a7-record --record`;
+  `python3 tools/mkrelease.py v0.1.0-alpha7 WORK/a7-record/strict "$OM5_STOCK"`; copy alpha5's `LOOKS.BIN`.
+- Checks (emulator/host only): `tests/unarmed_assert.mjs` EXPECT=inert / applied pass (keys
+  `ok ok` + 8 × `right` + `menu menu`, then `s1`); startup probe passes (arm gate now `0x613f2f86`);
+  `tools/dev/static_rules.py BUILD STOCK` passes (no 0xfb opcode, 14 tables aligned, stream lengths);
+  `tests/audit_build.py` against the alpha6 build: all edits declared, loader bounds unchanged, 768 ND cases
+  (`tests/alpha7-build-audit.json`); host suite 18 tests, 17 pass with `OM5_STOCK`, alpha1–7 reproduced.
+  The 19 look/menu cases: see `tests/alpha7-results.json`.
+- Open: no camera run; the other processor's decoder was not found; E144 pre-alpha is on hold until rebuilt on this
+  donor with `stream_length`; photos taken without a half-press before arming use stock values (documented);
+  `tests/run_emulator.py` has no case for the gating (the POST module is run by hand).
+- Workspace as checkpoint 13. Reference repos read for camera lessons only: `cakelesscoder/caduceus-ep7`
+  `docs/FIRMWARE_GUIDE.md` §9–10, `BOOTLOOP_T3.md`, `CRASH_LOG.md`.
