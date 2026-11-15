@@ -109,5 +109,11 @@
     "stale_profile_numbers": "111 = 63 and 903 = 989 = 1 before arming; 111 = Natural and 903 = 989 = 0 after arming.",
     "static_rules": "Opcode, alignment and stock-page stream-length checks passed.",
     "build_audit": "Native loader bounds and resource image unchanged; all differences declared; 768 ND selector inputs passed."
+  },
+  "host": {
+    "passed": 17,
+    "skipped": "Optional original OM-5 E144 built-output check.",
+    "release_reproduction": "Alpha1 through alpha8 reproduced from official E148 1.1.",
+    "installer": "Alpha8 required UNTESTED and reproduced the pinned package, stock recovery image and starter bank."
   }
 }

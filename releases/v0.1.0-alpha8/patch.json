@@ -861,6 +861,5 @@
   "file": "DCOLYMP/E1489999.BIN",
   "bytes": 90832896,
   "sha256": "709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68"
- },
- "blocked": "Alpha8 is temporarily held for release package verification."
+ }
 }

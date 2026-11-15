@@ -504,5 +504,8 @@ Static rules and the build audit against alpha7 passed, including 768 ND inputs.
 All 19 cases in `tests/run_emulator.py` passed against matching stock sessions.
 Results and the static audit are in `tests/alpha8-results.json` and `tests/alpha8-build-audit.json`.
 
-The release manifest and starter bank are in `releases/v0.1.0-alpha8`. The installer holds alpha8
-until the host suite reproduces the release package from verified stock.
+The release manifest and starter bank are in `releases/v0.1.0-alpha8`. The package was pushed
+with the installer held. `OM5_STOCK=… python -m unittest discover -s tests -v` reproduced alpha1–8
+from stock (17 passed, optional E144 built-output check skipped). After the hold was removed, the
+default installer refused a response other than `UNTESTED` and then reproduced the alpha8 package,
+stock recovery image and starter bank with that acknowledgement.
