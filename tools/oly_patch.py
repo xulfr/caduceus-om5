@@ -30,7 +30,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 from oly_container import parse, replace_payload, reconstruct  # noqa: E402
-from oly_compress import expand_image, repack_image, spans  # noqa: E402
+from oly_compress import expand_image, repack_image, spans, length_fault, stream_lengths  # noqa: E402
 from oly_resource import alias_images  # noqa: E402
 
 SCHEMA = 'oly-patch/1'
@@ -231,7 +231,7 @@ def build(patch_dir, stock_path, out, tools=None, decoded=False, untested=False)
         comp = comps[kind_of(group['component'])]
         require(not comp.compressed, 'Resource aliases need a stored resource component')
         aliases = [(kind_of(target), kind_of(source)) for target, source in group['aliases']]
-        comp.install(group['name'], 0, alias_images(bytes(comp.data), aliases))
+        comp.install(group['name'], 0, alias_images(bytes(comp.data), aliases, group.get('lz4_recipe')))
 
     for bitmap in spec.get('bitmaps', []):
         comp = comps[kind_of(bitmap['component'])]
@@ -249,9 +249,16 @@ def build(patch_dir, stock_path, out, tools=None, decoded=False, untested=False)
     # runs (never longer than the stock stream's longest) instead of one long literal run.
     patched = {kind: repack_image(by_kind[kind].payload, data,
                                   split=comps[kind].spec.get('repack') == 'split',
-                                  literal_limit=0 if comps[kind].spec.get('repack') == 'split' else None)
+                                  literal_limit=0 if comps[kind].spec.get('repack') == 'split' else None,
+                                  stream_length=comps[kind].spec.get('stream_length'))
                if comps[kind].compressed else data
                for kind, data in expanded.items()}
+    # Stream length rule (tools/oly_compress.py): once a patch declares it, every compressed stream of every
+    # rewritten component is checked, including the resource block's.
+    if any(c.spec.get('stream_length') for c in comps.values()):
+        for kind, data in patched.items():
+            for at, packed in stream_lengths(data):
+                require(not length_fault(packed), f'Component {kind:#x} stream at {at:#x}: {length_fault(packed)}')
     for kind, comp in comps.items():
         if comp.compressed:
             require(sha(patched[kind]) == comp.spec['stored_after_sha256'],

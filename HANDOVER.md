@@ -375,3 +375,19 @@ own 1.1, so it is normal. Owner asked for code inspection only, no smaller camer
 - Workspace as checkpoint 10 (toolchain, stock, OM-Emu, expanded main at /home/user/work/dec, full disassembly
   via `objdump -D -b binary -m am33-2 --adjust-vma=0x60021020`). Scratch probes (PRE modules for HLS events,
   row descriptors, settings 903/989 and group values) were not committed.
+
+## Continuation checkpoint 13 — stream length, alpha6 (2026-11-15)
+
+- Lead for the alpha5 loop: its section-7 LZ4 stream is exactly 611 × 4096 bytes; the loader ignores the 32-byte
+  header in its block arithmetic. Record: [research/OM5II-STREAM-LENGTH-2026-11-15.md](research/OM5II-STREAM-LENGTH-2026-11-15.md).
+  Owner allowed the 8 Nov source (`xulfr/oly_fw_analysis` `25a336e`, files `patches/hsl/om-5-ii` + `tools/`) to be
+  fetched for the diff; it rebuilt to `e2ca5b28…92e1`.
+- Alpha6: package `2bb95563fc7c61fac8da2b9c2f2fa177d6395bcafe2941755b5ed8163d3c3e84`, `releases/v0.1.0-alpha6`.
+  Same expanded main as alpha5 (`cc0efda8…`), streams re-encoded to OM's length modulo 4096, resource block identical
+  to the 8 Nov one. `patch.json` has `stream_length` and `lz4_recipe`; `tools/mkrelease.py` copies both to the release.
+- Commands: `OM5_STOCK=… bash tools/dev/build.sh WORK/a6-record --record`, then
+  `python3 tools/mkrelease.py v0.1.0-alpha6 WORK/a6-record/strict "$OM5_STOCK"` and a copy of alpha5's `LOOKS.BIN`.
+- Checks run: see the end of this checkpoint (updated when they finish). Not camera-tested; `camera_tested` false.
+- Open: site/README/CHANGELOG still say alpha5 is current and blocked (update and run `tools/mksite.py`); E144
+  pre-alpha needs a rebuild with the rule before anyone flashes it; `tests/` has no unit test for `_pad`/`length_fault` yet.
+- Workspace: checkpoint-10 recipe; toolchain `/home/user/work/toolchain/install/bin`, OM-Emu `bdb3347`, Node 22.23.4.

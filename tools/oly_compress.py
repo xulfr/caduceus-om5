@@ -129,6 +129,81 @@ def _repack(original, target, rows, split=False):
     return bytes(packed)
 
 
+# ---- Stream length rule (E148 1.1; found after the alpha5 boot loop, research/OM5II-STREAM-LENGTH-2026-11-15.md)
+# The loader (0x6005b249) reads a compressed section from flash in 2 KiB blocks: (L // 2048 + 1) * 2048 bytes
+# for a packed length L, although the stream is 32 + L bytes long. A stream with L % 2048 > 2016 therefore loses
+# its last bytes (proven from the code). The stream is then decoded by the other processor, whose code is not in
+# the main program; alpha5's section 7 was exactly 611 * 4096 bytes and that build never started. So a re-encoded
+# stream must end at the same place inside a 4 KiB page as OM's own stream does: L == stock L (mod 4096).
+BLOCK, PAGE, HEADER, GUARD = 2048, 4096, 32, 64
+
+
+def length_fault(packed):
+    """Why a packed length is refused, or None."""
+    if packed % BLOCK > BLOCK - HEADER:
+        return f'packed length {packed}: the loader would not read its last {packed % BLOCK - (BLOCK - HEADER)} bytes'
+    if packed % PAGE < GUARD:
+        return f'packed length {packed} ends {packed % PAGE} bytes into a 4 KiB page (the alpha5 boot-loop case is 0)'
+    size = BLOCK
+    while size <= 1 << 24:          # 32 + L must not straddle the end of any power-of-two unit a reader may use
+        if packed % size > size - HEADER - GUARD:
+            return f'packed length {packed} ends {size - packed % size} bytes before a {size} byte boundary'
+        size *= 2
+    return None
+
+
+def _pad(data, raw, stock_packed, literal_limit):
+    """Re-encode a valid block so its length equals stock_packed modulo 4096, without changing what it decodes
+    to. Two length-neutral LZ4 rewrites, both of kinds the stock streams are full of:
+      +3 bytes: one match of 8..18 bytes becomes two matches with the same offset (4 bytes, then the rest);
+      +1 byte:  a 4-byte match between two short literal runs becomes literals.
+    The last 64 KiB of output is left as it is (LZ4 end-of-block rules, and the patch code sits there)."""
+    need = (stock_packed - len(data)) % PAGE
+    while length_fault(len(data) + need):
+        need += PAGE
+    if not need:
+        return data
+    decoded, rows = _sequences(data, raw)
+    ones, threes = need % 3, need // 3
+    out, i, limit = [], 0, raw - 65536
+    while i < len(rows):
+        lits, off, n, start = rows[i]
+        nxt = rows[i + 1] if i + 1 < len(rows) else None
+        if off and start + n < limit:
+            if ones and n == 4 and nxt and nxt[1] and len(lits) + 4 + len(nxt[0]) <= 14 and nxt[3] + nxt[2] < limit:
+                merged = lits + decoded[start:start + 4] + nxt[0]
+                out.append((merged, nxt[1], nxt[2], nxt[3]))
+                ones -= 1
+                i += 2
+                continue
+            if threes and 8 <= n <= 18 and len(lits) < 15:
+                out.append((lits, off, 4, start))
+                out.append((b'', off, n - 4, start + 4))
+                threes -= 1
+                i += 1
+                continue
+        out.append(rows[i])
+        i += 1
+    if ones or threes:
+        raise ValueError('No room to adjust the packed length')
+    packed = bytearray()
+    for lits, off, n, _ in out:
+        packed.extend(_encode(lits, off, n))
+    packed = bytes(packed)
+    if _sequences(packed, raw)[0] != decoded or len(packed) % PAGE != stock_packed % PAGE:
+        raise ValueError('Length adjustment changed the expanded data')
+    return packed
+
+
+def stream_lengths(stored):
+    """(offset, packed length) of every olycompress stream in a stored component, whatever holds it."""
+    out, p = [], 0
+    while (p := stored.find(MAGIC, p)) >= 0:
+        out.append((p, struct.unpack_from('<I', stored, p + 16)[0]))
+        p += 32
+    return out
+
+
 def max_literal_run(data, raw):
     """Longest literal run of an LZ4 block (for comparison with the stock stream)."""
     _, rows = _sequences(data, raw)
@@ -157,7 +232,11 @@ def expand_image(stored):
     return bytes(result)
 
 
-def repack_image(stored, target, split=False, literal_limit=None):
+def repack_image(stored, target, split=False, literal_limit=None, stream_length=None):
+    """stream_length 'stock-page': every re-encoded stream keeps OM's packed length modulo 4096 and must pass
+    length_fault(). None reproduces the releases up to alpha5 (blocked: alpha5 failed on a camera)."""
+    if stream_length not in (None, 'stock-page'):
+        raise ValueError(f'Unknown stream_length rule {stream_length!r}')
     if len(stored) != len(target):
         raise ValueError('Expanded image size changed')
     original = expand_image(stored)
@@ -168,6 +247,10 @@ def repack_image(stored, target, split=False, literal_limit=None):
             continue
         _, rows = _sequences(stored[p + 32:p + 32 + packed], raw)
         data = _repack(original[p:p + raw], target[p:p + raw], rows, split)
+        if stream_length:
+            data = _pad(data, raw, packed, literal_limit)
+            if length_fault(len(data)) or length_fault(packed):
+                raise ValueError(f'olycompress at {p:#x}: {length_fault(len(data)) or length_fault(packed)}')
         if literal_limit is not None:
             stock_max = max(len(r[0]) for r in rows)
             if max_literal_run(data, raw) > max(stock_max, literal_limit):

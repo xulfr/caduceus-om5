@@ -56,6 +56,10 @@ def main():
                      'after_sha256': report['components']['0x101']['sha256']},
         'package': {'file': 'DCOLYMP/E1489999.BIN', 'bytes': report['package_bytes'], 'sha256': report['package_sha256']},
     }
+    if spec['components']['0x100'].get('stream_length'):
+        release['main']['stream_length'] = spec['components']['0x100']['stream_length']
+    if spec['resource_aliases'][0].get('lz4_recipe'):
+        release['resource']['lz4_recipe'] = spec['resource_aliases'][0]['lz4_recipe']
     out = ROOT / 'releases' / name
     out.mkdir(parents=True, exist_ok=True)
     (out / 'patch.json').write_text(json.dumps(release, indent=1) + '\n')

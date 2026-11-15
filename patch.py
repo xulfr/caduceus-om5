@@ -113,10 +113,12 @@ def build(rel, stock):
     if sha256(main) != m['expanded_after_sha256']:
         raise Refuse('the patched main program differs from the release')
     print('Packing the main program (about a quarter of a minute) ...')
-    stored = repack_image(by_kind[0x100].payload, bytes(main), split=True, literal_limit=0)
+    stored = repack_image(by_kind[0x100].payload, bytes(main), split=True, literal_limit=0,
+                          stream_length=m.get('stream_length'))
     if sha256(stored) != m['stored_after_sha256']:
         raise Refuse('the packed main program differs from the release')
-    res = alias_images(by_kind[0x101].payload, [(int(a, 16), int(b, 16)) for a, b in rel['resource']['aliases']])
+    res = alias_images(by_kind[0x101].payload, [(int(a, 16), int(b, 16)) for a, b in rel['resource']['aliases']],
+                       rel['resource'].get('lz4_recipe'))
     if sha256(res) != rel['resource']['after_sha256']:
         raise Refuse('the resource block differs from the release')
     new = {0x100: stored, 0x101: res}
