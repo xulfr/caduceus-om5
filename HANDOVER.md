@@ -387,7 +387,11 @@ own 1.1, so it is normal. Owner asked for code inspection only, no smaller camer
   to the 8 Nov one. `patch.json` has `stream_length` and `lz4_recipe`; `tools/mkrelease.py` copies both to the release.
 - Commands: `OM5_STOCK=… bash tools/dev/build.sh WORK/a6-record --record`, then
   `python3 tools/mkrelease.py v0.1.0-alpha6 WORK/a6-record/strict "$OM5_STOCK"` and a copy of alpha5's `LOOKS.BIN`.
-- Checks run: see the end of this checkpoint (updated when they finish). Not camera-tested; `camera_tested` false.
-- Open: site/README/CHANGELOG still say alpha5 is current and blocked (update and run `tools/mksite.py`); E144
-  pre-alpha needs a rebuild with the rule before anyone flashes it; `tests/` has no unit test for `_pad`/`length_fault` yet.
+- Checks run (emulator/host only): all 19 look/menu cases pass on the alpha6 build with zero image stores beyond stock
+  (`tests/alpha6-results.json`); startup probe passes; host suite with `OM5_STOCK`: alpha1–6 reproduce byte for byte;
+  OM-Emu's own LZ4 decoder expands the alpha6 stored main to the expected bytes. Not camera-tested; `camera_tested` false.
+- Site, README, SAFETY, FAQ and CHANGELOG now describe alpha6 as not camera-tested; the OM-5 pre-alpha page says hold.
+- Open: the other processor's decoder was not found, so the cause is inferred; E144 pre-alpha needs a rebuild with
+  the rule (its builder must pass `stream_length`); `_pad` has no synthetic unit test (covered by build round trips);
+  a stale 903/989 from the 8 Nov run may show picture mode 63 on the first start (choose a mode once).
 - Workspace: checkpoint-10 recipe; toolchain `/home/user/work/toolchain/install/bin`, OM-Emu `bdb3347`, Node 22.23.4.

@@ -1,0 +1,119 @@
+{
+ "build": "v0.1.0-alpha6",
+ "package_sha256": "2bb95563fc7c61fac8da2b9c2f2fa177d6395bcafe2941755b5ed8163d3c3e84",
+ "evidence": "emulator only (OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8, Node 22.23.4); not a camera test",
+ "cases": [
+  {
+   "case": "four-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "next-film",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "slot-two",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "wrap",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "ten-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "oversized-bank",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-crc",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-range",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-markup",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-control",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "persisted-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "other-rows",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return-title",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "title-redraw",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "scp-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "empty-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "no-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "unarmed-delete",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  }
+ ],
+ "startup_probe": "passed (tests/startup_assert.mjs)",
+ "stream_checks": {
+  "expanded_main_sha256": "cc0efda8eea117f72f8a5c041aba216c5f50c198fe5b6bc08a80fff907c176a0 (identical to alpha5)",
+  "section6_packed": 2254191,
+  "section7_packed": 2505716,
+  "stock_packed": [
+   2250095,
+   2501620
+  ],
+  "page_offsets": [
+   1391,
+   3060
+  ],
+  "independent_decode": "OM-Emu expandImage of the stored main equals the expanded main",
+  "resource_sha256": "6b93ba2171e8ad5627cfa29d198bc07a01ff49173307bafde3b37fd412707a22 (identical to the 8 Nov build)"
+ },
+ "host_suite": "18 tests: 17 pass with OM5_STOCK (alpha1-6 reproduced), E144 built-output check skipped"
+}
