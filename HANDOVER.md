@@ -356,3 +356,22 @@ Record: [research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md](research/OM5II-FOURTH
 - Next session: plan a hardware bisection with minimal builds (owner flashes each, each recorded); ask the owner
   whether a Color Profile / C1–C4 profile was selected before the update and whether the red light also appears
   with OM's own file. The alpha5 code review and emulator results remain valid as emulator-only evidence.
+
+## Continuation checkpoint 12 — static investigation of the alpha5 boot loop (2026-11-15)
+
+Owner answers: no profile selected (nor in C1–C4) before the update; the red light also appears when flashing OM's
+own 1.1, so it is normal. Owner asked for code inspection only, no smaller camera tests. Findings are in
+[research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md](research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md):
+
+- No root cause established. The recovery flash ran the updater from alpha5's own section 7, so loader, sections
+  1–7 (including the patched LZ4 streams) and task 92 worked; the fault is on the normal-start path after that.
+- Ruled out with evidence: stream truncation, the string-getter hook bytes and frames, a non-zero armed handle at
+  power-on, constructor tables, stock use of the patch tails, a section-10 checksum, `LOOKS.BIN`, `pm_num`'s zeroing.
+- Hazards: the picture-mode lookup now depends on hidden settings 903/989 (and 1060/1061/1064/1065 for 504/505) —
+  any non-zero value makes every mode read 63; a loader-programmed access monitor (`0x99700040..`) covers sections
+  9–10 until section 10 loads, and alpha1–5 are the first builds with code in section 10.
+- Most direct next static step: diff the 8 Nov build that booted (`25a336e`, old repository) against alpha5's
+  start-up paths — needs the owner's go-ahead (CLAUDE.md forbids re-exploring the old repositories otherwise).
+- Workspace as checkpoint 10 (toolchain, stock, OM-Emu, expanded main at /home/user/work/dec, full disassembly
+  via `objdump -D -b binary -m am33-2 --adjust-vma=0x60021020`). Scratch probes (PRE modules for HLS events,
+  row descriptors, settings 903/989 and group values) were not committed.
