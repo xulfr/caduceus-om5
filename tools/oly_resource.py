@@ -7,6 +7,7 @@ included in the patch: every replacement points to another stock resource.
 import struct
 
 from oly_compress import _sequences, _repack, _encode, length_fault
+from oly_ui_bitmap import append_icons, unpack_bitmap
 
 
 def _recipe(target, rows, recipe):
@@ -16,13 +17,16 @@ def _recipe(target, rows, recipe):
     begin = lambda r: r[3] - len(r[0])
     head = [r for r in rows if r[3] + r[2] <= lo]
     tail = [r for r in rows if begin(r) >= hi]
-    if not head or not tail or head[-1][3] + head[-1][2] != lo or begin(tail[0]) != hi:
+    if (not head or head[-1][3] + head[-1][2] != lo
+            or (begin(tail[0]) if tail else len(target)) != hi):
         raise ValueError('Resource recipe window is not on stock sequence boundaries')
     packed, at = bytearray(), 0
     for lits, off, n, start in head:
         packed.extend(_encode(target[at:start], off, n))
         at = start + n
-    for lit, off, n in recipe['sequences']:
+    sequences = (struct.iter_unpack('<3H', bytes.fromhex(recipe['sequences_le16']))
+                 if 'sequences_le16' in recipe else recipe['sequences'])
+    for lit, off, n in sequences:
         packed.extend(_encode(target[at:at + lit], off, n))
         at += lit + n
     if at != hi:
@@ -35,7 +39,7 @@ def _recipe(target, rows, recipe):
     return bytes(packed)
 
 
-def alias_images(payload, aliases, recipe=None):
+def alias_images(payload, aliases, recipe=None, artwork=None):
     """Return a same-size 0x101 payload with selected IDs aliased to stock IDs.
 
     recipe (optional): the LZ4 sequences of the changed part of the record, so the stored bytes equal a stream
@@ -64,19 +68,27 @@ def alias_images(payload, aliases, recipe=None):
         raise ValueError('Resource image table is outside record')
     source = bytes(data)
     placeholder = load + table - 20
-    seen = set()
+    replacements = {}
     for target_id, source_id in aliases:
-        if target_id in seen:
-            raise ValueError(f'Duplicate resource image ID {target_id:#x}')
-        seen.add(target_id)
-        dst = table + 4 * target_id
         src = table + 4 * source_id
-        if min(dst, src) < 0 or max(dst, src) + 4 > len(data):
+        if src < table or src + 4 > len(data):
+            raise ValueError('Source image ID leaves pointer table')
+        replacements[target_id] = struct.unpack_from('<I', source, src)[0]
+    if len(aliases) != len(replacements):
+        raise ValueError('Duplicate resource alias')
+    result = bytearray(payload)
+    if artwork:
+        icons = _append_artwork(result, origin, source, load, table, artwork)
+        if replacements.keys() & icons.keys():
+            raise ValueError('Resource alias and artwork share an image ID')
+        replacements.update(icons)
+    for target_id, replacement in replacements.items():
+        dst = table + 4 * target_id
+        if dst < table or dst + 4 > len(data):
             raise ValueError('Image ID leaves pointer table')
-        replacement = struct.unpack_from('<I', source, src)[0]
         current = struct.unpack_from('<I', source, dst)[0]
         if current != placeholder or replacement == placeholder:
-            raise ValueError(f'Invalid resource alias {target_id:#x} -> {source_id:#x}')
+            raise ValueError(f'Invalid resource replacement for {target_id:#x}')
         struct.pack_into('<I', data, dst, replacement)
 
     # Re-encode with the stock stream's own sequences (oly_compress): matches whose bytes are unchanged are kept,
@@ -89,10 +101,48 @@ def alias_images(payload, aliases, recipe=None):
         raise ValueError(f'Resource record: {length_fault(size)}')
     if size + 32 > span:
         raise ValueError(f'Repacked resource exceeds its {span} byte span')
-    result = bytearray(payload)
     result[at:at + span] = bytes([255]) * span
     result[at:at + 16] = original[:16]
     struct.pack_into('<II', result, at + 16, size, raw)
     result[at + 24:at + 32] = bytes(8)
     result[at + 32:at + 32 + size] = encoded
     return bytes(result)
+
+
+def _append_artwork(result, origin, image_table, table_load, table, artwork):
+    """Extend E148's final bitmap record into the component's zero-filled tail."""
+    index = 37
+    address, span, z1, z2 = struct.unpack_from('<4I', result, index * 16)
+    at = address - origin
+    if z1 or z2 or any(result[(index + 1) * 16:2016]):
+        raise ValueError('Expected the E148 bitmap record last in the resource index')
+    if at < 2016 or at + span > len(result) or result[at:at + 16] != b'olycompress     ':
+        raise ValueError('Invalid E148 bitmap record')
+    packed, raw = struct.unpack_from('<II', result, at + 16)
+    if packed + 32 > span or result[at + 24:at + 32] != bytes(8):
+        raise ValueError('Invalid E148 bitmap stream header')
+    decoded, sequences = _sequences(result[at + 32:at + 32 + packed], raw)
+    atlas = bytearray(decoded)
+    load = 0xa3791000
+
+    def source_rows(image_id):
+        ptr, = struct.unpack_from('<I', image_table, table + 4 * image_id)
+        blob, offset = (decoded, ptr - load) if ptr >= load else (image_table, ptr - table_load)
+        if not 0 <= offset <= len(blob) - 28 or blob[offset:offset + 2] != b'\x0e\x00':
+            raise ValueError(f'Invalid stock bitmap {image_id:#x}')
+        return unpack_bitmap(blob, offset + 24)
+
+    icons = append_icons(atlas, load, artwork['sprites'], source_rows)
+    if load + len(atlas) > ((load + raw + 65535) & ~65535):
+        raise ValueError('Artwork crosses the final stock bitmap memory page')
+    encoded = _recipe(atlas, sequences, artwork['lz4_recipe'])
+    size = len(encoded)
+    if length_fault(size):
+        raise ValueError(f'Bitmap record: {length_fault(size)}')
+    new_span = max(span, (size + 32 + 511) & ~511)
+    if at + new_span > len(result) or any(result[at + span:at + new_span]):
+        raise ValueError('Bitmap record exceeds zero-filled tail')
+    struct.pack_into('<I', result, index * 16 + 4, new_span)
+    struct.pack_into('<II', result, at + 16, size, len(atlas))
+    result[at + 32:at + new_span] = encoded + b'\xff' * (new_span - 32 - size)
+    return icons

@@ -58,8 +58,9 @@ def main():
     }
     if spec['components']['0x100'].get('stream_length'):
         release['main']['stream_length'] = spec['components']['0x100']['stream_length']
-    if spec['resource_aliases'][0].get('lz4_recipe'):
-        release['resource']['lz4_recipe'] = spec['resource_aliases'][0]['lz4_recipe']
+    for key in ('lz4_recipe', 'artwork'):
+        if key in spec['resource_aliases'][0]:
+            release['resource'][key] = spec['resource_aliases'][0][key]
     out = ROOT / 'releases' / name
     out.mkdir(parents=True, exist_ok=True)
     (out / 'patch.json').write_text(json.dumps(release, indent=1) + '\n')

@@ -232,7 +232,8 @@ def build(patch_dir, stock_path, out, tools=None, decoded=False, untested=False)
         comp = comps[kind_of(group['component'])]
         require(not comp.compressed, 'Resource aliases need a stored resource component')
         aliases = [(kind_of(target), kind_of(source)) for target, source in group['aliases']]
-        comp.install(group['name'], 0, alias_images(bytes(comp.data), aliases, group.get('lz4_recipe')))
+        comp.install(group['name'], 0, alias_images(bytes(comp.data), aliases, group.get('lz4_recipe'),
+                                                    group.get('artwork')))
 
     for bitmap in spec.get('bitmaps', []):
         comp = comps[kind_of(bitmap['component'])]

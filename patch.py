@@ -118,7 +118,7 @@ def build(rel, stock):
     if sha256(stored) != m['stored_after_sha256']:
         raise Refuse('the packed main program differs from the release')
     res = alias_images(by_kind[0x101].payload, [(int(a, 16), int(b, 16)) for a, b in rel['resource']['aliases']],
-                       rel['resource'].get('lz4_recipe'))
+                       rel['resource'].get('lz4_recipe'), rel['resource'].get('artwork'))
     if sha256(res) != rel['resource']['after_sha256']:
         raise Refuse('the resource block differs from the release')
     new = {0x100: stored, 0x101: res}
