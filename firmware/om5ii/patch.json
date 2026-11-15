@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "58c0b53152a105df69614d34ab9ec2071a56c2c6990b3181f129fcb9033959c7",
+      "stored_after_sha256": "625228acbc8345c5de4953ae75bb20895f9d9fa12c738054348b9d7719299220",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "df9a97904e7799b523e87c9a8c84dda45e404b0643b6133a37c6c3acbe4988e5",
+      "after_sha256": "b7cde364b8f3ced8b0c08d9f37bb1852432f82cc7fbb76037f9c07d8c0d71c11",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -797,6 +797,46 @@
       "bytes": 1242,
       "before_sha256": "6cf0da63031bada9020bd4c3161ce6c89e6a00cc8711cd02db43b7dfeb8b565f",
       "after_sha256": "a290234143370238df7c6a1456623758d884039393c6101503613b3ea6c02e4a"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_value",
+      "address": "0x610c3e26",
+      "bytes": 32,
+      "before_sha256": "04fc97fff1406dec6ee56243938d20079f6eb0d1dc04b0117428ec7884da228a",
+      "after_sha256": "29b9ce0826bea812d5d602d70b1bcff12c6b7a588c6e899bdf96a89eccca4e67"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_icon_value",
+      "address": "0x610c3e96",
+      "bytes": 80,
+      "before_sha256": "2cc0abc96029a0fea242a0ba618da86cc7d0b5fd91e296217880f3235f1fa054",
+      "after_sha256": "cbadd85f5b5ffa8a5364ac4372ce19f7e67d375d0d5d8c0d64574623e3345d1f"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_label",
+      "address": "0x610c3fb6",
+      "bytes": 32,
+      "before_sha256": "5f893034f6e09bebc2d414ae2838eff288bd8642f97ace6bd86928da50a5c600",
+      "after_sha256": "13782cdaea97e3e1f0df00b67b055a0e76eb4d8c905bab7b96a0602d9602fc9d"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_label_top",
+      "address": "0x610c4006",
+      "bytes": 32,
+      "before_sha256": "87a3c40d156e23798a1e73a46b6b8fa419050c26d33b0dfb223845d777976dcf",
+      "after_sha256": "d91ed6a6435acd2d989fafd6b91d8fe76fd98dc622ac2944e39364ef44450a9c"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_icon",
+      "address": "0x610c4076",
+      "bytes": 80,
+      "before_sha256": "7ebe0adda259d76d8d8148487af83b46c61495113f3bcba571fe8ef5241f7201",
+      "after_sha256": "7a27334aaed0cf7abc1f8f45bfc06c973df5ff77fb85a88a47deb2989596ec50"
     }
   ],
   "data_edits": [
@@ -1147,12 +1187,42 @@
       "name": "nd_1710_allowed_count",
       "address": "0x60514868",
       "after": "0600"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_value",
+      "address": "0x610c3e26",
+      "after": "0d00ff0054001e000d00ff0054001e000d003b0154001e000d003b0154001e00"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_icon_value",
+      "address": "0x610c3e96",
+      "after": "3c004b001d001e003c004b001d001e003c0087001d001e003c0087001d001e003c00c3001d001e003c00c3001d001e003c00ff001d001e003c00ff001d001e003c003b011d001e003c003b011d001e00"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_label",
+      "address": "0x610c3fb6",
+      "after": "0e00ff0052001e000e00ff0052001e000e003b0152001e000e003b0152001e00"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_label_top",
+      "address": "0x610c4006",
+      "after": "0e00f00052001e000e00f00052001e000e002c0152001e000e002c0152001e00"
+    },
+    {
+      "component": "0x100",
+      "name": "profile_side_icon",
+      "address": "0x610c4076",
+      "after": "0c0043002e002e000c0043002e002e000c007f002e002e000c007f002e002e000c00bb002e002e000c00bb002e002e000c00f7002e002e000c00f7002e002e000c0033012e002e000c0033012e002e00"
     }
   ],
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68",
+    "sha256": "5fd2a564d2b7042bf33c64a09cc2ce4763dff7d0952223868f78677876b37161",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },
