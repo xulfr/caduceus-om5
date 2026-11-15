@@ -503,3 +503,6 @@ Static rules and the build audit against alpha7 passed, including 768 ND inputs.
 
 All 19 cases in `tests/run_emulator.py` passed against matching stock sessions.
 Results and the static audit are in `tests/alpha8-results.json` and `tests/alpha8-build-audit.json`.
+
+The release manifest and starter bank are in `releases/v0.1.0-alpha8`. The installer holds alpha8
+until the host suite reproduces the release package from verified stock.
