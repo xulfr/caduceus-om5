@@ -309,3 +309,33 @@ existing developer builder (not added to patch.py or the launchers). CLAUDE.md's
   under `/home/tomrb/camera-firmware-lab/binutils-patch-build`. `generated/bin/mn10300-elf-{as,ld,objcopy}`
   links point there for PATH. The pre-existing one-line `tools/dev/sess.mjs` after-step hook was left untouched
   and is excluded from this commit; these tests do not depend on it.
+
+## Continuation checkpoint 10 — alpha4 bug hunt and alpha5 (2026-11-15)
+
+- Audited remote main `d85fbbb`; the strict build reproduced alpha4 `590c2959…d713d648` and the host suite
+  passed before changes. Findings, reproductions and negative results:
+  [alpha5 audit](research/OM5II-ALPHA5-AUDIT-2026-11-15.md).
+- Fixed: alpha4's `pg_title` stored the title id with a 32-bit `mov` into the controller's 16-bit row
+  descriptor, zeroing the title style index at +6 (no visible effect in OM-Emu, but a write into stock state);
+  a look without a WB shift kept the previous look's shift (now sets 0/0, as LookLab previews it — a
+  behaviour change the owner may want to revisit); stale tone-ID comments (midtone is 691; 976/977/978 + 3p =
+  Highlights/Midtones/Shadows, confirmed with the camera's own tone editor in OM-Emu) and stale guide text.
+- Alpha5 package: 90,832,896 bytes, SHA-256 `98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2`.
+  `patch.py` selects `releases/v0.1.0-alpha5` by default; its starter bank is byte-identical to alpha4.
+- Commands (repository root, `OM5_STOCK` = pinned E148 file, binutils on PATH):
+  `bash tools/dev/build.sh WORK/alpha5-record --record` (ends with a strict build), then
+  `python3 tools/mkrelease.py v0.1.0-alpha5 WORK/alpha5-record/strict "$OM5_STOCK"` and a copy of alpha4's
+  `LOOKS.BIN`. `tests/audit_build.py` against a strict alpha4 build: 417 changed bytes, all declared (ext6 3,
+  ext7 1, ext10 413); loader bounds and resources unchanged; 768 ND cases. Evidence `tests/alpha5-build-audit.json`.
+- Tests: every emulator case now uses `tests/layout_guard.mjs` as PRE (row descriptor may change only in the
+  title id) and checks each look slot's WB record plus the live A/B and G/M of the current profile. The new
+  checks fail on alpha4 (`title-redraw`, `next-film`). Results `tests/alpha5-results.json`. Startup probe
+  passes with image stores equal to stock. Host suite: 17 tests, 16 pass, E144 built-output skipped.
+- Workspace used (Linux cloud container, gone after the session): binutils 2.42 `mn10300-elf` built from
+  archive.ubuntu.com `binutils_2.42.orig.tar.xz` with the checkpoint-5 flags into `/home/user/work/toolchain/install`;
+  E148 stock from `tools/fetch_stock.py E148` (hash matched); OM-Emu `bdb3347` at `/home/user/work/om-emu`;
+  Node 22.23.4; Python 3.13.18 with `Markdown==3.7` and Pillow. Expanded main for disassembly:
+  `objdump -D -b binary -m am33-2 --adjust-vma=0x60021020`.
+- Open: no camera has run alpha5; the "Reset OK-hold" hint seen on the strip after a look step (same in alpha4
+  and alpha5) was not investigated; the super control panel's Color Profile icon is still missing in OM-Emu.
+  `camera_tested` stays false and the `UNTESTED` gate remains.

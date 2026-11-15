@@ -23,8 +23,8 @@ has the OM-3 project's looks, adapted.
 
 **The look's name did not appear.** The name is the title of the Picture Mode screen while the highlight is on the
 strip of picture modes, and the top line of the super control panel while its Picture Mode cell is highlighted.
-After visiting the rows below, the title reads "Picture Mode" until you move along the strip. Names have at most
-12 characters.
+Names have at most 12 characters. (An empty slot's title reads "Picture Mode" after you visit the rows below, until
+you move along the strip.)
 
 **Does it change RAW files?** No. Like any picture mode it changes the JPEG, and the preview.
 

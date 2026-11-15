@@ -50,7 +50,8 @@ The first press on an empty slot gives look 1 on Color Profile 1, look 2 on Colo
 Profile 3.
 
 What a look sets: the 12 colours' Saturation, Hue and Lightness, the tone curve, Contrast, Sharpness, Shading and
-the white-balance shift (A/B, G/M, on the white-balance mode you are using).
+the white-balance shift (A/B, G/M, on the white-balance mode you are using). A look made without a shift sets the
+shift to 0, so it never keeps the shift of the look before it.
 
 **The look is now the slot's own settings.** It is saved with the camera's settings, it is there after switching
 off, with another card or with no card, and it goes with a custom mode (C1–C4) you save. You can change any of its
@@ -61,8 +62,8 @@ Things to know:
 - **The trash button steps the look only on the Picture Mode row** (the strip of picture modes). A step
   **overwrites the slot's values**, including changes you made. In the colour wheel the trash button switches
   Saturation / Hue / Lightness; on the tone, Shading, Sharpness and Contrast rows it does nothing.
-- If you go down to the other rows and come back up, the camera's title reads "Picture Mode" instead of the mode's
-  name. The trash button still steps the look there; the name shows again when you move along the strip.
+- If you go down to the other rows and come back up, a slot holding a look keeps the look's name as the title. An
+  empty Color Profile slot reads "Picture Mode" instead of its own name until you move along the strip.
 - On the super control panel the look's name is the top line while the Picture Mode cell is highlighted.
 - A `LOOKS.BIN` that is damaged, or has a value out of range, is ignored as a whole.
 - The look file is read once per switch-on. After changing the file, switch off and on.

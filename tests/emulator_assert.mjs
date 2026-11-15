@@ -6,6 +6,10 @@ export default function(g) {
   const R = (id, part = 1) => g.__call(0x602f50f8, { d0: id, d1: part }).d0 >>> 0;
   const G = id => g.__call(0x602d000d, { d0: id }, [0, 4]).d0 | 0;
   const h = Buffer.from(g.__M.dbgRead(0x6218c2fe, 2)).readUInt16LE();
+  const guard = g.__layoutGuard;
+  assert.ok(guard, 'layout guard installed (PRE tests/layout_guard.mjs)');
+  assert.deepEqual(guard.violations, [], 'Picture Mode row descriptor: only the title id may change');
+  console.log(`LAYOUT GUARD ${guard.checked} layouts, ${guard.kind4} on the mode strip, no descriptor change`);
   if (expect.state === null) {
     assert.equal(h, 0, 'state handle stays unpublished');
     console.log('ASSERTIONS passed');
@@ -34,10 +38,16 @@ export default function(g) {
       assert.equal(G(id), film[key] ?? 0, `slot ${p} ${key}`);
     const addr = g.__call(0x60d52ed5, { d0: 2749 + p }).a0 >>> 0;
     assert.equal(Buffer.from(g.__M.dbgRead(addr, 26)).toString('utf16le').replace(/\0.*$/, ''), film.name);
-    if (film.wb) {
-      const wb = 904 + 4*p;
-      assert.equal(R(wb + 2), (film.wb[0] & 255) | ((film.wb[1] & 255) << 8), `slot ${p} WB shift`);
-      assert.equal(R(wb + 3), (R(wb) ^ R(wb + 1) ^ R(wb + 2) ^ 0x57420101) >>> 0, `slot ${p} WB checksum`);
+    // A look without a WB shift sets 0 / 0 (as LookLab previews it); it never keeps the previous look's.
+    const [ab, gm] = film.wb ?? [0, 0];
+    const wb = 904 + 4*p;
+    assert.equal(R(wb + 2), (ab & 255) | ((gm & 255) << 8), `slot ${p} WB shift record`);
+    assert.equal(R(wb + 3), (R(wb) ^ R(wb + 1) ^ R(wb + 2) ^ 0x57420101) >>> 0, `slot ${p} WB checksum`);
+    if (G(111) === 54 + p) {
+      const mode = [0, 18, 3, 1, 6, 17, 7, 8, 13, 14, 15, 16, 9].indexOf(G(1578));
+      assert.notEqual(mode, -1, 'WB mode has shift settings');
+      assert.equal(G(1580 + mode), ab, `slot ${p} live A/B`);
+      assert.equal(G(1593 + mode), gm, `slot ${p} live G/M`);
     }
   }
   if (expect.case === 'persisted-name') {

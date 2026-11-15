@@ -106,7 +106,8 @@ set while it is selected come back when you select it again. All other picture m
 <p>The first press on an empty slot gives look 1 on Color Profile 1, look 2 on Color Profile 2, look 3 on Color
 Profile 3.</p>
 <p>What a look sets: the 12 colours' Saturation, Hue and Lightness, the tone curve, Contrast, Sharpness, Shading and
-the white-balance shift (A/B, G/M, on the white-balance mode you are using).</p>
+the white-balance shift (A/B, G/M, on the white-balance mode you are using). A look made without a shift sets the
+shift to 0, so it never keeps the shift of the look before it.</p>
 <p><strong>The look is now the slot's own settings.</strong> It is saved with the camera's settings, it is there after switching
 off, with another card or with no card, and it goes with a custom mode (C1–C4) you save. You can change any of its
 values on the camera. The card is needed again only to choose another look.</p>
@@ -115,8 +116,8 @@ values on the camera. The card is needed again only to choose another look.</p>
 <li><strong>The trash button steps the look only on the Picture Mode row</strong> (the strip of picture modes). A step
   <strong>overwrites the slot's values</strong>, including changes you made. In the colour wheel the trash button switches
   Saturation / Hue / Lightness; on the tone, Shading, Sharpness and Contrast rows it does nothing.</li>
-<li>If you go down to the other rows and come back up, the camera's title reads "Picture Mode" instead of the mode's
-  name. The trash button still steps the look there; the name shows again when you move along the strip.</li>
+<li>If you go down to the other rows and come back up, a slot holding a look keeps the look's name as the title. An
+  empty Color Profile slot reads "Picture Mode" instead of its own name until you move along the strip.</li>
 <li>On the super control panel the look's name is the top line while the Picture Mode cell is highlighted.</li>
 <li>A <code>LOOKS.BIN</code> that is damaged, or has a value out of range, is ignored as a whole.</li>
 <li>The look file is read once per switch-on. After changing the file, switch off and on.</li>

@@ -1,0 +1,29 @@
+{
+  "camera_tested": false,
+  "package_sha256": "98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2",
+  "previous_expanded_sha256": "0cfc7aa088bd46c905540ab7e0c5897a6e99fc08183e7313411d948a84f7ff94",
+  "expanded_sha256": "cc0efda8eea117f72f8a5c041aba216c5f50c198fe5b6bc08a80fff907c176a0",
+  "changed_ranges": {
+    "ext6": {
+      "bytes": 3,
+      "section": 6
+    },
+    "ext7": {
+      "bytes": 1,
+      "section": 7
+    },
+    "ext10": {
+      "bytes": 413,
+      "section": 10
+    }
+  },
+  "all_edits_declared": true,
+  "native_loader_bounds_unchanged": true,
+  "resources_unchanged": true,
+  "nd_selector_cases": 768,
+  "section_tail_space": {
+    "ext6": 416,
+    "ext7": 192,
+    "ext10": 926
+  }
+}

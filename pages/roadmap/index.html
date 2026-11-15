@@ -21,6 +21,9 @@ The owner performs any physical test; development sessions prepare and check fil
   while its Picture Mode cell is highlighted; the mounted-card, missing-file case is a regression test.</li>
 <li>Implemented in v0.1.0-alpha4 (emulator only): the look name remains visible after returning from the lower
   rows. Look names cannot inject camera display commands. Installer reruns preserve custom look banks.</li>
+<li>Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
+  16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
+  look's shift.</li>
 <li>Open, cosmetic: in the emulator the super control panel's Picture Mode cell draws no icon for a Color Profile.</li>
 <li>Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the

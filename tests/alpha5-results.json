@@ -1,0 +1,220 @@
+{
+  "build": "v0.1.0-alpha5",
+  "package_sha256": "98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2",
+  "evidence": "emulator only (OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8, Node 22.23.4); not a camera test",
+  "cases": [
+    {
+      "case": "four-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 10,
+        "mode_strip": 10,
+        "violations": 0
+      }
+    },
+    {
+      "case": "next-film",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 11,
+        "mode_strip": 11,
+        "violations": 0
+      }
+    },
+    {
+      "case": "slot-two",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 12,
+        "mode_strip": 12,
+        "violations": 0
+      }
+    },
+    {
+      "case": "wrap",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 14,
+        "mode_strip": 14,
+        "violations": 0
+      }
+    },
+    {
+      "case": "ten-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 10,
+        "mode_strip": 10,
+        "violations": 0
+      }
+    },
+    {
+      "case": "oversized-bank",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "bad-crc",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "bad-range",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "name-markup",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "name-control",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "persisted-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 10,
+        "mode_strip": 10,
+        "violations": 0
+      }
+    },
+    {
+      "case": "other-rows",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 15,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "row-return",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 16,
+        "mode_strip": 11,
+        "violations": 0
+      }
+    },
+    {
+      "case": "row-return-title",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 18,
+        "mode_strip": 13,
+        "violations": 0
+      }
+    },
+    {
+      "case": "title-redraw",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 11,
+        "mode_strip": 11,
+        "violations": 0
+      }
+    },
+    {
+      "case": "scp-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 10,
+        "mode_strip": 10,
+        "violations": 0
+      }
+    },
+    {
+      "case": "empty-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "no-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "unarmed-delete",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "layout_guard": {
+        "layouts_checked": 9,
+        "mode_strip": 9,
+        "violations": 0
+      }
+    },
+    {
+      "case": "startup-fault-injection",
+      "status": "passed",
+      "image_stores_beyond_stock": 0,
+      "incomplete_section_masks": 1023
+    }
+  ],
+  "negative_checks_on_alpha4": [
+    {
+      "case": "title-redraw",
+      "result": "failed as expected",
+      "assertion": "Picture Mode row descriptor: only the title id may change"
+    },
+    {
+      "case": "next-film",
+      "result": "failed as expected",
+      "assertion": "Picture Mode row descriptor: only the title id may change"
+    },
+    {
+      "case": "next-film (descriptor check removed)",
+      "result": "failed as expected",
+      "assertion": "slot 0 WB shift record"
+    }
+  ]
+}

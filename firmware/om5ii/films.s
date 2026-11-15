@@ -85,9 +85,11 @@ pg_title:
  beq pg_t_out
  mov a0,a2
  /* Saved a0 points to the controller's RAM copy of the row descriptor:
-  * +0 kind, +4 title id. Only named Color Profiles on the mode strip. */
+  * u16 +0 kind, u16 +4 title id, u16 +6 the title's style index (stock
+  * 0x60f05459 reads it for every kind). Only the title id may change:
+  * 16-bit accesses only. Only named Color Profiles on the mode strip. */
  mov (12,sp),a0
- movbu (a0),d0
+ movhu (a0),d0
  cmp 4,d0
  bne pg_t_dirty
  mov 111,d0
@@ -102,7 +104,7 @@ pg_title:
  cmp 0,a0
  beq pg_t_dirty
  mov (12,sp),a0
- mov d3,(4,a0)
+ movhu d3,(4,a0)
 pg_t_dirty:
  movbu (FL_DIRTY,a2),d0
  cmp 0,d0
@@ -425,11 +427,10 @@ fl_d_set:
  mov d0,(12,sp)
  cmp 6,d0
  bne fl_d_set
- /* WB shift, when the film has one: into the current WB mode's A/B and G/M;
-  * wb.s' commit hook then keeps it in this profile's WB record */
- movbu (36,a3),d0
- cmp 1,d0
- bne fl_d_name
+ /* WB shift into the current WB mode's A/B and G/M: the film's own, or 0 / 0
+  * for a film without one (as LookLab previews it), so a film never keeps the
+  * previous film's shift. wb.s' commit hook then keeps it in this profile's
+  * WB record. Byte 36 is 0 or 1 (fl_check). */
  mov 1578,d0
  call stock_get,[],4
  mov fl_wbm,a0
@@ -446,14 +447,24 @@ fl_d_wb:
  mov d2,(12,sp)
  mov d2,d0
  add 1580,d0
+ clr d1
+ movbu (36,a3),d2
+ cmp 0,d2
+ beq fl_d_ab
  movbu (37,a3),d1
  extb d1
+fl_d_ab:
  mov 1,a0
  call stock_ui_write,[d2,d3,a2,a3],20
  mov (12,sp),d0
  add 1593,d0
+ clr d1
+ movbu (36,a3),d2
+ cmp 0,d2
+ beq fl_d_gm
  movbu (38,a3),d1
  extb d1
+fl_d_gm:
  mov 1,a0
  call stock_ui_write,[d2,d3,a2,a3],20
 fl_d_name:

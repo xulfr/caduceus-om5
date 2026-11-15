@@ -805,7 +805,8 @@ light_lut:
  *   struct +8 = 0 (ID 59), +20 = 1 (ID 105), +24 = 0 (ID 1806)
  *   effective 916..927 = 928+12p .. 939+12p  (store 1 -> store 2)
  *   effective 1016 = shading 912+p, 1011 = 0, 998 = 0
- *   effective 383 / 690 / 382 = 976+3p / 977+3p / 978+3p (store 2)
+ *   effective 383 / 691 / 382 = 976+3p / 977+3p / 978+3p (store 2):
+ *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
  * Color Profile may have set them (flag starts set: effective settings survive
  * power-off). The code sits in section 8, which E148 loads before section 2. */
@@ -1080,7 +1081,7 @@ pm_num_keep:
  * 3..5 = MONO1..3 (111 = 57..59), 0xff = any other mode.
  *
  * E148's stock refresh never writes 916..927, 1011, 1016, 998 or the tone IDs
- * 383/691/382 (the last three are the user's own Highlight/Shadow/Mid), so a
+ * 383/691/382 (the last three are the user's own Highlight/Mid/Shadow), so a
  * profile's values must be undone on leaving it, and E147's "zero them in
  * stock modes" rule does not fit E148. On entering a profile from a stock
  * mode the user's three tone values are saved in a persistent record, part 1

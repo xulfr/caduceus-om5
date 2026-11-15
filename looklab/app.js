@@ -187,9 +187,9 @@ function drawEditor() {
     slider('Highlights', () => f.highlights, (v) => { f.highlights = v; }, RANGE.tone), slider('Contrast', () => f.contrast, (v) => { f.contrast = v; }, RANGE.contrast),
     slider('Sharpness', () => f.sharpness, (v) => { f.sharpness = v; }, RANGE.sharpness), slider('Shading', () => f.shading, (v) => { f.shading = v; }, RANGE.shading)));
   const on = el('input', { type: 'checkbox', id: 'wbon', onchange: () => { f.wb = on.checked ? [0, 0] : null; changed(); drawEditor(); } }); on.checked = !!f.wb;
-  ed.append(el('h3', {}, 'White balance shift'), el('label', { class: 'check', for: 'wbon' }, on, ' This film sets the A/B and G/M shift'));
+  ed.append(el('h3', {}, 'White balance shift'), el('label', { class: 'check', for: 'wbon' }, on, ' This film sets the A/B and G/M shift (otherwise the camera sets both to 0)'));
   if (f.wb) ed.append(el('div', { class: 'grid' }, slider('A/B (amber +)', () => f.wb[0], (v) => { f.wb[0] = v; }, RANGE.wb), slider('G/M (green +)', () => f.wb[1], (v) => { f.wb[1] = v; }, RANGE.wb)));
-  ed.append(el('p', { class: 'hint' }, 'Sharpness is not shown in the preview. The shift is added to whatever white balance mode the camera is on.'));
+  ed.append(el('p', { class: 'hint' }, 'Sharpness is not shown in the preview. The shift is applied to whatever white balance mode the camera is on.'));
 }
 
 let pending = 0;

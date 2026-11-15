@@ -21,7 +21,7 @@ Record (signed bytes; the offsets are those of the OM-3 project's `LOOKS.BIN` re
 | 0 | Hue, 12 colours | −7..7 |
 | 12 | Lightness, 12 colours | −7..7 |
 | 24 | Saturation, 12 colours | −5..5 |
-| 36 | WB shift on | 0 / 1 |
+| 36 | WB shift on (0: the camera sets the shift to 0) | 0 / 1 |
 | 37, 38 | WB A/B, G/M | −7..7 |
 | 41 | Contrast | −2..2 |
 | 42 | Sharpness | −2..2 |

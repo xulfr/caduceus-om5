@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.0-alpha5 — 2026-11-15
+
+**OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256
+`98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2`.
+
+- The title restore added in alpha4 wrote a 32-bit word into the camera's 16-bit row descriptor and zeroed the
+  title's style index on every layout of a named slot. It now changes only the title id. No visible effect was
+  seen in the emulator, but it was a write into the camera's own state outside the intended field.
+- A look without a white-balance shift now sets the shift to 0, as LookLab previews it. Before, it kept the
+  shift of the look before it, so a look's colour depended on the order you stepped through them.
+- Corrected the tone-curve ID comments in the firmware source, and the guides' description of the title after
+  returning from the lower rows.
+- Every emulator case now checks the row descriptor and each slot's WB record. See the
+  [audit](research/OM5II-ALPHA5-AUDIT-2026-11-15.md) for evidence and remaining hardware gaps.
+
 ## v0.1.0-alpha4 — 2026-11-15
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256

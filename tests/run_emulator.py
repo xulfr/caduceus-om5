@@ -85,8 +85,10 @@ def main():
             (card / 'LOOKS.BIN').write_bytes(data)
         expected = folder / 'expect.json'
         expected.write_text(json.dumps(dict(case=name, state=state, count=count, slots=slots)))
-        pre = ROOT / 'tools/dev/mount.mjs' if mounted else ROOT / 'tests/unmounted.mjs'
-        env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(pre), POST=str(ROOT / 'tests/emulator_assert.mjs'), OM5_EXPECT=str(expected))
+        # layout_guard.mjs mounts the card (unless OM5_UNMOUNTED) and checks the row descriptor on every layout.
+        env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/layout_guard.mjs'),
+                   POST=str(ROOT / 'tests/emulator_assert.mjs'), OM5_EXPECT=str(expected),
+                   OM5_UNMOUNTED='0' if mounted else '1')
         if state is None:
             # Leave the state handle unpublished and replace the section-10
             # extension with its stock bytes to catch any premature branch.

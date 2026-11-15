@@ -36,8 +36,12 @@ does nothing on the tone, Shading, Sharpness and Contrast rows, that it steps ag
 Picture Mode row, and that the super control panel's frame differs from stock once a slot holds a film.
 Alpha3 adds a valid maximum-size bank with a trailing byte and a pre-arm Delete case with the section-10
 extension replaced by stock bytes. Alpha4 adds a title check after returning from lower rows, name-command
-and control-byte rejection, and safe display of names persisted by older releases. Results are in
-`alpha4-results.json` (19 look/menu cases plus the separate startup probe). Medium-mounted status and, in
+and control-byte rejection, and safe display of names persisted by older releases. Alpha5 runs every case with
+`layout_guard.mjs` as PRE: it records the Picture Mode row descriptor at the updater's last call and again where
+stock reads it, and fails if anything but the title id changed (alpha4 zeroed the style index). Every slot that
+holds a look also has its WB record checked: a look without a shift must leave 0 / 0, and the live A/B and G/M
+of the current profile must match. Results are in `alpha5-results.json` (19 look/menu cases plus the separate
+startup probe). Medium-mounted status and, in
 armed cases, section-ready bits are injected because the emulator does not reproduce that hardware lifecycle.
 
 The same session is run on unmodified stock first. Every store into the image is logged. Any PC/address

@@ -7,6 +7,20 @@
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
 <div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="changelog">Changelog</h1>
+<h2 id="v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</h2>
+<p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
+<code>98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2</code>.</p>
+<ul>
+<li>The title restore added in alpha4 wrote a 32-bit word into the camera's 16-bit row descriptor and zeroed the
+  title's style index on every layout of a named slot. It now changes only the title id. No visible effect was
+  seen in the emulator, but it was a write into the camera's own state outside the intended field.</li>
+<li>A look without a white-balance shift now sets the shift to 0, as LookLab previews it. Before, it kept the
+  shift of the look before it, so a look's colour depended on the order you stepped through them.</li>
+<li>Corrected the tone-curve ID comments in the firmware source, and the guides' description of the title after
+  returning from the lower rows.</li>
+<li>Every emulator case now checks the row descriptor and each slot's WB record. See the
+  <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA5-AUDIT-2026-11-15.md">audit</a> for evidence and remaining hardware gaps.</li>
+</ul>
 <h2 id="v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
 <code>590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648</code>.</p>
