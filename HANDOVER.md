@@ -447,3 +447,31 @@ Five boot failures now (4, 5, 8, 15, 15 Nov). Recovery after this one was not re
   on OM's firmware after 8 Nov and whether Reset was used.
 - Workspace (gone): checkpoint-10 recipe; legacy 8 Nov source via `git fetch --depth 1 origin 25a336e` of
   `xulfr/oly_fw_analysis` (`patches/hsl/om-5-ii`, `tools/`), builds with its own `tools/oly_patch.py`.
+
+## Continuation checkpoint 16 — LOAD ORDER DEFECT FOUND, alpha7 must not be flashed (2026-11-15) — READ FIRST
+
+**Static finding, strongest lead so far (not camera-proven).** The handover's load order "1, 8, 2, 3 …" is wrong.
+Two loader tasks run concurrently: `0x60045a38` loads section 1, then waits for bit `0x80` of `0xa26e2660` before
+loading section 8; `0x60045abf` loads 2, 3, 4, 5, 6, 7 and sets `0x80` only after section 7 (`0x60045cd1`), then
+waits for 8 (`0x100`) before 9 and 10. **Real order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.** (caduceus-ep7/OM-3 lesson 5:
+a section-2 hook calling unloaded section-8 code boot-looped the OM-3.)
+
+- Alpha5/alpha6: the WB commit hook (section 2) calls `st_ptr` in **section 8** for settings 111/1578/1632/1580–1605
+  as soon as section 6 is ready, i.e. during start-up before section 8 is loaded → jump into unloaded RAM → loop at
+  every start. The 8 Nov build had no section-8 call on that path, and it started. Fits every observation.
+- **Alpha7 as committed is worse** (every commit and every refresh calls `st_ptr` in section 8). It is blocked. Do
+  not flash it. Its 19-case regression was not finished. Docs/CHANGELOG/README still describe alpha7 as a
+  candidate: correct them.
+- Fix to implement (designed, not written): `st_ptr`, `st_axis`/`st_getb`, `st_reset_*`, `st_set_editor`, and the
+  gate of every section-2 hook (wb_load + wb_original, refresh_case/guard, creset gate, pm_set/pm_put gates, builder
+  wrapper, arm_hook with an inline `loaded_bits & 1023 == 1023` check before calling `arm_gate`) must live in the
+  **section 2 tail** (848 bytes at `0x605af4b0`). Everything else is entered only when armed (armed ⇒ all ten
+  sections initialised): move the WB body (~520 bytes) to the unused section 4 tail (`0x60829570`, 656 bytes);
+  `decode` + LUTs, creset body, pm loops, apply_values, arm_gate to section 8; keep ext5/6/7/10 bodies.
+  Gates in ext6/ext7 are fine once `st_*` is in section 2 (sections 6/7 load after 2). Free tails: s3 384, s4 656,
+  s5 820, s6 400, s7 192, s9 568, s10 774; section 1 has only 40.
+- Then: update `wb.ld` (`st_ptr` address), patch.json sections/ranges (drop `refresh_guard`, add `wb_body`),
+  `tests/startup_assert.mjs` addresses, and make `tests/unarmed_pcs.py` fail on any unarmed PC at or above
+  `0x61343800` (section 8+) or in sections 3/4/9. Re-run everything, then unblock.
+- Other alpha7 work is valid and should be kept: start-up gating, handle validation (RAM read, alignment, magic),
+  stale 903/989 repair at arming, stream-length rule, static rules.

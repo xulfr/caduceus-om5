@@ -857,5 +857,5 @@
   "bytes": 90832896,
   "sha256": "c6f3a8fa5e68082498dc2ea148dfc8e50f2dcf349ad9f30d91c3ffffa330243a"
  },
- "blocked": "Candidate: the emulator regression run for this build has not finished."
+ "blocked": "Known defect: hooks in section 2 call code in section 8 before the loader has loaded it (see HANDOVER checkpoint 16)."
 }
