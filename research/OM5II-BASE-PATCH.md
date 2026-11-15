@@ -1,5 +1,8 @@
 # OM-5 Mark II HSL, per-profile white balance, Monochrome Profiles and Live ND32/ND64 (experimental)
 
+> The later loader audit corrected the submission order to 1–10.
+> Section 8 follows section 7. [Disassembly findings](../HANDOVER.md).
+
 > **Earlier camera failures (4–8 November 2026).** On 4 November, the owner reported that
 > package SHA-256 `35f0caac4b70f1e59e3d5311fdf74a8c021d720755a7441796b080707b79d434`
 > appeared to flash but the OM-5 Mark II then failed to boot: black screen and

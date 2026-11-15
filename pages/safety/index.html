@@ -23,7 +23,7 @@
 </tr>
 <tr>
 <td>Real OM-5 Mark II</td>
-<td><strong>v0.1.0-alpha5 failed</strong> (15 November 2026): immediate boot loop after the update; OM's 1.1 restored from the card. The installer refuses alpha1–alpha5. <strong>Alpha6 boot-looped as well</strong> (15 November 2026). The installer refuses alpha1–alpha6. <strong>Alpha7 has not run on a camera.</strong></td>
+<td><strong>Alpha5 and alpha6 boot-looped</strong> on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. <strong>Alpha8 has only run in OM-Emu.</strong></td>
 </tr>
 <tr>
 <td>Earlier builds on a real OM-5 Mark II</td>
@@ -39,7 +39,7 @@
 program never does (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md">the analysis</a>). This build keeps them in a
 block of ordinary memory instead and touches nothing until the first half-press of the shutter button. The first
 two failures were builds with a different loading scheme that is no longer used; their exact cause was never found.</p>
-<p>The emulator did not predict any of the three failures. It has no real loader, no second processor, no image
+<p>The emulator did not predict the earlier failures. It has no real loader, no second processor, no image
 processor. Passing it means "no fault that the emulator can show".</p>
 <h2 id="what-can-go-wrong">What can go wrong</h2>
 <ul>

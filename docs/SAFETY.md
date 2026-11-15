@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, looks load from the card and reach the slot's settings, nothing writes into the firmware image. |
-| Real OM-5 Mark II | **v0.1.0-alpha5 failed** (15 November 2026): immediate boot loop after the update; OM's 1.1 restored from the card. The installer refuses alpha1–alpha5. **Alpha6 boot-looped as well** (15 November 2026). The installer refuses alpha1–alpha6. **Alpha7 has not run on a camera.** |
+| Real OM-5 Mark II | **Alpha5 and alpha6 boot-looped** on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. **Alpha8 has only run in OM-Emu.** |
 | Earlier builds on a real OM-5 Mark II | **Three more failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
 | Going back | After each failure OM's firmware was put back from the card (hold **OK**, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did. |
 
@@ -16,7 +16,7 @@ program never does ([the analysis](../research/OM5II-IMAGE-STORE-FAULT-2026-11-1
 block of ordinary memory instead and touches nothing until the first half-press of the shutter button. The first
 two failures were builds with a different loading scheme that is no longer used; their exact cause was never found.
 
-The emulator did not predict any of the three failures. It has no real loader, no second processor, no image
+The emulator did not predict the earlier failures. It has no real loader, no second processor, no image
 processor. Passing it means "no fault that the emulator can show".
 
 ## What can go wrong

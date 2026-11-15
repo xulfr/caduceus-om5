@@ -1,5 +1,8 @@
 # OM-5 Mark II E148 firmware 1.1: HSL/WB brick-risk review
 
+> The later loader audit corrected the submission order to 1–10.
+> Section 8 follows section 7. [Disassembly findings](../HANDOVER.md).
+
 **5 November 2026 update:** A complete five-component variant with byte-identical
 stock compressed Sections 6 and 7 also caused a reported boot loop. The owner
 reports that the complete stock restore worked afterward. This weakens the

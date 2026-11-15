@@ -15,8 +15,7 @@ lookup, or a particular failing instruction. No reset log, loader trace, or
 installed-flash readback exists. The exact failing stage and root cause remain
 unestablished.
 
-The stock main's base loader starts sections in order 1, 8, 2, 3, 4, 5, 6, 7,
-9, 10. Both failed images leave the base region unchanged, but edited section
+The stock main's two loader tasks submit sections 1 through 10 in order. [Disassembly findings](../HANDOVER.md). Both failed images leave the base region unchanged, but edited section
 code/data can run during startup. OM-Emu starts beyond parts of the real boot
 and does not execute the physical section loader or model the camera's caches.
 Its successful UI and native overlay tests cannot locate this failure.

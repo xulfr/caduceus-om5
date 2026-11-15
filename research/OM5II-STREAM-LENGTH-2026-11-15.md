@@ -31,8 +31,8 @@ In the alpha5 package (`98bd2433…80c2`) the section-7 stream is **exactly 2,50
 - The 8 Nov build's resource block used a different LZ4 encoding (liblz4 HC) from alpha1–5 (pure Python).
 
 Everything else reachable before a half-press was reviewed again (hook bytes, frames, MDR/`retf`, section order,
-alignment of every data table, no `0xfb` opcodes, no branch into a hook site, loader extents, load order 1, 8, 2…10,
-HLS manager padding). No defect was found there. The E-P7/OM-3 projects' camera lessons were used as the checklist.
+alignment of every data table, no `0xfb` opcodes, no branch into a hook site, loader extents and HLS manager
+padding). The later loader audit corrected the section order to 1–10. [Disassembly findings](../HANDOVER.md).
 
 ## Fix (alpha6, package `2bb95563fc7c61fac8da2b9c2f2fa177d6395bcafe2941755b5ed8163d3c3e84`; kept in alpha7)
 
@@ -72,14 +72,13 @@ displaced-instruction replays, and one read of the state handle per hook.
 Consequence: the profile's contrast and sharpness, hue/lightness, and looks are active from the first half-press
 after power-on. A photo taken without a half-press (for example by remote control) before that uses stock values.
 
-Emulator: `tests/unarmed_assert.mjs` (inert before, applied after), all 19 look/menu cases, startup probe.
+Alpha7 passed the gating and startup probes, with the 19-case run interrupted. Alpha8 passed the full suite.
+[Alpha8 verification](../tests/alpha8-results.json).
 
 ## Not established
 
-- Which of the two explanations, if either, caused the alpha5 loop. Both are removed in alpha7. A camera start is
-  the only proof.
-- Whether a Color Profile works on the camera's image processor at all. If it does not, alpha7 should fail when a
-  profile is applied after a half-press, not at start-up.
+- Whether the section load-order defect caused the alpha5 or alpha6 camera loops. Alpha8's fix has run in OM-Emu.
+- Whether a Color Profile works on the camera's image processor after the arming half-press.
 - Possible leftover from the 8 Nov run: hidden setting 903/989 non-zero makes the picture mode read as 63 on the
   first start. Choosing a picture mode once rewrites all four settings.
 - The original OM-5 pre-alpha 1 (`70788992…d1b4`) predates this rule and its stream lengths were not checked.

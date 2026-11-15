@@ -1,5 +1,8 @@
 # OM-5 II: the third failure traced to stores into the loaded image
 
+> The later loader audit corrected the submission order to 1–10.
+> Section 8 follows section 7. [Disassembly findings](../HANDOVER.md).
+
 11 November 2026. Follows the [third incident report](OM5II-THIRD-BOOT-FAILURE-2026-11-08.md).
 Offline work only: static analysis and OM-Emu sessions driving the firmware's own GUI. **No camera was
 used. The corrected build has not been flashed, so this is a well-supported explanation and a tested

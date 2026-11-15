@@ -1,5 +1,8 @@
 # Fourth OM-5 Mark II boot failure: alpha5 (2026-11-15)
 
+> The later loader audit corrected the submission order to 1–10.
+> Section 8 follows section 7. [Disassembly findings](../HANDOVER.md).
+
 **Camera result, negative.** Reported by the owner (xulfr) in the session that produced alpha5.
 
 | | |

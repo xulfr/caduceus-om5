@@ -15,8 +15,9 @@
 > [!CAUTION]
 > ### Not camera-tested: five earlier builds failed on a camera
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
-> versions did (November 2026). v0.1.0-alpha6 did the same on 15 November. The installer refuses those. v0.1.0-alpha7 changes what runs at start-up and has not run on a camera. Each time, OM's own
-> firmware could be put back from the memory card, but there is no guarantee that will always work.
+> versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
+> Alpha8 fixes a section load-order defect and has only run in the emulator. OM's own firmware was restored
+> from the card after each failure. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
 > We are looking for someone willing to make the first careful camera test: see [the test plan](docs/FIRST_FLASH.md).
 
@@ -24,12 +25,12 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha7, 15 Nov 2026 | **Not camera-tested.** Alpha5 and alpha6 boot-looped on the owner's camera (15 Nov 2026) and are blocked. Alpha7 runs none of its own code before the first half-press ([note](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md)). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha8, 15 Nov 2026 | **Emulator only.** Alpha8 keeps startup gates in section 2 and enables profiles on the first shutter half-press. Alpha7 remains blocked for the [load-order defect](HANDOVER.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
 cannot imitate everything (the image sensor, the second processor, the start-up loader), and it did not predict
-any of the three earlier failures. Only a report from a real camera can change the state above.
+the earlier camera failures. Only a report from a real camera can change the state above.
 
 ## At a glance
 

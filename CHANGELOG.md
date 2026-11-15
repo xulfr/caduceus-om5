@@ -2,24 +2,24 @@
 
 ## Camera result — 2026-11-15
 
-**v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II (15 November 2026).** Alpha7 has not run on a
-camera. Details: [fifth boot failure](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
+**v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
+[Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha7 — 2026-11-15 (not camera-tested)
+## v0.1.0-alpha8 — 2026-11-15 (emulator only)
 
-- Alpha6 showed that the compressed-block length was not the cause. Alpha7 changes what runs at start-up instead.
-- Until the first shutter half-press after power-on, every hook only replays OM's own instructions: the
-  picture-mode refresh, mode-list copies, custom-mode reset, WB and profile-setting commits, the capture builder and
-  the Picture Mode page updater do nothing of ours, whatever settings an earlier build left behind.
-- The "armed" state is now verified (read from RAM, aligned, with a marker in the memory block), so a wrong value
-  at start-up cannot switch the project code on.
-- The half-press that arms Caduceus applies a profile that was left selected and repairs a picture mode that an
-  earlier build left unreadable.
-- Profiles and looks are therefore active from the first half-press after power-on. Before it, a selected profile's
-  detail pages are hidden, and a photo taken without a half-press (remote control) uses stock values.
-- Emulator: look/menu cases, startup probe, gating probe, unarmed execution trace, stale-number repair; static
-  rules and build audit; host tests reproduce alpha1–7. Package `c6f3a8fa…243a`.
-- Not addressed: OM's own code meeting the added picture-mode entries, and the string hook that shows look names.
+- Stock disassembly confirms that the loader submits sections 1 through 10 in order. Section-2 hooks
+  now check the armed state in their own section. White-balance processing runs from section 4 after arming.
+- The first shutter half-press can arm the patch after all ten sections finish initializing. It applies
+  the selected profile and repairs stale profile numbers 903 and 989. RAM handle validation and the
+  stock-page compressed-stream rule carry forward from alpha7.
+- All 19 look/menu regressions, the startup and arming probes, the unarmed PC check, and the build
+  and static audits passed. [Verification](tests/alpha8-results.json).
+
+## v0.1.0-alpha7 — 2026-11-15 (blocked)
+
+- Added startup gating, RAM handle validation and stale profile-number repair.
+- Some startup gates call section 8 from section 2 before section 8 is loaded. The installer refuses
+  this package (`c6f3a8fa…243a`). [Load-order finding](HANDOVER.md).
 
 ## v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)
 

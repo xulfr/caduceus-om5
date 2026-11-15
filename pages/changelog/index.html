@@ -8,23 +8,23 @@
 <div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="changelog">Changelog</h1>
 <h2 id="camera-result-2026-11-15">Camera result — 2026-11-15</h2>
-<p><strong>v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II (15 November 2026).</strong> Alpha7 has not run on a
-camera. Details: <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md">fifth boot failure</a>.</p>
-<h2 id="v010-alpha7-2026-11-15-not-camera-tested">v0.1.0-alpha7 — 2026-11-15 (not camera-tested)</h2>
+<p><strong>v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.</strong>
+<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md">Camera report</a>.</p>
+<h2 id="v010-alpha8-2026-11-15-emulator-only">v0.1.0-alpha8 — 2026-11-15 (emulator only)</h2>
 <ul>
-<li>Alpha6 showed that the compressed-block length was not the cause. Alpha7 changes what runs at start-up instead.</li>
-<li>Until the first shutter half-press after power-on, every hook only replays OM's own instructions: the
-  picture-mode refresh, mode-list copies, custom-mode reset, WB and profile-setting commits, the capture builder and
-  the Picture Mode page updater do nothing of ours, whatever settings an earlier build left behind.</li>
-<li>The "armed" state is now verified (read from RAM, aligned, with a marker in the memory block), so a wrong value
-  at start-up cannot switch the project code on.</li>
-<li>The half-press that arms Caduceus applies a profile that was left selected and repairs a picture mode that an
-  earlier build left unreadable.</li>
-<li>Profiles and looks are therefore active from the first half-press after power-on. Before it, a selected profile's
-  detail pages are hidden, and a photo taken without a half-press (remote control) uses stock values.</li>
-<li>Emulator: look/menu cases, startup probe, gating probe, unarmed execution trace, stale-number repair; static
-  rules and build audit; host tests reproduce alpha1–7. Package <code>c6f3a8fa…243a</code>.</li>
-<li>Not addressed: OM's own code meeting the added picture-mode entries, and the string hook that shows look names.</li>
+<li>Stock disassembly confirms that the loader submits sections 1 through 10 in order. Section-2 hooks
+  now check the armed state in their own section. White-balance processing runs from section 4 after arming.</li>
+<li>The first shutter half-press can arm the patch after all ten sections finish initializing. It applies
+  the selected profile and repairs stale profile numbers 903 and 989. RAM handle validation and the
+  stock-page compressed-stream rule carry forward from alpha7.</li>
+<li>All 19 look/menu regressions, the startup and arming probes, the unarmed PC check, and the build
+  and static audits passed. <a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha8-results.json">Verification</a>.</li>
+</ul>
+<h2 id="v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</h2>
+<ul>
+<li>Added startup gating, RAM handle validation and stale profile-number repair.</li>
+<li>Some startup gates call section 8 from section 2 before section 8 is loaded. The installer refuses
+  this package (<code>c6f3a8fa…243a</code>). <a href="https://github.com/xulfr/caduceus-om5/blob/main/HANDOVER.md">Load-order finding</a>.</li>
 </ul>
 <h2 id="v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</h2>
 <ul>

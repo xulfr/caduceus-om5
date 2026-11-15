@@ -13,10 +13,10 @@ G/M corrections, and an XOR check word. The first use of a profile inherits the
 current WB configuration. Native tint tables and one-touch measurements remain
 shared.
 
-The extension occupies the loaded section-2 tail at `0x605af5cc`. The busy
-guard uses byte 12 of the allocated heap state block. Both it and the UI writer are in section 6, which
-boot loads after section 2, so the wrapper takes the stock path until
-section 6's completed-initialization bit (`0x20` of `0xa26e2694`) is set. The same commit hook
+The commit gate sits in the section-2 tail at `0x605af780`. It checks section 6's initialization bit
+(`0x20` of `0xa26e2694`) for the stock UI writer, then checks the armed state via `st_ptr` in section 2.
+The armed WB body starts at `0x60829570` in section 4 and uses byte 12 of the allocated heap state block
+to guard against nested commits. The same commit hook
 also refreshes the effective settings after a Color Profile setting changes
 (see the README). The refresh writes effective IDs 916–927 in part 0; the WB
 records stay in part 1. In OM-Emu the 9/9 recall test covered first-use

@@ -3,10 +3,10 @@
 For whoever tests this first. Stop at the first thing that is not as written, put OM's firmware back
 ([Safety](SAFETY.md)), and report it (what you pressed, what the screen and the lights did).
 
-**Before step 1 (alpha7), still on OM's firmware:** set Picture Mode to Natural in the shooting mode the camera
+**Before step 1, set Picture Mode to Natural in OM's firmware** for the shooting mode the camera
 will start in (and in Movie mode if you use it). Earlier test builds may have left a Color Profile stored there.
-From alpha7 on, nothing of this project acts until the first shutter half-press after switching on; if the picture
-mode looks wrong before that half-press, it is put right at the half-press.
+Alpha8 activates profiles at the first shutter half-press after switching on and repairs stale profile
+numbers then.
 
 | Step | Do | Expect | Shows |
 |---|---|---|---|

@@ -37,12 +37,15 @@ The cause is in what the alpha5/alpha6 main program does on a normal start that 
    alignment, `0xfb` opcodes, section order and branches into hook sites; no defect was found on paper.
 3. **Stock code meeting the added table entries** with whatever picture-mode state the camera holds.
 
-## Alpha7 (not camera-tested)
+## Alpha7 (blocked)
+
+Alpha7 can call section 8 from section 2 during startup. Alpha8 moves the gates into section 2.
+[Load-order findings](../HANDOVER.md).
 
 Package `c6f3a8fa5e68082498dc2ea148dfc8e50f2dcf349ad9f30d91c3ffffa330243a`, `releases/v0.1.0-alpha7`. It keeps the length rule and changes the main program:
 
 - **Every hook is gated on the armed state.** Before the first half-press each hook replays OM's displaced
-  instructions and returns: refresh tail, capture builder, mode-list copies, custom-mode reset, WB and
+  instructions and returns once its gate can run: refresh tail, capture builder, mode-list copies, custom-mode reset, WB and
   profile-setting commits, the Picture Mode page updater; the editor, Delete, labels and the string getter were
   already gated. This removes explanation 1 for project code. `tests/unarmed_pcs.py` traces an unarmed emulator
   session and accepts only gates and replays.
@@ -55,8 +58,8 @@ Package `c6f3a8fa5e68082498dc2ea148dfc8e50f2dcf349ad9f30d91c3ffffa330243a`, `rel
   non-zero while 111's family is another mode, which makes 111 read 63) is cleared, and the camera's own refresh
   runs for a context that is on a profile, holds a tone save, or was just repaired.
 
-Not addressed: explanation 3 (OM's code meeting the added table entries with a stored profile), and the string
-getter hook itself, which still runs for every string. If alpha7 loops, those two are what is left.
+OM's startup code still reads the added table entries, and the string getter still runs for every string.
+The physical boot sequence remains unverified.
 
 Emulator and host checks are listed in `tests/alpha7-results.json`.
 
