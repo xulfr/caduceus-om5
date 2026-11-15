@@ -2,6 +2,17 @@
 
 ## Camera result — 2026-11-15
 
+## v0.1.0-alpha6 — 2026-11-15 (not camera-tested)
+
+- Same camera code as alpha5, byte for byte. Only the way the program is compressed in the update file changes.
+- Alpha5's compressed block for section 7 was exactly 611 × 4096 bytes long, and the camera's loader ignores the
+  32-byte block header when it works out how much to read. Alpha6 keeps each compressed block at the same offset
+  inside a 4 KiB page as OM's own firmware, and the builder refuses unsafe lengths.
+- The resource block is byte-identical to the 8 November build's, which started on the camera.
+- This is the best-supported explanation of the alpha5 boot loop, not a proven one:
+  [stream length note](research/OM5II-STREAM-LENGTH-2026-11-15.md). Package `2bb95563…3e84`.
+- If the picture mode looks wrong on the first start, choose a picture mode once.
+
 **v0.1.0-alpha5 boot-looped on the owner's OM-5 Mark II** immediately after the update; OM's 1.1 restored from
 the card. The installer now refuses alpha1–alpha5. Details: [fourth boot failure](research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md).
 

@@ -21,6 +21,8 @@ class ReleaseTests(unittest.TestCase):
         # alpha5 boot-looped on a camera (15 Nov 2026); alpha1-4 share its startup code.
         for source in sorted((ROOT / 'releases').glob('*/patch.json')):
             name = source.parent.name
+            if name not in {f'v0.1.0-alpha{n}' for n in range(1, 6)}:
+                continue
             self.assertTrue(json.loads(source.read_text()).get('blocked'), name)
             result = subprocess.run([sys.executable, str(ROOT / 'patch.py'), '--release', name,
                                      '--stock', 'missing-stock.bin', '--i-accept-untested'],
@@ -28,6 +30,19 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn('Do not flash it', result.stdout)
             self.assertNotIn('Traceback', result.stderr)
+
+    def test_stream_length_rule(self):
+        # Loader facts and the alpha5 case: research/OM5II-STREAM-LENGTH-2026-11-15.md
+        sys.path.insert(0, str(ROOT / 'tools'))
+        import oly_compress as oc
+        self.assertIsNotNone(oc.length_fault(2502656))            # alpha5 section 7: 611 * 4096
+        self.assertIsNotNone(oc.length_fault(2048 * 5 + 2017))    # loader would drop the last byte
+        for good in (2250095, 2501620, 764647, 2254191, 2505716, 764680):
+            self.assertIsNone(oc.length_fault(good), good)
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha6/patch.json').read_text())
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        self.assertIn('lz4_recipe', rel['resource'])
+        self.assertFalse(rel['camera_tested'])
 
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):

@@ -13,9 +13,9 @@
 </p>
 
 > [!CAUTION]
-> ### Do not install: the latest build failed on a camera
+> ### Not camera-tested: four earlier builds failed on a camera
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
-> versions did (November 2026). The installer now refuses every release until this is fixed. Each time, OM's own
+> versions did (November 2026). The installer refuses those releases. v0.1.0-alpha6 removes the most likely cause and has not run on a camera. Each time, OM's own
 > firmware could be put back from the memory card, but there is no guarantee that will always work.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
 > We are looking for someone willing to make the first careful camera test: see [the test plan](docs/FIRST_FLASH.md).
@@ -24,7 +24,7 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha5, 15 Nov 2026 | **Boot loop on the owner's camera, 15 Nov 2026.** Blocked in the installer. |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha6, 15 Nov 2026 | **Not camera-tested.** Alpha5 boot-looped on the owner's camera (15 Nov 2026) and is blocked; alpha6 changes how the update file is compressed ([note](research/OM5II-STREAM-LENGTH-2026-11-15.md)). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
