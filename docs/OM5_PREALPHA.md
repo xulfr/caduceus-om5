@@ -3,6 +3,10 @@
 > **Pre-alpha. This has never run on any camera.** The Mark II build it is made from has not run on a Mark II
 > either, and three earlier Mark II builds left the camera in a boot loop. Nobody knows whether an original OM-5 can
 > be brought back from the card if this fails. Read all of this page, and [Safety](SAFETY.md), before you start.
+>
+> **Hold off (15 November 2026).** A fourth Mark II build (alpha5) boot-looped. The likely cause is the length of a
+> compressed block in the update file ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Pre-alpha 1 was made
+> before that check existed and its block lengths have not been checked. Do not flash it; wait for a rebuilt pre-alpha.
 
 This page is for **owners of the original OM-5 (2022, firmware 1.2)** who are comfortable with a terminal, accept the
 risk to their camera, and want to help: by trying the first steps below and reporting what happens, good or bad, or
