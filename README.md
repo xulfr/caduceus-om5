@@ -1,6 +1,6 @@
 <h1 align="center">Caduceus for OM-5</h1>
 
-<p align="center"><strong>Film looks and a full colour editor for the OM SYSTEM OM-5 Mark II. Experimental.</strong></p>
+<p align="center"><strong>Looks and a full colour editor for the OM SYSTEM OM-5 Mark II. Experimental.</strong></p>
 
 <p align="center">
   <a href="https://xulfr.github.io/caduceus-om5/"><b>Website</b></a> &nbsp;·&nbsp;
@@ -36,7 +36,7 @@ any of the three earlier failures. Only a report from a real camera can change t
 On the OM-5 Mark II, OM's firmware has three **Color Profile** slots and three **Monochrome Profile** slots that are
 hidden from the menus. Caduceus brings them back and adds:
 
-- **Film looks.** Each Color Profile slot can hold a film look, such as "Portra 400" or "Velvia 50". You make up to
+- **Custom looks.** Each Color Profile slot can hold a look, such as "Portra 400" or "Velvia 50". You make up to
   ten looks in [LookLab](https://xulfr.github.io/caduceus-om5/looklab/), a web page that runs in your browser, and
   save them as one file, `LOOKS.BIN`, in a folder `OM5MOD` on the memory card. In Picture Mode, select a Color
   Profile and press the **trash button** to step through the looks. The look's name becomes the screen's title and
@@ -76,8 +76,8 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 
 | | OM-3 (v0.29.1) | OM-5 Mark II (this) |
 |---|---|---|
-| Films in the Picture Mode list | FILM 1–20, their own entries | 3 slots (Color Profile 1–3); up to 10 looks in the file, trash button steps through them |
-| Film names | title, quick menu, shooting screen | Picture Mode title and super control panel (12 characters) |
+| Looks in the Picture Mode list | FILM 1–20, their own entries | 3 slots (Color Profile 1–3); up to 10 looks in the file, trash button steps through them |
+| Look names | title, quick menu, shooting screen | Picture Mode title and super control panel (12 characters) |
 | Looks kept in the camera | yes | yes: the look's values become the slot's own settings |
 | Hue / Saturation / Lightness, 12 colours | yes | yes |
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
@@ -150,11 +150,11 @@ This project stands on the work of three upstream projects. Thank you to their a
 
 - **[fishcu/oly_fw_analysis](https://github.com/fishcu/oly_fw_analysis)** by **fishcu**: the Olympus firmware research (on the PEN-F) that showed how
   these cameras' firmware can be read, changed and rebuilt. The OM-5 Mark II work here began in a fork of it.
-- **[cakelesscoder/caduceus-ep7](https://github.com/cakelesscoder/caduceus-ep7)** by **cakelesscoder**: Caduceus itself, for the PEN E-P7. The idea of film
+- **[cakelesscoder/caduceus-ep7](https://github.com/cakelesscoder/caduceus-ep7)** by **cakelesscoder**: Caduceus itself, for the PEN E-P7. The idea of look
   looks loaded from a file on the card, the way the patch waits for the first half-press, how the installer asks
   OM's server for the official firmware, and the description of the update file format.
 - **[androidfanman/caduceus-om3](https://github.com/androidfanman/caduceus-om3)** by **androidfanman**: Caduceus for the OM-3. The look record layout that
-  `LOOKS.BIN` reuses, the film looks in LookLab's library, LookLab's preview, and the layout of this site and its guides.
+  `LOOKS.BIN` reuses, the looks in LookLab's library, LookLab's preview, and the layout of this site and its guides.
 
 Exactly what was taken from each is listed in [NOTICE](NOTICE).
 

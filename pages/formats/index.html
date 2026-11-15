@@ -41,7 +41,7 @@
 <tr>
 <td>14</td>
 <td>2</td>
-<td>film count n</td>
+<td>look count n</td>
 </tr>
 <tr>
 <td>16</td>
@@ -51,7 +51,7 @@
 <tr>
 <td>32</td>
 <td>80 × n</td>
-<td>films: a 64-byte record, then a 16-byte name</td>
+<td>looks: a 64-byte record, then a 16-byte name</td>
 </tr>
 </tbody>
 </table>
@@ -117,8 +117,8 @@ Blue, Blue-cyan, Cyan, Green-cyan, Green, Yellow-green. Bytes 39, 40 and 47..63 
 Name: ASCII, zero-padded; the camera shows the first 12 characters.</p>
 <p>The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
 that fails is ignored as a whole. Writers: <code>card/mklooks.py</code>, LookLab (<code>looklab/app.js</code>), byte-identical.</p>
-<h2 id="where-a-film-lives-in-the-camera">Where a film lives in the camera</h2>
-<p>A film is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
+<h2 id="where-a-look-lives-in-the-camera">Where a look lives in the camera</h2>
+<p>A look is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
 part 1 of the same cells (<code>0x4831</code> tag, hsl.s), Contrast 908 + p, Sharpness 904 + p, Shading 912 + p, Highlights /
 Midtones / Shadows 976 + 3p .. 978 + 3p, the WB shift in the current WB mode's shift settings (wb.s then keeps the
 profile's WB record). Its name and number are in part 1 of four otherwise unused cells: 916–919 (slot 1), 924–927

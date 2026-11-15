@@ -10,7 +10,11 @@
 - Tester page with the risks, a build guide, a step-by-step first test that starts with OM's own firmware, and a
   camera-test issue template. `tools/fetch_stock.py` downloads and checks OM's files.
 
-## Unreleased — 2026-11-14
+## Unreleased — 2026-11-15
+
+- User-facing wording: "films" are now "looks" (custom colour profiles with a name), on the site, in the guides and in LookLab. Firmware, file names and formats are unchanged.
+
+## Earlier unreleased — 2026-11-14
 
 - Original OM-5 developer candidate: ran the film regressions and a menu tour in OM-Emu's Mark II model (all pass,
   frames identical to alpha2), recorded that OM-Emu's OM-5 model cannot run it, and compared the two stock programs

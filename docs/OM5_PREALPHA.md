@@ -13,7 +13,7 @@ by improving the builder. If you only want to use Caduceus, wait for a tested re
 The original OM-5 runs an older program that has no Color Profiles to restore. So this build does not patch it.
 It takes the **whole OM-5 Mark II program with Caduceus** and fits it into the original OM-5's update file, with
 the original OM-5's file layout and its own controller firmware. If it works, the camera should behave like an
-OM-5 Mark II running Caduceus: the Mark II's menus, films, HSL, tone controls and Live ND64.
+OM-5 Mark II running Caduceus: the Mark II's menus, looks, HSL, tone controls and Live ND64.
 
 Whether it can work depends on hardware the two cameras may not share: sensor and image processor, stabiliser,
 charging and USB, and above all the separate controller chip. The original OM-5's controller firmware is kept, and
@@ -25,7 +25,7 @@ it is a different build from the Mark II's.
 |---|---|
 | Builder checks | Both OM firmware files are checked against OM's published checksums. Every Caduceus code range, all 557 OM-5 resource records and all 116 pictures are preserved; the pictures are recompressed losslessly to fit, pixel-checked. The OM-5's own firmware is written alongside, byte for byte, to go back. |
 | Emulator, OM-5 model | Runs OM's own OM-5 firmware, but cannot run Mark II code at all: no result. |
-| Emulator, Mark II model (same chip family) | Starts, all 13 film checks pass, 23 screens identical to the Mark II build. It does not use the original OM-5's resource layout or controller, so this says little about an OM-5. |
+| Emulator, Mark II model (same chip family) | Starts, all 13 look checks pass, 23 screens identical to the Mark II build. It does not use the original OM-5's resource layout or controller, so this says little about an OM-5. |
 | Comparing the two OM programs | About 86 % of functions match. Differences found: renumbered identifiers, one moved variable in on-chip memory, a different controller firmware. [Details](../research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md). |
 | Real original OM-5 | **Nothing.** You would be the first. |
 
@@ -117,7 +117,7 @@ hold **OK**, switch on, let go when the orange light is steady, do not touch any
 | 1 | Prepare a second card with the restore `DCOLYMP` folder and keep it at hand. Then update with the **install** file. Switch on, touch nothing for a minute. | Whether it starts at all: the biggest unknown. |
 | 2 | If it started: note **Menu › Setup › Firmware**, open the menus and the super control panel, take a photo, play it back. | Whether the basics work. |
 | 3 | Half-press once, then **Picture Mode**: look for Color Profile 1–3; try the colour wheel and the trash button there. | Whether Caduceus works. |
-| 4 | With [LookLab](../looklab/)'s `LOOKS.BIN` in `OM5MOD`: films, as in [Using it](USING.md#films). Switch off and on several times. | Films, saving, restart. |
+| 4 | With [LookLab](../looklab/)'s `LOOKS.BIN` in `OM5MOD`: looks, as in [Using it](USING.md#looks). Switch off and on several times. | Looks, saving, restart. |
 | 5 | Check what you can of stabilisation, charging over USB, battery level, autofocus, and video. | The hardware unknowns. |
 
 **At the first thing that is wrong, stop, write it down, and go back** (below). A photo of the screen helps.

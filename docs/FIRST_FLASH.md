@@ -11,8 +11,8 @@ For whoever tests this first. Stop at the first thing that is not as written, pu
 | 3 | Switch off, on. Half-press once. Take a photo in Natural. Play it back. | A normal photo. | Arming (one small block of memory is taken at the first half-press). |
 | 4 | Picture Mode › Color Profile 1 › the colour wheel. Press the trash button. | Saturation → Hue → Lightness. Set a strong Hue and Lightness on one colour, take a photo of something that colour, compare with Natural. | The editor and that Hue / Lightness reach the photo. |
 | 5 | Switch off, on, several times; leave it on Color Profile 1 while you do. | It starts every time, still on Color Profile 1 with your values. | Starting with a profile saved: the suspected cause of the loop after the third failure. |
-| 6 | Copy `OM5MOD` (with `LOOKS.BIN`) to the card. Switch on, half-press, Picture Mode › Color Profile 1, press the trash button (highlight on the strip of picture modes). | The title changes to the first film's name at once; its values are in the rows. A second press gives the second film's name. | Films. |
-| 7 | Take the card out, put another in, switch off and on. | Color Profile 1 still has the film and its name. | The film lives in the camera. |
+| 6 | Copy `OM5MOD` (with `LOOKS.BIN`) to the card. Switch on, half-press, Picture Mode › Color Profile 1, press the trash button (highlight on the strip of picture modes). | The title changes to the first look's name at once; its values are in the rows. A second press gives the second look's name. | Films. |
+| 7 | Take the card out, put another in, switch off and on. | Color Profile 1 still has the look and its name. | The look lives in the camera. |
 | 8 | Live ND: ND32 and ND64, on a tripod. Custom modes C1–C4 with a Color Profile. Monochrome Profile 1. | They work. | The rest. |
 
 Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and

@@ -6,7 +6,7 @@
 
 | | |
 |---|---|
-| Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, films load from the card and reach the slot's settings, nothing writes into the firmware image. |
+| Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, looks load from the card and reach the slot's settings, nothing writes into the firmware image. |
 | Real OM-5 Mark II | **Nothing for this build.** |
 | Earlier builds on a real OM-5 Mark II | **Three failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
 | Going back | After each failure OM's firmware was put back from the card (hold **OK**, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did. |
@@ -26,7 +26,7 @@ processor. Passing it means "no fault that the emulator can show".
   update lives in the same program this project changes.
 - **The camera cannot be recovered from the card.** Then it needs OM service, and they may charge, or decline.
 - **Warranty.** Unofficial firmware may affect it.
-- **Photos.** Whether Hue, Lightness and the films reach the JPEG exactly as intended has never been checked on a
+- **Photos.** Whether Hue, Lightness and the looks reach the JPEG exactly as intended has never been checked on a
   camera. Shoot RAW + JPEG for anything that matters.
 
 No responsibility is accepted for any damage or loss.

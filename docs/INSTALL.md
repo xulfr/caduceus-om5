@@ -25,7 +25,7 @@ You get a folder `card`:
 | | |
 |---|---|
 | `card/DCOLYMP/E1489999.BIN` | the update with Caduceus |
-| `card/OM5MOD/LOOKS.BIN` | the ten starter films |
+| `card/OM5MOD/LOOKS.BIN` | the ten starter looks |
 | `card/restore/DCOLYMP/E1489999.BIN` | OM's own firmware, to go back. **Keep it.** |
 
 ## 2. Copy to the SD card

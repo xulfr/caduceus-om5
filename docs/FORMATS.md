@@ -10,9 +10,9 @@ Little-endian. 32 + 80 × n bytes, n = 1..10 (at most 832 bytes).
 | 4 | 4 | total length |
 | 8 | 4 | CRC-32 (zlib) of bytes 12..end |
 | 12 | 2 | version 1 |
-| 14 | 2 | film count n |
+| 14 | 2 | look count n |
 | 16 | 16 | zero |
-| 32 | 80 × n | films: a 64-byte record, then a 16-byte name |
+| 32 | 80 × n | looks: a 64-byte record, then a 16-byte name |
 
 Record (signed bytes; the offsets are those of the OM-3 project's `LOOKS.BIN` record):
 
@@ -35,9 +35,9 @@ Name: ASCII, zero-padded; the camera shows the first 12 characters.
 The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
 that fails is ignored as a whole. Writers: `card/mklooks.py`, LookLab (`looklab/app.js`), byte-identical.
 
-## Where a film lives in the camera
+## Where a look lives in the camera
 
-A film is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
+A look is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
 part 1 of the same cells (`0x4831` tag, hsl.s), Contrast 908 + p, Sharpness 904 + p, Shading 912 + p, Highlights /
 Midtones / Shadows 976 + 3p .. 978 + 3p, the WB shift in the current WB mode's shift settings (wb.s then keeps the
 profile's WB record). Its name and number are in part 1 of four otherwise unused cells: 916–919 (slot 1), 924–927
