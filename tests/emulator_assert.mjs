@@ -6,6 +6,11 @@ export default function(g) {
   const R = (id, part = 1) => g.__call(0x602f50f8, { d0: id, d1: part }).d0 >>> 0;
   const G = id => g.__call(0x602d000d, { d0: id }, [0, 4]).d0 | 0;
   const h = Buffer.from(g.__M.dbgRead(0x6218c2fe, 2)).readUInt16LE();
+  if (expect.state === null) {
+    assert.equal(h, 0, 'state handle stays unpublished');
+    console.log('ASSERTIONS passed');
+    return;
+  }
   assert.notEqual(h, 0, 'state allocated after half press');
   const state = Buffer.from(g.__M.dbgRead(0xa1e27d80 - 1 + h, 80));
   assert.equal(state[64], expect.state, 'film load state');

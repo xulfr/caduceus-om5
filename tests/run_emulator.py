@@ -25,6 +25,7 @@ def main():
     a = ap.parse_args()
     films = json.loads((ROOT / 'tools/dev/films-test.json').read_text())
     good = looks_bin(films)
+    max_bank = looks_bin((films * 3)[:10])
     crc_bad = bytearray(good); crc_bad[-1] ^= 1
     range_bad = bytearray(good); range_bad[32] = 8
     struct.pack_into('<I', range_bad, 8, zlib.crc32(range_bad[12:]))
@@ -40,6 +41,8 @@ def main():
     for kind in (0x100, 0x101):
         data = patch.expand_image(blocks[kind].payload) if kind == 0x100 else blocks[kind].payload
         (baseline / f'{kind:04x}.bin').write_bytes(data)
+    main_image = a.build.resolve() / 'decoded/0100.bin'
+    without_looks_code = a.out.resolve() / 'before-section10.bin'
     twins = looks_bin([dict(films[1], name='Twin One'), dict(films[1], name='Twin Two')])
     twin = lambda i: dict(films[1], name=('Twin One', 'Twin Two')[i], index=i)
     cases = [
@@ -47,7 +50,8 @@ def main():
         ('next-film', good, True, 'delete delete', 1, 4, [selected(1), None, None]),
         ('slot-two', good, True, 'delete right delete', 1, 4, [selected(0), selected(1), None]),
         ('wrap', good, True, 'delete ' * 5, 1, 4, [selected(0), None, None]),
-        ('ten-films', looks_bin((films * 3)[:10]), True, 'delete', 1, 10, [selected(0), None, None]),
+        ('ten-films', max_bank, True, 'delete', 1, 10, [selected(0), None, None]),
+        ('oversized-bank', max_bank + b'\0', True, 'delete', 2, 0, [None] * 3),
         ('bad-crc', crc_bad, True, 'delete', 2, 0, [None] * 3),
         ('bad-range', range_bad, True, 'delete', 2, 0, [None] * 3),
         # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
@@ -58,6 +62,7 @@ def main():
         ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),
         ('empty-card', None, True, 'delete', 2, 0, [None] * 3),
         ('no-card', None, False, 'delete', 0, 0, [None] * 3),
+        ('unarmed-delete', good, True, 'delete', None, 0, [None] * 3),
     ]
     results = []
     for name, data, mounted, keys, state, count, slots in cases:
@@ -72,9 +77,22 @@ def main():
         expected.write_text(json.dumps(dict(state=state, count=count, slots=slots)))
         pre = ROOT / 'tools/dev/mount.mjs' if mounted else ROOT / 'tests/unmounted.mjs'
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(pre), POST=str(ROOT / 'tests/emulator_assert.mjs'), OM5_EXPECT=str(expected))
+        if state is None:
+            # Leave the state handle unpublished and replace the section-10
+            # extension with its stock bytes to catch any premature branch.
+            ext = next(r for r in spec['ranges'] if r['name'] == 'ext10')
+            base = int(spec['components']['0x100']['cpu_base'], 16)
+            start = int(ext['address'], 16) - base
+            end = start + ext['bytes']
+            image = bytearray(main_image.read_bytes())
+            image[start:end] = (baseline / '0100.bin').read_bytes()[start:end]
+            without_looks_code.write_bytes(image)
+            image_path, prefix, ready = without_looks_code, to_slot.removeprefix('s1 '), []
+        else:
+            image_path, prefix, ready = main_image, to_slot, ['--ready']
         command = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()),
-                   str(a.build.resolve() / 'decoded/0100.bin'), str(a.build.resolve() / 'decoded/0101.bin'),
-                   str(folder / 'screens'), to_slot + keys, '--ready', '--watch', '--json', '--card=' + str(card.parent)]
+                   str(image_path), str(a.build.resolve() / 'decoded/0101.bin'),
+                   str(folder / 'screens'), prefix + keys, *ready, '--watch', '--json', '--card=' + str(card.parent)]
         base_env = dict(env)
         base_env.pop('POST')
         base_command = command.copy()
@@ -107,6 +125,9 @@ def main():
                 assert frames[-11 + k] == frames[-12 + k], f'{name}: Delete acted on row {k // 2}'
         if name == 'scp-name':
             assert frames[-1] != stock_frames[-1], 'scp-name: the control panel shows no film name'
+        if name == 'unarmed-delete':
+            assert summaries[-1]['steps'][-1].startswith('delete: 0x418 ')
+            assert frames[-1] == frames[-2], 'unarmed-delete: Delete changed the Picture Mode screen'
         results.append(dict(case=name, status='passed', image_stores_beyond_stock=0))
         print(f'{name}: passed', flush=True)
     if not results:

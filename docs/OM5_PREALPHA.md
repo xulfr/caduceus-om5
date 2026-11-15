@@ -54,7 +54,10 @@ most of it building the assembler once.
 
    ```bash
    cd caduceus-om5
+   git switch --detach 02c3cb2a64687e3aa74b0639550c82a95cfd66d7
    ```
+
+   This revision pins the Mark II alpha2 donor used by the published pre-alpha 1 checksum.
 
    ```bash
    python3 -m pip install pillow

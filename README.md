@@ -24,7 +24,7 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha2, 14 Nov 2026 | Works in the emulator. **Never run on a camera.** One-step installer included. |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha3, 15 Nov 2026 | Emulator-tested. **Never run on a camera.** One-step installer included. |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
@@ -52,7 +52,7 @@ Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
 1. Make up to ten looks in LookLab (or use the ten starter looks) and copy `LOOKS.BIN` into a folder `OM5MOD` at the top of the card.
 2. Switch on and **half-press the shutter button once**. The camera reads the file then (once per switch-on).
 3. Press **OK**, go to **Picture Mode** and move along the strip to **Color Profile 1**, 2 or 3 (after Color Creator).
-4. Press the **trash button**: the slot loads the first look and its name becomes the title. Press again for the next look; after the last it starts again. Each slot keeps its own look.
+4. Press the **trash button**. An empty slot starts with the look matching its slot number, or look 1 if the bank has fewer looks. Press again for the next look. After the last it wraps to look 1. Each slot keeps its own look.
 5. Press **down** to fine-tune the look: the colour wheel (in it, the trash button switches Saturation / Hue / Lightness), tone curve, Shading, Sharpness and Contrast.
 6. Shoot. The look is stored in the camera: it stays after switching off, with no card, and goes into custom modes C1–C4.
 

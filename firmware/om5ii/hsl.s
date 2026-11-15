@@ -97,6 +97,10 @@ hsl_delete_action:
  mov (16,sp),d1
  cmp d1,d0
  bne delete_done
+ /* Section 10 loads last. Check the published state before branching there. */
+ call st_ptr,[],8
+ cmp 0,a0
+ beq delete_done
  call fl_delete,[d2,d3,a2,a3],44
 delete_done:
  mov (20,sp),d0

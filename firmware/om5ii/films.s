@@ -6,7 +6,7 @@
  * lightness, contrast, sharpness, shading, the tone curve and the WB shift.
  *
  *  1. Half-press (HLS_EVENT task, through hsl.s' extension vector, only once
- *     armed): read C:\OM5MOD\LOOKS.BIN (at most 832 bytes) into the heap
+ *     armed): read C:\OM5MOD\LOOKS.BIN (up to 833 bytes) into the heap
  *     state block P and check it. One attempt per power-on, and only with a
  *     mounted card. Nothing is written to the settings here.
  *  2. Delete on the Picture Mode screen with the highlight on a Color
@@ -32,6 +32,8 @@ FL_BANK  = 152                  /* the file */
 FL_HDR   = 32
 FL_REC   = 80                   /* 64-byte record + 16-byte name */
 FL_MAX   = 10
+FL_SIZE  = FL_HDR + FL_REC * FL_MAX
+FL_READ  = FL_SIZE + 1           /* read one extra byte to detect an oversized file */
 PANEL_ROW = 136                 /* panel updater object: kind of the highlighted row */
 LABEL_ID = 130                  /* text label: the string id it last laid out */
 FL_TAG   = 0x464c               /* 'FL': word 0 of a slot's name cells = FL_TAG << 16 | index << 8 */
@@ -135,7 +137,7 @@ fl_e_go:
  mov a2,a0
  add FL_BANK,a0
  mov 1,d0
- mov FL_HDR + FL_REC * FL_MAX,d1
+ mov FL_READ,d1
  call fread,[d2,d3,a2,a3],24
  mov d0,d2
  mov (4,sp),a0
@@ -157,6 +159,8 @@ fl_check:
  mov d0,d2
  cmp FL_HDR + FL_REC,d2
  bcs fl_c_bad
+ cmp FL_SIZE,d2
+ bhi fl_c_bad
  mov (a3),d0
  cmp 0x46354d4f,d0               /* 'OM5F' */
  bne fl_c_bad

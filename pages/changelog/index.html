@@ -7,6 +7,17 @@
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
 <div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="changelog">Changelog</h1>
+<h2 id="v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</h2>
+<p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
+<code>f56a13335e1085e73f79db66e58440839022349a72746e1dcb5b32e2bc08e242</code>.</p>
+<ul>
+<li>The Picture Mode trash handler checks startup readiness before entering the look code in the last-loaded section.</li>
+<li>The camera rejects look banks longer than 832 bytes, including a valid ten-look bank with trailing data.</li>
+<li>The Windows launcher prompts once and returns the patcher's exit status after a refusal or failure.</li>
+<li>Corrected the README's description of which look an empty slot takes on its first press.</li>
+<li>Pinned the original OM-5 pre-alpha 1 build instructions to the source revision for its published hash.</li>
+<li>Updated the site, guides and LookLab to use the term "looks" for named custom colour profiles.</li>
+</ul>
 <h2 id="om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</h2>
 <p><strong>Original OM-5, E144 firmware 1.2. Never run on any camera; for testers.</strong> Package SHA-256
 <code>70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4</code>, built by the tester from OM's two firmware files.</p>
@@ -15,10 +26,6 @@
   controller firmware.</li>
 <li>Tester page with the risks, a build guide, a step-by-step first test that starts with OM's own firmware, and a
   camera-test issue template. <code>tools/fetch_stock.py</code> downloads and checks OM's files.</li>
-</ul>
-<h2 id="unreleased-2026-11-15">Unreleased — 2026-11-15</h2>
-<ul>
-<li>User-facing wording: "films" are now "looks" (custom colour profiles with a name), on the site, in the guides and in LookLab. Firmware, file names and formats are unchanged.</li>
 </ul>
 <h2 id="earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</h2>
 <ul>

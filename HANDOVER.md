@@ -246,3 +246,32 @@ existing developer builder (not added to patch.py or the launchers). CLAUDE.md's
   version reproduces the checksum (the page says to stop and report if not).
 - If a tester reports, record it in a new checkpoint and research note with model, firmware, exact checksum,
   steps and outcome. Only a recorded camera result may change any "untested" wording.
+
+## Continuation checkpoint 8 — OM-5 Mark II audit and alpha3 (2026-11-15)
+
+- Rebuilt alpha2 to `2eac7af1…67ca9`. Reproduced a pre-arm Delete trap with the section-10
+  extension absent, acceptance of a ten-look file with trailing data and a second Windows
+  launcher invocation after a refusal. See [audit and reproduction details](research/OM5II-ALPHA3-AUDIT-2026-11-15.md).
+- Alpha3 package (90,832,896 bytes) SHA-256
+  `f56a13335e1085e73f79db66e58440839022349a72746e1dcb5b32e2bc08e242`.
+  The installer selects `releases/v0.1.0-alpha3` by default. It reproduced the package and
+  the exact stock restore using the pinned E148 1.1 file.
+- Build commands from the repository root, with `OM5_STOCK` set to the pinned E148 file
+  and WSL binutils 2.43 on PATH:
+
+  ```sh
+  bash tools/dev/build.sh generated/alpha3-record --record
+  python3 tools/mkrelease.py v0.1.0-alpha3 generated/alpha3-record/strict "$OM5_STOCK"
+  ```
+
+  The record step ends with a strict build. The release reuses the starter bank from alpha2.
+  Format, release and site tests run with `python -m unittest discover -s tests -v`.
+- OM-Emu at `bdb3347` and Node 26.13.0 ran all 15 cases, including the new cases.
+  Results are in `tests/alpha3-results.json`. The Windows workspace has raw logs and screenshots
+  under `generated/alpha3-regressions-1` through `generated/alpha3-regressions-5`, verified
+  installer output in `generated/alpha3-installer-verification` and official inputs in `generated/stock`.
+- Built the original OM-5 pre-alpha 1 from the source revision now pinned in its guide.
+  The package reproduced `70788992…d1b4` with the alpha2 donor.
+- The generic title after returning from a lower row and missing super control panel icon in
+  OM-Emu remain open. No physical camera result exists for alpha3. The readiness test exercises
+  the branch with missing code in OM-Emu. Physical boot, recovery and capture remain unverified.

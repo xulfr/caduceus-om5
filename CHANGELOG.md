@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.0-alpha3 — 2026-11-15
+
+**OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256
+`f56a13335e1085e73f79db66e58440839022349a72746e1dcb5b32e2bc08e242`.
+
+- The Picture Mode trash handler checks startup readiness before entering the look code in the last-loaded section.
+- The camera rejects look banks longer than 832 bytes, including a valid ten-look bank with trailing data.
+- The Windows launcher prompts once and returns the patcher's exit status after a refusal or failure.
+- Corrected the README's description of which look an empty slot takes on its first press.
+- Pinned the original OM-5 pre-alpha 1 build instructions to the source revision for its published hash.
+- Updated the site, guides and LookLab to use the term "looks" for named custom colour profiles.
+
 ## OM-5 pre-alpha 1 — 2026-11-14
 
 **Original OM-5, E144 firmware 1.2. Never run on any camera; for testers.** Package SHA-256
@@ -9,10 +21,6 @@
   controller firmware.
 - Tester page with the risks, a build guide, a step-by-step first test that starts with OM's own firmware, and a
   camera-test issue template. `tools/fetch_stock.py` downloads and checks OM's files.
-
-## Unreleased — 2026-11-15
-
-- User-facing wording: "films" are now "looks" (custom colour profiles with a name), on the site, in the guides and in LookLab. Firmware, file names and formats are unchanged.
 
 ## Earlier unreleased — 2026-11-14
 

@@ -34,8 +34,9 @@ out-of-range records, mounted empty card and no card. Since alpha2 it also check
 repaints the screen (two films that differ only in name must give different frames), that the trash button
 does nothing on the tone, Shading, Sharpness and Contrast rows, that it steps again after returning to the
 Picture Mode row, and that the super control panel's frame differs from stock once a slot holds a film.
-Results of the last run are in `alpha2-results.json`. Medium-mounted status and section-ready bits are
-injected because the emulator does not reproduce that hardware lifecycle.
+Alpha3 adds a valid maximum-size bank with a trailing byte and a pre-arm Delete case with the section-10
+extension replaced by stock bytes. Results are in `alpha3-results.json`. Medium-mounted status and, in
+armed cases, section-ready bits are injected because the emulator does not reproduce that hardware lifecycle.
 
 The same session is run on unmodified stock first. Every store into the image is logged. Any PC/address
 pair absent from stock, or count above its stock baseline, fails. This distinguishes stock initialization
