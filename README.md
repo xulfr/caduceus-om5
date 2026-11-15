@@ -31,6 +31,34 @@
 cannot imitate everything (the image sensor, the second processor, the start-up loader), and it did not predict
 any of the three earlier failures. Only a report from a real camera can change the state above.
 
+## At a glance
+
+**What's added** (OM-5 Mark II): six entries in **Picture Mode**, after Color Creator, plus Live ND32 and ND64.
+
+| | Color Profile 1–3 | Monochrome Profile 1–3 |
+|---|---|---|
+| Looks from `LOOKS.BIN` (trash button steps through them) | Yes | No |
+| Hue, Saturation, Lightness for 12 colours | Yes | No |
+| Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
+| Sharpness, Contrast, Shading | Yes | Yes |
+| Own white balance, remembered per profile | Yes | No |
+| Colour filter, toning, grain | No | Yes |
+| Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
+
+Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
+
+**How to use looks**
+
+1. Make up to ten looks in LookLab (or use the ten starter looks) and copy `LOOKS.BIN` into a folder `OM5MOD` at the top of the card.
+2. Switch on and **half-press the shutter button once**. The camera reads the file then (once per switch-on).
+3. Press **OK**, go to **Picture Mode** and move along the strip to **Color Profile 1**, 2 or 3 (after Color Creator).
+4. Press the **trash button**: the slot loads the first look and its name becomes the title. Press again for the next look; after the last it starts again. Each slot keeps its own look.
+5. Press **down** to fine-tune the look: the colour wheel (in it, the trash button switches Saturation / Hue / Lightness), tone curve, Shading, Sharpness and Contrast.
+6. Shoot. The look is stored in the camera: it stays after switching off, with no card, and goes into custom modes C1–C4.
+
+**How to install:** the [install guide](docs/INSTALL.md), summarised [below](#install-om-5-mark-ii). Read
+[Safety](docs/SAFETY.md) first: no build has run on a camera yet.
+
 ## What it does
 
 On the OM-5 Mark II, OM's firmware has three **Color Profile** slots and three **Monochrome Profile** slots that are

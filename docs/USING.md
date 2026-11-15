@@ -7,6 +7,17 @@ firmware (the Color Profiles are in the list, but their extra controls are aslee
 
 ## The slots
 
+| | Color Profile 1–3 | Monochrome Profile 1–3 |
+|---|---|---|
+| Looks from `LOOKS.BIN` (trash button steps through them) | Yes | No |
+| Hue, Saturation, Lightness for 12 colours | Yes | No |
+| Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
+| Sharpness, Contrast, Shading | Yes | Yes |
+| Own white balance, remembered per profile | Yes | No |
+| Colour filter, toning, grain | No | Yes |
+| Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
+
+
 **OK › Picture Mode.** After Color Creator:
 
 - **Color Profile 1, 2, 3**: your three look slots.
