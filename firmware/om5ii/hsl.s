@@ -568,6 +568,13 @@ display_signed:
 pages_hook:
  call pg_title,[d2,d3,a2,a3],36      /* films.s: repaint the title after a film step */
  call direct_layout,[d2,d3,a2,a3],160
+ /* Not armed (no half-press since power-on): the stock updater only. The
+  * detail pages are created hidden and nothing else shows them. */
+ call st_ptr,[],8
+ cmp 0,a0
+ bne pages_armed
+ jmp direct_ret
+pages_armed:
  mov 111,d0
  call stock_get,[],4
  sub 54,d0

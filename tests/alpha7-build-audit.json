@@ -1,9 +1,13 @@
 {
   "camera_tested": false,
-  "package_sha256": "fe6262be1a21d5f073f1f89f1acddbd37de6711d3eb6bf1a2edcf216801de42b",
+  "package_sha256": "e0b76026842440e93b769a936a1f115aca1ed4d7941c28788eaf11c72b63dbd8",
   "previous_expanded_sha256": "cc0efda8eea117f72f8a5c041aba216c5f50c198fe5b6bc08a80fff907c176a0",
-  "expanded_sha256": "f7b0da979970868ffb5c61f103e4403f1af4d1064919966d7b8c44dde392ac94",
+  "expanded_sha256": "3a14d5316332f3e6ecedd85cad668ea8eb82800c0cbce610f8aef0c054d4257e",
   "changed_ranges": {
+    "ext6": {
+      "bytes": 484,
+      "section": 6
+    },
     "creset_hook": {
       "bytes": 2,
       "section": 2
@@ -46,7 +50,7 @@
   "resources_unchanged": true,
   "nd_selector_cases": 768,
   "section_tail_space": {
-    "ext6": 416,
+    "ext6": 400,
     "ext7": 192,
     "ext10": 926
   }

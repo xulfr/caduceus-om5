@@ -857,5 +857,5 @@
   "bytes": 90832896,
   "sha256": "2bb95563fc7c61fac8da2b9c2f2fa177d6395bcafe2941755b5ed8163d3c3e84"
  },
- "blocked": "Superseded by alpha7 before any camera test: alpha6 still ran the profile code during start-up."
+ "blocked": "This exact package caused a boot loop on the owner's OM-5 Mark II (15 Nov 2026)."
 }

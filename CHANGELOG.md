@@ -2,7 +2,11 @@
 
 ## Camera result — 2026-11-15
 
-## v0.1.0-alpha7 — 2026-11-15 (not camera-tested)
+**v0.1.0-alpha6 boot-looped on the owner's OM-5 Mark II (15 November 2026).** The compressed-block explanation
+below is therefore wrong or incomplete. The installer refuses alpha1–alpha7; alpha7 is an unreleased candidate.
+Details: [fifth boot failure](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
+
+## v0.1.0-alpha7 — 2026-11-15 (unreleased, blocked, not camera-tested)
 
 - Keeps alpha6's compressed-block fix (below).
 - New: until the first shutter half-press after power-on, every hook only replays OM's own instructions. The
@@ -12,10 +16,9 @@
 - So profiles and looks are active from the first half-press after power-on. A photo taken before any half-press
   (remote control, for example) uses the camera's stock values.
 - Emulator: 19 look/menu cases, the startup probe and a new gating check; host tests reproduce alpha1–7.
-  Package `fe6262be…e42b`. Why: [stream length and start-up note](research/OM5II-STREAM-LENGTH-2026-11-15.md).
-- Alpha6 was never flashed and is superseded; the installer offers alpha7.
+  Package `e0b76026…dbd8`; the 19-case run was not finished. Why: [stream length and start-up note](research/OM5II-STREAM-LENGTH-2026-11-15.md).
 
-## v0.1.0-alpha6 — 2026-11-15 (not camera-tested)
+## v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)
 
 - Same camera code as alpha5, byte for byte. Only the way the program is compressed in the update file changes.
 - Alpha5's compressed block for section 7 was exactly 611 × 4096 bytes long, and the camera's loader ignores the

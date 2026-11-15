@@ -1,5 +1,8 @@
 # Alpha5 boot loop: compressed stream length (2026-11-15)
 
+> **Refuted as the cause on a camera, 15 Nov 2026:** alpha6, built with this fix, boot-looped too.
+> See [the fifth boot failure](OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md). Kept as a negative result.
+
 Static analysis and build comparison only. **No camera was used; alpha6 has not run on a camera.**
 
 ## Finding

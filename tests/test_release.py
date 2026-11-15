@@ -18,10 +18,10 @@ class ReleaseTests(unittest.TestCase):
             patch.build(rel, b'wrong camera')
 
     def test_failed_releases_are_refused_before_file_access(self):
-        # alpha5 boot-looped on a camera (15 Nov 2026); alpha1-4 share its startup code.
+        # alpha5 and alpha6 boot-looped on a camera (15 Nov 2026); alpha1-4 share their startup code; alpha7 is unreleased.
         for source in sorted((ROOT / 'releases').glob('*/patch.json')):
             name = source.parent.name
-            if name not in {f'v0.1.0-alpha{n}' for n in range(1, 7)}:
+            if name not in {f'v0.1.0-alpha{n}' for n in range(1, 8)}:
                 continue
             self.assertTrue(json.loads(source.read_text()).get('blocked'), name)
             result = subprocess.run([sys.executable, str(ROOT / 'patch.py'), '--release', name,

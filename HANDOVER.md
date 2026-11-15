@@ -407,7 +407,7 @@ own 1.1, so it is normal. Owner asked for code inspection only, no smaller camer
   `arm_refresh` (ext8) runs the stock refresh once at arming for a context on a profile or holding a tone save;
   the refresh takes the context in d0 **and the picture mode in d1**.
 - Package `fe6262be1a21d5f073f1f89f1acddbd37de6711d3eb6bf1a2edcf216801de42b`, `releases/v0.1.0-alpha7`
-  (expanded main `f7b0da97…ac94`, resource `6b93ba21…7a22`). Alpha6 is marked superseded (`blocked`).
+  (first build `fe6262be…`; final source with the page-layout gate: package `e0b76026…dbd8`). See checkpoint 15.
 - Commands: `OM5_STOCK=… bash tools/dev/build.sh WORK/a7-record --record`;
   `python3 tools/mkrelease.py v0.1.0-alpha7 WORK/a7-record/strict "$OM5_STOCK"`; copy alpha5's `LOOKS.BIN`.
 - Checks (emulator/host only): `tests/unarmed_assert.mjs` EXPECT=inert / applied pass (keys
@@ -421,3 +421,29 @@ own 1.1, so it is normal. Owner asked for code inspection only, no smaller camer
   `tests/run_emulator.py` has no case for the gating (the POST module is run by hand).
 - Workspace as checkpoint 13. Reference repos read for camera lessons only: `cakelesscoder/caduceus-ep7`
   `docs/FIRMWARE_GUIDE.md` §9–10, `BOOTLOOP_T3.md`, `CRASH_LOG.md`.
+
+## Continuation checkpoint 15 — alpha6 camera result: boot loop (2026-11-15) — READ THIS FIRST
+
+**Negative camera result.** The owner flashed v0.1.0-alpha6 (`2bb95563fc7c61fac8da2b9c2f2fa177d6395bcafe2941755b5ed8163d3c3e84`) while the session was paused: straight to a
+boot loop. Record: [research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
+Five boot failures now (4, 5, 8, 15, 15 Nov). Recovery after this one was not reported: ask.
+
+- Alpha6 = alpha5's expanded main + re-encoded streams + the 8 Nov resource block. So the stream length and the
+  resource encoding are **not** the cause. Checkpoint 13's lead is refuted; the length rule stays as a builder check.
+- Still open: settings left by the 8 Nov run (tone save, 903/989, part-1 cells) acting through start-up code; the
+  start-up code added since 8 Nov (string getter hook, arm hook, `st_ptr`, d2 tag, section 10); stock code meeting
+  the added tables. Nothing found on paper in any of them.
+- Alpha7 (`e0b76026842440e93b769a936a1f115aca1ed4d7941c28788eaf11c72b63dbd8`, source at this commit) gates every hook on the armed state. It is **blocked and unreleased**:
+  the 19-case emulator regression was interrupted, and it only addresses the first of the three. `patch.py` now
+  refuses alpha1-alpha7; `KNOWN_BOOT_FAILURES` has alpha5 and alpha6.
+- Passing on the alpha7 build (emulator/host only): `tests/unarmed_assert.mjs` inert/applied,
+  `tests/unarmed_pcs.py` (only gates and stock replays run unarmed), startup probe, `tools/dev/static_rules.py`,
+  `tests/audit_build.py` vs the alpha6 build, host suite.
+- Ideas not done: (a) reflash the 8 Nov package once to separate stored state from new code (owner's decision);
+  (b) a build with the string getter hook and section-10 layer removed but otherwise alpha7, if (a) points at code;
+  (c) find what the camera does with picture-mode state at start (settings restore path, `0x602df14f`);
+  (d) a crash record like caduceus-ep7's `docs/CRASH_LOG.md` (NMI handler hook writing registers to RAM, saved to
+  the card on the next good start) so a failure reports its own PC; (e) ask the owner what the Picture Mode showed
+  on OM's firmware after 8 Nov and whether Reset was used.
+- Workspace (gone): checkpoint-10 recipe; legacy 8 Nov source via `git fetch --depth 1 origin 25a336e` of
+  `xulfr/oly_fw_analysis` (`patches/hsl/om-5-ii`, `tools/`), builds with its own `tools/oly_patch.py`.

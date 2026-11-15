@@ -1,0 +1,15 @@
+{
+ "build": "v0.1.0-alpha7 (unreleased, blocked)",
+ "package_sha256": "e0b76026842440e93b769a936a1f115aca1ed4d7941c28788eaf11c72b63dbd8",
+ "evidence": "emulator only (OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8, Node 22.23.4); not a camera test",
+ "look_menu_cases": "NOT COMPLETED: the 19-case run was interrupted when the alpha6 camera failure was reported",
+ "passed": [
+  "tests/unarmed_assert.mjs EXPECT=inert",
+  "tests/unarmed_assert.mjs EXPECT=applied",
+  "tests/unarmed_pcs.py",
+  "tests/startup_assert.mjs",
+  "tools/dev/static_rules.py",
+  "tests/audit_build.py vs alpha6 build"
+ ],
+ "camera": "alpha6 (2bb95563...) boot-looped on the owner's camera on 2026-11-15; alpha7 has not run on a camera"
+}
