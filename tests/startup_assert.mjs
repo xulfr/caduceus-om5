@@ -10,20 +10,33 @@ export default function(g) {
   const handle = 0x6218c2fe, tid = 0x6218c2fc, ready = 0xa26e2694;
   const malloc = 0x60023818, getTid = 0x600317b4;
   const saved = [read(handle, 2), read(tid, 2), read(ready, 4)];
-  const hooks = new Map([malloc, getTid].map(pc => [pc, lab.hooks.get(pc)]));
+  const trig = 0x602f0cc2, resume = 0x602f0b9a, armGate = 0x613f2d93;
+  const hooks = new Map([malloc, getTid, trig, resume, armGate].map(pc => [pc, lab.hooks.get(pc)]));
   let allocations = 0, taskCalls = 0, taskResult = 0, taskId = 1, allocation = 0;
   let owned = 0;
-  const gate = () => g.__call(0x613f2f6d, {}, [0xf0, 36]);
+  const gate = () => g.__call(armGate, {}, [0xf0, 36]);
   try {
     half(handle, 0); half(tid, 1);
     lab.hook_rt(getTid, (h, r) => { taskCalls++; half(r.a0, taskId); h.finish(r, { d0: taskResult }); }, 'audit-get-tid');
     lab.hook_rt(malloc, (h, r) => {
       allocations++; assert.equal(r.d0, 1024); h.finish(r, { a0: allocation });
     }, 'audit-allocation');
-    for (let mask = 0; mask < 1023; mask++) { word(ready, mask); gate(); }
+    // Run the native hook and inject a half-press in the stock trigger frame.
+    lab.hook_rt(trig, (h, r) => { word(r.sp + 36 + 16, 0x02000100); h.finish(r); }, 'audit-trigger');
+    lab.hook_rt(resume, (h, r) => h.return_here(r, [0xf0, 36]), 'audit-trigger-resume');
+    lab.hook_rt(armGate, () => assert.fail('incomplete mask reached section 8'), 'audit-forbidden-arm');
+    for (let mask = 0; mask < 1023; mask++) {
+      word(ready, mask);
+      g.__call(0x602f0b95, {}, [0xf0, 36]);
+    }
+    word(ready, 1023);
+    let reached = false;
+    lab.hook_rt(armGate, (h, r) => { reached = true; h.finish(r); }, 'audit-allowed-arm');
+    g.__call(0x602f0b95, {}, [0xf0, 36]);
+    assert.equal(reached, true, 'the injected half-press reaches section 8 with the complete mask');
+    if (hooks.get(armGate)) lab.hooks.set(armGate, hooks.get(armGate)); else lab.hooks.delete(armGate);
     assert.equal(taskCalls, 0, 'all incomplete section masks return before OS calls');
     assert.equal(allocations, 0);
-    word(ready, 1023);
     for (const [stored, actual, result] of [[0, 1, 0], [0x8001, 1, 0], [1, 2, 0], [1, 1, 1]]) {
       half(tid, stored); taskId = actual; taskResult = result; gate();
     }
@@ -50,7 +63,7 @@ export default function(g) {
     for (const [value, pointer, magic] of [[0, 0, 1], [1, 0xa1e27d80, 1], [1, 0, 0], [43329, 0xa1e326c0, 1], [43329, 0, 0], [2, 0, 1], [5, 0xa1e27d84, 1], [43330, 0, 1], [65535, 0, 1]]) {
       for (const [a] of spots) word(a, magic ? 0x55444143 : 0x12345678);
       half(handle, value);
-      const r = g.__call(0x613f2ed8, { d0: 0x12345678, d1: 42, a1: 123 }, [0, 8]);
+      const r = g.__call(0x605af4b0, { d0: 0x12345678, d1: 42, a1: 123 }, [0, 8]);
       assert.equal(r.a0 >>> 0, pointer >>> 0, `state handle ${value}`);
       assert.equal(r.d0, 0x12345678); assert.equal(r.d1, 42); assert.equal(r.a1, 123);
     }

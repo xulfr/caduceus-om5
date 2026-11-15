@@ -5,14 +5,14 @@
     python3 tests/unarmed_pcs.py BUILD out.txt        (mn10300-elf-nm on PATH)
 
 Every executed address inside the patch's code ranges must belong to a gate or to a replay of OM's displaced
-instructions. Anything else means project code acted before the patch was armed. Emulator only."""
+instructions. Section 3, 4 and 8 or later are forbidden even for an allowlisted symbol. Emulator only."""
 import bisect, subprocess, sys
 from pathlib import Path
 
 ALLOWED = {
     'st_ptr', 'st_ptr_none', 'st_ptr_out', 'st_axis', 'st_getb', 'st_getb_out',          # the handle read
     'wb_load', 'wb_original',                                             # stock commit
-    'refresh_case', 'refresh_guard', 'refresh_stock', 'rt_tail',          # stock refresh tail
+    'refresh_case', 'refresh_guard', 'refresh_stock',          # stock refresh tail
     'fl_str', 'fl_str_stock', 'fl_str_cp',                                # stock string getter
     'pages_hook', 'pg_title', 'pg_t_out',                                 # stock page updater
     'read_hook', 'ui_read', 'ui_read_stock', 'write_hook', 'ui_write', 'ui_write_stock',
@@ -21,10 +21,10 @@ ALLOWED = {
     'hsl_delete_action', 'delete_done', 'delete_restore', 'delete_stock',
     'parent_hook', 'parent_restore', 'st_set_editor', 'st_set_editor_out',
     'reset_hook', 'st_reset_on', 'st_reset_off', 'st_reset_put', 'st_reset_out',
-    'builder_hook', 'apply_values', 'apply_done',
+    'builder_hook', 'builder_stock',
     'creset', 'creset_stock', 'creset_orig',
     'pm_set_a3', 'pm_set_a2', 'pm_set', 'pm_set_done', 'pm_put', 'pm_put_done',
-    'arm_hook', 'arm_back', 'arm_gate', 'arm_out', 'paint_axis', 'paint_done',
+    'arm_hook', 'arm_back', 'paint_axis', 'paint_done',
 }
 
 
@@ -39,13 +39,19 @@ def main():
     syms.sort()
     addresses = [a for a, _ in syms]
     ran = {}
+    forbidden = []
     for line in pcs.read_text().split('\n'):
         if line:
             pc = int(line.split()[0], 16)
-            name = syms[bisect.bisect_right(addresses, pc) - 1][1]
-            name = 'wb_load' if name.startswith('.L') else name          # assembler-local labels inside wb_load
+            if 0x605ce800 <= pc < 0x60622000 or 0x60627000 <= pc < 0x60829800 or pc >= 0x61343800:
+                forbidden.append(f'{pc:#010x} (outside the allowed sections)')
+                continue
+            index = bisect.bisect_right(addresses, pc) - 1
+            name = syms[index][1] if index >= 0 else f'{pc:#010x}'
             ran[name] = ran.get(name, 0) + 1
-    extra = sorted(set(ran) - ALLOWED)
+    extra = sorted(set(ran) - ALLOWED) + forbidden
+    if not ran and not forbidden:
+        extra.append('empty trace')
     print('ran unarmed:', ', '.join(f'{k} ({v})' for k, v in sorted(ran.items())))
     print('UNARMED PCS failed: ' + ', '.join(extra) if extra else 'UNARMED PCS passed: only gates and stock replays ran')
     sys.exit(1 if extra else 0)

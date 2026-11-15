@@ -54,8 +54,8 @@ is implied. Do not change `camera_tested` after a passing run.
 ## Startup fault injection and build audit
 
 `startup_assert.mjs` is a POST module for `sess.mjs`. It checks all incomplete section masks, task identity,
-allocation failure/retry, state-clear and handle bounds. Its arming entry address is from the current E148
-`hsl.s` ELF; update the probe if that symbol moves. Run a session without keys:
+allocation failure/retry, state-clear and handle bounds. It tests the native half-press hook with all incomplete masks, then calls the section-8 allocation path
+directly for fault injection. Update the probe's ELF symbol addresses if they move. Run a session without keys:
 
 ```sh
 OM_EMU_MODEL=E148 PRE="$PWD/tools/dev/mount.mjs" POST="$PWD/tests/startup_assert.mjs" node tools/dev/sess.mjs generated/om-emu generated/strict/decoded/0100.bin generated/strict/decoded/0101.bin generated/startup '' --watch --json
@@ -75,7 +75,7 @@ preservation, fresh starter creation, write failure and failed recovery preparat
 `github-actions.yml` can be installed as `.github/workflows/tests.yml` by a credential with workflow
 permission. It runs the source suite without firmware; no active workflow is claimed here.
 
-## Start-up gating and static rules (alpha7)
+## Start-up gating and static rules (alpha8)
 
 ```sh
 K='ok ok right right right right right right right right menu menu'
@@ -84,10 +84,11 @@ EXPECT=applied POST=tests/unarmed_assert.mjs OM_EMU_DIR=... bash tools/dev/run.s
 python3 tools/dev/static_rules.py BUILD STOCK.BIN
 ```
 
-`tests/unarmed_pcs.mjs` (PRE, with `PCS=file`) records every executed address inside the patch during a session
-without `s1`; `python3 tests/unarmed_pcs.py BUILD file` accepts only gates and replays of OM's instructions.
-`PRE=tests/stale_number.mjs` with keys `wait:300 s1` sets 903 = 1 (111 then reads 63); after `s1` 111 must read its
-mode again and 903 must be 0. `tests/startup_assert.mjs` also checks handle alignment and the block magic.
+`tests/unarmed_pcs.mjs` (PRE, with `PCS=file`) records every executed address in the patch extensions during
+a session without `s1`. `python3 tests/unarmed_pcs.py BUILD file` accepts only gates and replays of OM's
+instructions and rejects any recorded PC in sections 3, 4 or 8 and later.
+`N989=1 PRE=tests/stale_number.mjs POST=tests/stale_number_assert.mjs` with keys `wait:300 s1`
+injects stale 903 and 989. The probe checks that arming restores Natural and clears both numbers. `tests/startup_assert.mjs` also checks handle alignment and the block magic.
 
 The first pair checks that a Color Profile selected before any half-press does not run the project's refresh and
 that the arming half-press applies it. The static rules are camera lessons an emulator does not show: no `0xfb`
