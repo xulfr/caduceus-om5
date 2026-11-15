@@ -13,19 +13,19 @@
 </p>
 
 > [!CAUTION]
-> ### Not camera-tested: five earlier builds failed on a camera
+> ### Alpha8 boots on the owner’s camera. It remains experimental.
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
-> Alpha8 fixes a section load-order defect and has only run in the emulator. OM's own firmware was restored
+> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64. OM's own firmware was restored
 > from the card after each failure. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
-> We are looking for someone willing to make the first careful camera test: see [the test plan](docs/FIRST_FLASH.md).
+> The [camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records what works and the remaining UI defects.
 
 ## Status
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha8, 15 Nov 2026 | **Emulator only.** Alpha8 keeps startup gates in section 2 and enables profiles on the first shutter half-press. Alpha7 remains blocked for the [load-order defect](HANDOVER.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
@@ -58,7 +58,7 @@ Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
 6. Shoot. The look is stored in the camera: it stays after switching off, with no card, and goes into custom modes C1–C4.
 
 **How to install:** the [install guide](docs/INSTALL.md), summarised [below](#install-om-5-mark-ii). Read
-[Safety](docs/SAFETY.md) first: no build has run on a camera yet.
+See [Safety](docs/SAFETY.md) for the camera result and recovery procedure.
 
 ## What it does
 
@@ -112,7 +112,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | **no** |
+| Tested on a camera | yes | Alpha8 boot and selected features confirmed |
 
 ## How it works, briefly
 
@@ -162,8 +162,8 @@ Tests:
 OM5_STOCK=OLY_E_148_1100_0000_0000.BIN python3 -m unittest discover -s tests -v
 ```
 
-Rules that keep the project honest: only a recorded camera result may be called "camera-tested"; releases keep
-`camera_tested: false` and the installer's `UNTESTED` confirmation until then; failures are recorded, never hidden.
+Record physical-camera results with the exact package hash and tested features. The experimental installer
+keeps its `UNTESTED` confirmation.
 Details in [CLAUDE.md](CLAUDE.md).
 
 ## Words used here

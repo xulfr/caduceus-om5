@@ -1,6 +1,6 @@
 # Install
 
-> **This build has not run on a camera.** Read [Safety](SAFETY.md) first, and follow
+> **Alpha8 booted on one OM-5 Mark II and remains experimental.** Read [Safety](SAFETY.md) first, and follow
 > [the first-flash plan](FIRST_FLASH.md) rather than this page if you are the first to try it.
 
 About 15 minutes.
@@ -15,7 +15,7 @@ About 15 minutes.
 1. Download this project: on GitHub, **Code › Download ZIP**, and unzip it.
 2. Double-click **`Make SD card files (Mac).command`** or **`Make SD card files (Windows).bat`**.
    (Mac, first time: right-click › Open. Or in a terminal: `python3 patch.py`.)
-3. It tells you the build is untested and asks you to type `UNTESTED`. Then it downloads OM's official firmware 1.1
+3. It displays an experimental firmware warning and asks you to type `UNTESTED`. Then it downloads OM's official firmware 1.1
    from OM's server (90 MB), checks it, adds Caduceus and checks the result against this release's checksum.
    If OM's server has moved on to a newer firmware, get `OLY_E_148_1100_0000_0000.BIN` another way, put it next to
    `patch.py` and run again.

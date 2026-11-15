@@ -1,6 +1,6 @@
 # Roadmap
 
-All current firmware work is **emulator only**. No successful camera run of this project is recorded.
+Alpha8 booted on a physical OM-5 Mark II with working Color Profiles and Live ND32/64. [Camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md).
 The owner performs any physical test; development sessions prepare and check files only.
 
 ## First priority: OM-5 Mark II (E148, firmware 1.1)
@@ -18,10 +18,10 @@ The owner performs any physical test; development sessions prepare and check fil
 - Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.
-- Open, cosmetic: in the emulator the super control panel's Picture Mode cell draws no icon for a Color Profile.
+- Next: fix the four alpha8 display defects in the [handover](HANDOVER.md).
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
-  [first camera test plan](docs/FIRST_FLASH.md) and record the exact package hash.
+  [camera test checklist](docs/FIRST_FLASH.md) and record the exact package hash.
 
 ## Second stage: original OM-5 (E144, firmware 1.2)
 

@@ -5,10 +5,10 @@
 <link rel="stylesheet" href="../site/site.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/" aria-current="page">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="install">Install</h1>
 <blockquote>
-<p><strong>This build has not run on a camera.</strong> Read <a href="../safety/">Safety</a> first, and follow
+<p><strong>Alpha8 booted on one OM-5 Mark II and remains experimental.</strong> Read <a href="../safety/">Safety</a> first, and follow
 <a href="../first-flash/">the first-flash plan</a> rather than this page if you are the first to try it.</p>
 </blockquote>
 <p>About 15 minutes.</p>
@@ -22,7 +22,7 @@
 <li>Download this project: on GitHub, <strong>Code › Download ZIP</strong>, and unzip it.</li>
 <li>Double-click <strong><code>Make SD card files (Mac).command</code></strong> or <strong><code>Make SD card files (Windows).bat</code></strong>.
    (Mac, first time: right-click › Open. Or in a terminal: <code>python3 patch.py</code>.)</li>
-<li>It tells you the build is untested and asks you to type <code>UNTESTED</code>. Then it downloads OM's official firmware 1.1
+<li>It displays an experimental firmware warning and asks you to type <code>UNTESTED</code>. Then it downloads OM's official firmware 1.1
    from OM's server (90 MB), checks it, adds Caduceus and checks the result against this release's checksum.
    If OM's server has moved on to a newer firmware, get <code>OLY_E_148_1100_0000_0000.BIN</code> another way, put it next to
    <code>patch.py</code> and run again.</li>

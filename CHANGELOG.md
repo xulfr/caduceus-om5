@@ -5,8 +5,10 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha8 — 2026-11-15 (emulator only)
+## v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)
 
+- The owner confirmed boot, SD-card look cycling and names, Color Profile controls, and Live ND32/64
+  on a physical OM-5 Mark II. Four UI defects remain. [Camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md).
 - Stock disassembly confirms that the loader submits sections 1 through 10 in order. Section-2 hooks
   now check the armed state in their own section. White-balance processing runs from section 4 after arming.
 - The first shutter half-press can arm the patch after all ten sections finish initializing. It applies

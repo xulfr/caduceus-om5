@@ -24,7 +24,7 @@ from oly_resource import alias_images                                    # noqa:
 
 UNTESTED = """
   ************************************************************************
-  THIS RELEASE HAS NOT RUN ON A CAMERA.
+  EXPERIMENTAL CAMERA FIRMWARE.
 
   Four OM-5 Mark II builds of this work left the owner's camera in a
   boot loop (November 2026). Each time OM's own firmware could be

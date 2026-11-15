@@ -1,6 +1,6 @@
 # Project rules
 
-Read HANDOVER.md first, including the latest continuation checkpoints. Work in `xulfr/caduceus-om5`
+Read HANDOVER.md first. Work in `xulfr/caduceus-om5`
 on `main`. The maintainer is **xulfr**. Commit and push each finished piece and update HANDOVER.md
 with its commands, results, remaining gaps and workspace requirements.
 
@@ -9,8 +9,9 @@ with its commands, results, remaining gaps and workspace requirements.
 - **Emulator only** means observed in OM-Emu. It never means **camera-tested**.
 - Use **camera-tested** only for an explicitly recorded physical-camera result, with model, stock
   version, exact package SHA-256, procedure and outcome. Do not infer it from a successful build.
-- No successful camera run is recorded for the current release. Keep `camera_tested: false`,
-  patch.py's `UNTESTED` acknowledgement and visible site warnings.
+- Alpha8 has a limited camera report for boot and selected features. Keep the experimental
+  installer acknowledgement and site warnings. The installer uses `camera_tested` to control the
+  acknowledgement. The release’s `camera_status` records the observed boot result.
 - The owner flashes. Sessions prepare files, inspect code and run tools/emulation only; never
   initiate a camera update or suggest that emulator success establishes a safe install.
 - Record negative results. Never suppress a failing audit or rewrite expected hashes to conceal

@@ -1,14 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The first camera test · Caduceus for OM-5</title>
+<title>Camera test checklist · Caduceus for OM-5</title>
 <link rel="stylesheet" href="../site/site.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="the-first-camera-test">The first camera test</h1>
-<p>For whoever tests this first. Stop at the first thing that is not as written, put OM's firmware back
-(<a href="../safety/">Safety</a>), and report it (what you pressed, what the screen and the lights did).</p>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="doc" id="content"><h1 id="camera-test-checklist">Camera test checklist</h1>
+<p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">alpha8 camera report</a> records the successful boot and known UI defects. If the camera fails to start or freezes, follow <a href="../safety/#going-back-to-oms-firmware">stock recovery</a> and report what happened.</p>
 <p><strong>Before step 1, set Picture Mode to Natural in OM's firmware</strong> for the shooting mode the camera
 will start in (and in Movie mode if you use it). Earlier test builds may have left a Color Profile stored there.
 Alpha8 activates profiles at the first shutter half-press after switching on and repairs stale profile
@@ -50,7 +49,7 @@ numbers then.</p>
 <tr>
 <td>4</td>
 <td>Picture Mode › Color Profile 1 › the colour wheel. Press the trash button.</td>
-<td>Saturation → Hue → Lightness. Set a strong Hue and Lightness on one colour, take a photo of something that colour, compare with Natural.</td>
+<td>Saturation → Hue → Lightness. On alpha8 the header and dials work with the wheel graphic missing. Check a strong Hue and Lightness change against Natural.</td>
 <td>The editor and that Hue / Lightness reach the photo.</td>
 </tr>
 <tr>

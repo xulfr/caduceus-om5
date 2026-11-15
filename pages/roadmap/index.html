@@ -5,9 +5,9 @@
 <link rel="stylesheet" href="../site/site.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="roadmap">Roadmap</h1>
-<p>All current firmware work is <strong>emulator only</strong>. No successful camera run of this project is recorded.
+<p>Alpha8 booted on a physical OM-5 Mark II with working Color Profiles and Live ND32/64. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">Camera report</a>.
 The owner performs any physical test; development sessions prepare and check files only.</p>
 <h2 id="first-priority-om-5-mark-ii-e148-firmware-11">First priority: OM-5 Mark II (E148, firmware 1.1)</h2>
 <ul>
@@ -24,10 +24,10 @@ The owner performs any physical test; development sessions prepare and check fil
 <li>Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.</li>
-<li>Open, cosmetic: in the emulator the super control panel's Picture Mode cell draws no icon for a Color Profile.</li>
+<li>Next: fix the four alpha8 display defects in the <a href="https://github.com/xulfr/caduceus-om5/blob/main/HANDOVER.md">handover</a>.</li>
 <li>Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
-  <a href="../first-flash/">first camera test plan</a> and record the exact package hash.</li>
+  <a href="../first-flash/">camera test checklist</a> and record the exact package hash.</li>
 </ul>
 <h2 id="second-stage-original-om-5-e144-firmware-12">Second stage: original OM-5 (E144, firmware 1.2)</h2>
 <p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/patches/ports/om-5-i-from-ii/README.md">E148-program transplant builder</a> is included and rebuilt
