@@ -51,6 +51,20 @@ from patch-origin writes; it does not prove that all hardware paths are safe.
 All results are **emulator only**. No loader, second CPU, ISP, physical persistence or exposure validation
 is implied. Do not change `camera_tested` after a passing run.
 
+### Live ND shooting labels
+
+Run the shooting UI with the display-side reads for settings 1709–1711 supplied by the fixture.
+It checks the prefix bitmap and whether the shooting screen draws the native `-LV` suffix.
+
+```sh
+for lv in 0 1; do
+  for step in 4 5 6; do
+    ND_LV=$lv ND_STEP=$step PRE=tests/nd_shooting_labels.mjs POST=tests/nd_shooting_labels.mjs \
+      OM_EMU_DIR=generated/om-emu bash tools/dev/run.sh BUILD "generated/nd-$step-$lv" 'ok ok ok'
+  done
+done
+```
+
 ## Startup fault injection and build audit
 
 `startup_assert.mjs` is a POST module for `sess.mjs`. It checks all incomplete section masks, task identity,

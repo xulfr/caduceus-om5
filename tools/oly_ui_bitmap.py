@@ -61,6 +61,13 @@ def append_icons(atlas, load, sprites, source_rows):
                 if not (0 <= x0 < x1 <= len(rows[0]) and 0 <= y0 < y1 <= len(rows)):
                     raise ValueError('Icon crop leaves source')
                 rows = [row[x0:x1] for row in rows[y0:y1]]
+            if 'width' in strip:
+                width = strip['width']
+                old_width = len(rows[0])
+                if not 1 <= width <= old_width:
+                    raise ValueError('Invalid narrower glyph width')
+                columns = [(2 * x + 1) * old_width // (2 * width) for x in range(width)]
+                rows = [bytes(row[x] for x in columns) for row in rows]
             pad = bytes(strip.get('pad_left', 0))
             strips.append([pad + row for row in rows])
         if len({len(rows) for rows in strips}) != 1:
