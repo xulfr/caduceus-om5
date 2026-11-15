@@ -1,8 +1,4 @@
-"""Repoint existing GUI image IDs inside a bounded resource record.
-
-Only pointer-table words change in the expanded record. No image artwork is
-included in the patch: every replacement points to another stock resource.
-"""
+"""Repoint GUI image IDs to stock bitmaps or artwork derived from stock."""
 
 import struct
 
@@ -40,7 +36,7 @@ def _recipe(target, rows, recipe):
 
 
 def alias_images(payload, aliases, recipe=None, artwork=None):
-    """Return a same-size 0x101 payload with selected IDs aliased to stock IDs.
+    """Return a same-size 0x101 payload with selected image IDs replaced.
 
     recipe (optional): the LZ4 sequences of the changed part of the record, so the stored bytes equal a stream
     that has started on a camera (the 8 November 2026 build's resource block). The packed length is checked
