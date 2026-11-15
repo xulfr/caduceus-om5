@@ -1,0 +1,113 @@
+{
+  "build": "v0.1.0-alpha8",
+  "package_sha256": "709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68",
+  "camera_tested": false,
+  "emulator": "OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8, Node 26.13.0",
+  "look_menu_cases": [
+    {
+      "case": "four-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "next-film",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "slot-two",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "wrap",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "ten-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "oversized-bank",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "bad-crc",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "bad-range",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "name-markup",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "name-control",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "persisted-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "other-rows",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "row-return",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "row-return-title",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "title-redraw",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "scp-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "empty-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "no-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "unarmed-delete",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    }
+  ],
+  "probes": {
+    "startup": "All 1023 incomplete masks stay in section 2; complete mask, task identity, allocation retry, clear bounds, RAM handle bounds, alignment and magic passed.",
+    "startup_image_stores": "Matched stock.",
+    "profile_before_arming": "Inert. The unarmed PC trace contains only gates and stock replays.",
+    "profile_at_arming": "Profile 1 applied on the first half-press.",
+    "forbidden_pc_negative_checks": "Rejected sections 3, 4, 8, 9 and 10, including the previously allowlisted alpha7 st_ptr.",
+    "stale_profile_numbers": "111 = 63 and 903 = 989 = 1 before arming; 111 = Natural and 903 = 989 = 0 after arming.",
+    "static_rules": "Opcode, alignment and stock-page stream-length checks passed.",
+    "build_audit": "Native loader bounds and resource image unchanged; all differences declared; 768 ND selector inputs passed."
+  }
+}

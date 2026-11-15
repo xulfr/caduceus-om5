@@ -493,10 +493,13 @@ decoder, WB profile helper and allocation path. The section 6/7 gates now call b
 
 `OM5_STOCK=… bash tools/dev/build.sh generated/alpha8-record --record` passed its strict rebuild.
 SHA-256 `709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68`.
-Test and release verification are in progress. No camera run.
+No camera run.
 
 The startup probe now exercises the native half-press hook for all 1023 incomplete masks and checks
 entry to the allocator with the full mask. The unarmed PC probe passed its menu run and rejected injected
 PCs in sections 3, 4, 8, 9 and 10, including alpha7's formerly allowlisted section-8 `st_ptr`.
 The inert/applied refresh probes and stale 903/989 repair passed. Startup image stores matched stock.
 Static rules and the build audit against alpha7 passed, including 768 ND inputs.
+
+All 19 cases in `tests/run_emulator.py` passed against matching stock sessions.
+Results and the static audit are in `tests/alpha8-results.json` and `tests/alpha8-build-audit.json`.

@@ -1,0 +1,94 @@
+{
+  "camera_tested": false,
+  "package_sha256": "709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68",
+  "previous_expanded_sha256": "1a17440b22cb598e9eca09a30bb8a9aac7e159d2f39f58e3d3e051191950273f",
+  "expanded_sha256": "df9a97904e7799b523e87c9a8c84dda45e404b0643b6133a37c6c3acbe4988e5",
+  "changed_ranges": {
+    "builder_hook": {
+      "bytes": 1,
+      "section": 2
+    },
+    "ext2": {
+      "bytes": 408,
+      "section": 2
+    },
+    "ext6": {
+      "bytes": 44,
+      "section": 6
+    },
+    "ext7": {
+      "bytes": 48,
+      "section": 7
+    },
+    "refresh_hook": {
+      "bytes": 1,
+      "section": 2
+    },
+    "creset_hook": {
+      "bytes": 4,
+      "section": 2
+    },
+    "refresh_cases": {
+      "bytes": 6,
+      "section": 2
+    },
+    "pm_s1": {
+      "bytes": 4,
+      "section": 2
+    },
+    "pm_s2": {
+      "bytes": 4,
+      "section": 2
+    },
+    "pm_s4": {
+      "bytes": 4,
+      "section": 2
+    },
+    "pm_s5": {
+      "bytes": 4,
+      "section": 2
+    },
+    "ext8": {
+      "bytes": 637,
+      "section": 8
+    },
+    "ext5": {
+      "bytes": 630,
+      "section": 5
+    },
+    "wb_hook": {
+      "bytes": 2,
+      "section": 2
+    },
+    "wb_extension": {
+      "bytes": 90,
+      "section": 2
+    },
+    "wb_body": {
+      "bytes": 474,
+      "section": 4
+    },
+    "wb_profile": {
+      "bytes": 212,
+      "section": 8
+    },
+    "arm_hook": {
+      "bytes": 4,
+      "section": 2
+    },
+    "ext10": {
+      "bytes": 8,
+      "section": 10
+    }
+  },
+  "all_edits_declared": true,
+  "previous_bytes_back_to_stock": 571,
+  "native_loader_bounds_unchanged": true,
+  "resources_unchanged": true,
+  "nd_selector_cases": 768,
+  "section_tail_space": {
+    "ext6": 400,
+    "ext7": 192,
+    "ext10": 774
+  }
+}
