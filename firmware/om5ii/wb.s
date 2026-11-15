@@ -1,7 +1,7 @@
 /* OM-5 Mark II 1.1 (E148 build 1100) per-profile white balance, ported from
  * the OM-3 patch. NOT tested on a camera; exercised in OM-Emu only.
- * The hook (native commit 0x602d19b1) and this body are both in section 2.
- * Section 6 (stock_ui_write) is checked via the completed-initialization bits. */
+ * The section-2 gate reaches the section-4 body and section-8 profile
+ * helper only after arming. */
 ST_BUSY = 12
 .section .wb_hook,"ax"
  jmp wb_load
@@ -33,23 +33,34 @@ wb_load:
  jmp wb_profile
 wb_not_profile:
  cmp PM_ID,d0
- beq wb_commit
+ beq wb_enter
  cmp 1578,d0
- beq wb_commit
+ beq wb_enter
  cmp 1632,d0
- beq wb_commit
+ beq wb_enter
  cmp 1580,d0
  blt wb_original
  cmp 1605,d0
- ble wb_commit
- bra wb_original
+ bgt wb_original
+wb_enter:
+ jmp wb_commit
+wb_original:
+ mov d1,a2
+ mov d0,d3
+ exthu d3
+ mov d3,d0
+ jmp commit_resume
+
+.section .wb_body,"ax"
 /* Replaces the first five bytes of the native commit routine. Its caller
  * already saved d2,d3,a2,a3 in a 20-byte frame. Nested commits use stock. */
 wb_commit:
  /* a2 = the state block (wb_load). Nested commits use stock. */
  movbu (ST_BUSY,a2),d2
  cmp 0,d2
- bne wb_original
+ beq wb_begin
+ jmp wb_original
+wb_begin:
  mov d0,d2
  mov d1,d3
  mov 1,d0
@@ -94,12 +105,6 @@ wb_done_ret:
  mov (4,sp),d0
  add 8,sp
  ret [d2,d3,a2,a3],20
-wb_original:
- mov d1,a2
- mov d0,d3
- exthu d3
- mov d3,d0
- jmp commit_resume
 /* Return base: Color Profile 1..3 (111 = 54..56) => 904,908,912; every other
  * mode => 920 (916 stays unused). No cached bank/profile pointer. */
 wb_current:

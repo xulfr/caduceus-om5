@@ -475,3 +475,22 @@ a section-2 hook calling unloaded section-8 code boot-looped the OM-3.)
   `0x61343800` (section 8+) or in sections 3/4/9. Re-run everything, then unblock.
 - Other alpha7 work is valid and should be kept: start-up gating, handle validation (RAM read, alignment, magic),
   stale 903/989 repair at arming, stream-length rule, static rules.
+
+## Continuation checkpoint 17 — alpha8 load-order fix (2026-11-15)
+
+Expanded stock E148 1.1 and independently disassembled both loader tasks. They call the section loader
+(`0x60046418`) in submission order 1–10. Task `0x60045abf` waits for section 1's handshake bit `0x02`
+at `0x60045adf`, then submits 2–7 and publishes `0x80` at `0x60045cda`. Task `0x60045a38` tests
+`0x80` at `0x60045a6e` before submitting 8 and publishes `0x100` at `0x60045a9c`. The other task
+tests `0x100` at `0x60045cf3` before submitting 9 and 10. These handshakes use `0xa26e2660`.
+The submission bits at `0xa26e2698` and initialization bits at `0xa26e2694` are distinct. The half-press
+gate checks all ten initialization bits before calling section 8.
+
+The section-2 tail begins with `st_ptr` at `0x605af4b0` and contains all section-2 gates, including
+the WB gate at `0x605af780`. The WB commit body starts at `0x60829570` in section 4. The refresh
+enters section 5 only when armed. Section 8 holds the armed builder, reset and profile-copy bodies,
+decoder, WB profile helper and allocation path. The section 6/7 gates now call back to section 2.
+
+`OM5_STOCK=… bash tools/dev/build.sh generated/alpha8-record --record` passed its strict rebuild.
+SHA-256 `709ca9d4e3a4a050a3586a57109ae892da8a142c6b1d85bec58bda22a68f3b68`.
+Test and release verification are in progress. No camera run.

@@ -743,7 +743,86 @@ scale:
  asr 12,d0
  ret [],4
 
+/* Section 2 loads before all callers of these gates. wb.ld binds st_ptr. */
 .section .ext2,"ax"
+/* a0 = P, or 0 when not armed / handle out of range. call st_ptr,[],8.
+ * Preserves d0-d3, a1-a3. */
+.global st_ptr
+st_ptr:
+ mov d0,(4,sp)
+ /* The handle is read from RAM (uncached alias): hooks may run on another
+  * CPU, whose cache need not hold what the arming CPU wrote. A handle counts
+  * only if it is in the pool, the block is 4-aligned and carries the magic
+  * arm_gate wrote, so a stale or foreign value reads as "not armed". */
+ movhu (st_handle_u),d0
+ cmp 0,d0
+ beq st_ptr_none
+ cmp ST_HANDLE_MAX,d0
+ bhi st_ptr_none
+ add ST_POOL-1,d0
+ mov d0,a0
+ and 3,d0
+ bne st_ptr_none
+ mov (ST_MAGIC,a0),d0
+ cmp ST_MAGIC_VALUE,d0
+ beq st_ptr_out
+st_ptr_none:
+ mov 0,a0
+st_ptr_out:
+ mov (4,sp),d0
+ ret [],8
+/* d0 = byte P+0 (axis) / P+d0, or 0 when not armed. call ...,[],12.
+ * Preserves everything else. */
+st_axis:
+ clr d0
+st_getb:
+ mov a0,(4,sp)
+ mov d0,(8,sp)
+ call st_ptr,[],8
+ clr d0
+ cmp 0,a0
+ beq st_getb_out
+ mov (8,sp),d0
+ add d0,a0
+ movbu (a0),d0
+st_getb_out:
+ mov (4,sp),a0
+ ret [],12
+/* Half-press trigger (HLS_EVENT task, 0x602f0b95): the displaced stock call
+ * runs first on the same frame; d0 and PSW are dead at the resume point
+ * (0x602f0b9a reloads d0 and tests it). */
+arm_hook:
+ call trig,[d2,d3,a2,a3],36
+ mov (16,sp),d0
+ cmp 0x02000100,d0
+ bne arm_back
+ mov (loaded_bits),d0
+ and 1023,d0
+ cmp 1023,d0
+ bne arm_back
+ call st_ptr,[],8
+ cmp 0,a0
+ bne arm_ext
+ call arm_gate,[d2,d3,a2,a3],36
+ call st_ptr,[],8
+ cmp 0,a0
+ beq arm_back
+ call arm_refresh,[d2,d3],16     /* section 10: armed implies all ten sections initialised */
+/* Extension vector: a further layer (Caduceus) may put one entry here. It is
+ * called only once armed, hence with every section initialised, on each
+ * half-press, in the HLS_EVENT task. It is entered by calls and may use
+ * d0, d1, a0, a1. Zero in this patch: nothing is called. */
+arm_ext:
+ mov (ext_halfpress),a0
+ cmp 0,a0
+ beq arm_back
+ call arm_ext_call,[d2,d3,a2,a3],36
+arm_back:
+ jmp trig_resume
+arm_ext_call:
+ calls (a0)
+ ret [d2,d3,a2,a3],36
+
 /* Keep stock saturation input. Load current active profile's cells after
  * the builder. Per-image ownership remains unqualified. */
 builder_hook:
@@ -752,6 +831,13 @@ builder_hook:
  mov d0,(4,sp)
  mov d1,(8,sp)
  mov a0,(12,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ bne builder_armed
+ mov (12,sp),a0
+ bra builder_stock
+builder_armed:
+ mov (12,sp),a0
  mov a1,(16,sp)
  mov a2,(20,sp)
  mov a3,(24,sp)
@@ -762,8 +848,11 @@ builder_hook:
  mov (16,sp),a1
  mov (20,sp),a2
  mov (24,sp),a3
+builder_stock:
  add 28,sp
  jmp builder_resume
+
+.section .ext8,"ax"
 /* d0 packed cell -> validated H/L byte, or neutral. Each nibble is -7..7, the
  * span of hue_lut/light_lut; the on-camera editor writes -5..5 only. */
 decode:
@@ -818,17 +907,15 @@ light_lut:
  *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
  * Color Profile may have set them (flag starts set: effective settings survive
- * power-off). The code sits in section 8, which E148 loads before section 2. */
+ * power-off). The section-5 body runs only after arming. */
 .section .refresh_hook,"ax"
  jmp refresh_guard
  nop
-/* Section 2 tail: enter the section-5 refresh extension only after section 5
- * initialization completes (bit 4 at 0xa26e2694). */
 /* Jump-table cases 54..56 (stock: the default 0x602e06ca). Note the profile
  * for the tail, then take the stock default path unchanged. */
 .section .refresh_cases,"a"
  .long refresh_case,refresh_case,refresh_case,refresh_case,refresh_case,refresh_case
-.section .refresh_guard,"ax"
+.section .ext2,"ax"
 /* The profile travels to rt_tail in d2 (callee-saved; this path of the stock
  * function neither reads nor writes it again, and its ret restores the
  * caller's value). No store. */
@@ -839,8 +926,8 @@ refresh_case:
  or REFRESH_TAG,d2
  jmp refresh_default
 refresh_guard:
- movbu (loaded_bits),d0
- btst 0x10,d0
+ call st_ptr,[],8
+ cmp 0,a0
  beq refresh_stock
  jmp rt_tail
 refresh_stock:
@@ -868,10 +955,7 @@ apply_values:
   * snapshot +28735 / +28765). Job record +10 is the dispatcher's block
   * key (always 11 here), not a profile. These are read when the block is
   * built, like the H/L cells, so a profile change between the snapshot
-  * and the build is not covered. Nothing before the first half-press. */
- call st_ptr,[],8
- cmp 0,a0
- beq apply_done
+  * and the build is not covered. The section-2 wrapper checks arming. */
  mov 38017,d0
  clr d1
  mov 0,a0
@@ -934,6 +1018,7 @@ sector_of_record:
  * the reset mode is the current one (setting 41). Part 1 of 904..975 holds the
  * live H/L and per-profile WB, so resetting another mode would wipe them.
  * When the reset mode is not current, keep that part as it was. */
+.section .ext2,"ax"
 creset:
  mov d0,d2
  mov d1,d3
@@ -944,12 +1029,53 @@ creset:
  call st_ptr,[],8
  cmp 0,a0
  beq creset_stock
+ jmp creset_armed
+creset_stock:
+ mov d2,d0
+ mov d3,d1
+creset_orig:
+ mov d0,d2
+ mov d1,d3
+ extbu d3
+ cmp 1,d3
+ jmp creset_resume
+
+/* Reset-in-progress flag. call ...,[d2,a2],12. Preserves d0,d1,a0,a1. */
+st_reset_on:
+ mov 1,d2
+ bra st_reset_put
+st_reset_off:
+ clr d2
+st_reset_put:
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq st_reset_out
+ movbu d2,(ST_RESET,a0)
+st_reset_out:
+ mov a2,a0
+ ret [d2,a2],12
+/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all. */
+st_set_editor:
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq st_set_editor_out
+ mov a2,(ST_EDITOR,a0)
+st_set_editor_out:
+ mov a2,a0
+ ret [a2],8
+
+.section .ext8,"ax"
+creset_armed:
  mov 41,d0
  call raw_get,[],4
  extbu d0
  extbu d2
  cmp d0,d2
- beq creset_stock
+ bne creset_save_cells
+ jmp creset_stock
+creset_save_cells:
  /* 72 cells (904..975) are held on this task's stack across the stock
   * reset: (8..295,sp). a2/a3 are the caller's and are put back. */
  add -304,sp
@@ -989,42 +1115,6 @@ creset_restore:
  mov (300,sp),a3
  add 304,sp
  ret [d2,d3],12
-creset_stock:
- mov d2,d0
- mov d3,d1
-creset_orig:
- mov d0,d2
- mov d1,d3
- extbu d3
- cmp 1,d3
- jmp creset_resume
-
-/* Reset-in-progress flag. call ...,[d2,a2],12. Preserves d0,d1,a0,a1. */
-st_reset_on:
- mov 1,d2
- bra st_reset_put
-st_reset_off:
- clr d2
-st_reset_put:
- mov a0,a2
- call st_ptr,[],8
- cmp 0,a0
- beq st_reset_out
- movbu d2,(ST_RESET,a0)
-st_reset_out:
- mov a2,a0
- ret [d2,a2],12
-/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all. */
-st_set_editor:
- mov a0,a2
- call st_ptr,[],8
- cmp 0,a0
- beq st_set_editor_out
- mov a2,(ST_EDITOR,a0)
-st_set_editor_out:
- mov a2,a0
- ret [a2],8
-
 /* Mode store: E148's mode-recall lists (0x604daf4c) carry 111 but not 903,
  * the Color Profile number that turns 111's stored family 11 into 54..56
  * (E147's lists carry 903 in the same row as 111), nor 989, the Monochrome
@@ -1034,6 +1124,7 @@ st_set_editor_out:
  * E147 does (0 = not a profile; the DB reset writes its default to both rows).
  * rows -> working copy (0x602e0f40 entry in a3, 0x602e1071 entry in a2);
  * a row value above 3 is not copied. */
+.section .ext2,"ax"
 pm_set_a3:
  mov a3,d3
  bra pm_set
@@ -1047,6 +1138,25 @@ pm_set:
  call st_ptr,[],8                /* not armed: the stock copy only */
  cmp 0,a0
  beq pm_set_done
+ jmp pm_set_armed
+pm_set_done:
+ ret [d2,d3],12
+/* working copy -> rows (0x602e0fa5, 0x602e1153): d0 id, d1 row, a0 value */
+pm_put:
+ mov d0,d2
+ mov d1,d3
+ call active_write,[d2],8
+ cmp 111,d2
+ bne pm_put_done
+ call st_ptr,[],8                /* not armed: the stock copy only */
+ cmp 0,a0
+ beq pm_put_done
+ jmp pm_put_armed
+pm_put_done:
+ ret [d2,d3],12
+
+.section .ext8,"ax"
+pm_set_armed:
  mov 903,d2
 pm_set_loop:
  mov d3,a0
@@ -1061,21 +1171,12 @@ pm_set_loop:
  call wc_set,[],4
 pm_set_next:
  cmp 989,d2
- beq pm_set_done
+ bne pm_set_mono
+ ret [d2,d3],12
+pm_set_mono:
  mov 989,d2
  bra pm_set_loop
-pm_set_done:
- ret [d2,d3],12
-/* working copy -> rows (0x602e0fa5, 0x602e1153): d0 id, d1 row, a0 value */
-pm_put:
- mov d0,d2
- mov d1,d3
- call active_write,[d2],8
- cmp 111,d2
- bne pm_put_done
- call st_ptr,[],8                /* not armed: the stock copy only */
- cmp 0,a0
- beq pm_put_done
+pm_put_armed:
  mov 903,d2
 pm_put_loop:
  mov d2,d0
@@ -1086,11 +1187,11 @@ pm_put_loop:
  mov d3,d1
  call active_write,[d2],8
  cmp 989,d2
- beq pm_put_done
+ bne pm_put_mono
+ ret [d2,d3],12
+pm_put_mono:
  mov 989,d2
  bra pm_put_loop
-pm_put_done:
- ret [d2,d3],12
 /* d0 = profile number for d2 (903: Color Profile, 989: Monochrome Profile);
  * returns 0 unless the working copy's stored 111 family is that profile's
  * (11 = COLOR, 12 = MONO), and clears a stale working-copy number. E148's
@@ -1123,7 +1224,7 @@ pm_num_keep:
  ret [d2,d3],12
 
 /* Picture-mode refresh tail for Color Profile 1-3 and Monochrome Profile 1-3
- * (section 5 free tail, entered from refresh_guard once section 5 is loaded).
+ * (section 5 free tail, entered from refresh_guard only when armed).
  * d3 (from the tag refresh_case leaves in d2) is the case: 0..2 = CP1..3 (111 = 54..56),
  * 3..5 = MONO1..3 (111 = 57..59), 0xff = any other mode.
  *
@@ -1150,16 +1251,6 @@ pm_num_keep:
 TONE_SAVED = 0x544f4e45
 .section .ext5,"ax"
 rt_tail:
- /* Not armed (no half-press since power-on): the stock tail and nothing else,
-  * whatever the settings hold. Start-up never runs the profile code below. */
- call st_ptr,[],8
- cmp 0,a0
- bne rt_armed
- mov (12,sp),a0
- clr d0
- mov d3,(76,a0)
- ret [d2,d3,a2,a3],96
-rt_armed:
  mov (12,sp),a0
  clr d0
  mov d3,(76,a0)
@@ -1407,88 +1498,9 @@ rs_stock:
  .hword 916,0, 917,0, 918,0, 919,0, 920,0, 921,0, 922,0, 923,0
  .hword 924,0, 925,0, 926,0, 927,0, 1011,2, 1016,0, 998,0, 0
 
-/* ---- State block access and arming (section 8: loaded before sections 2,
- * 6 and 7, whose hooks call it). st_ptr must stay first: wb.ld binds it. */
-.section .st8,"ax"
-/* a0 = P, or 0 when not armed / handle out of range. call st_ptr,[],8.
- * Preserves d0-d3, a1-a3. */
-.global st_ptr
-st_ptr:
- mov d0,(4,sp)
- /* The handle is read from RAM (uncached alias): hooks may run on another
-  * CPU, whose cache need not hold what the arming CPU wrote. A handle counts
-  * only if it is in the pool, the block is 4-aligned and carries the magic
-  * arm_gate wrote, so a stale or foreign value reads as "not armed". */
- movhu (st_handle_u),d0
- cmp 0,d0
- beq st_ptr_none
- cmp ST_HANDLE_MAX,d0
- bhi st_ptr_none
- add ST_POOL-1,d0
- mov d0,a0
- and 3,d0
- bne st_ptr_none
- mov (ST_MAGIC,a0),d0
- cmp ST_MAGIC_VALUE,d0
- beq st_ptr_out
-st_ptr_none:
- mov 0,a0
-st_ptr_out:
- mov (4,sp),d0
- ret [],8
-/* d0 = byte P+0 (axis) / P+d0, or 0 when not armed. call ...,[],12.
- * Preserves everything else. */
-st_axis:
- clr d0
-st_getb:
- mov a0,(4,sp)
- mov d0,(8,sp)
- call st_ptr,[],8
- clr d0
- cmp 0,a0
- beq st_getb_out
- mov (8,sp),d0
- add d0,a0
- movbu (a0),d0
-st_getb_out:
- mov (4,sp),a0
- ret [],12
-/* Half-press trigger (HLS_EVENT task, 0x602f0b95): the displaced stock call
- * runs first on the same frame; d0 and PSW are dead at the resume point
- * (0x602f0b9a reloads d0 and tests it). */
-arm_hook:
- call trig,[d2,d3,a2,a3],36
- mov (16,sp),d0
- cmp 0x02000100,d0
- bne arm_back
- call st_ptr,[],8
- cmp 0,a0
- bne arm_ext
- call arm_gate,[d2,d3,a2,a3],36
- call st_ptr,[],8
- cmp 0,a0
- beq arm_back
- call arm_refresh,[d2,d3],16     /* section 10: armed implies all ten sections initialised */
-/* Extension vector: a further layer (Caduceus) may put one entry here. It is
- * called only once armed, hence with every section initialised, on each
- * half-press, in the HLS_EVENT task. It is entered by calls and may use
- * d0, d1, a0, a1. Zero in this patch: nothing is called. */
-arm_ext:
- mov (ext_halfpress),a0
- cmp 0,a0
- beq arm_back
- call arm_ext_call,[d2,d3,a2,a3],36
-arm_back:
- jmp trig_resume
-arm_ext_call:
- calls (a0)
- ret [d2,d3,a2,a3],36
+.section .ext8,"ax"
 /* Arm once: every section initialised, caller is the HLS_EVENT task. */
 arm_gate:
- mov (loaded_bits),d0
- and 1023,d0
- cmp 1023,d0
- bne arm_out
  mov sp,a0
  add 12,a0
  call get_tid,[a2],4

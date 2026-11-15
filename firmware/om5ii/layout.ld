@@ -15,12 +15,10 @@ SECTIONS {
  .ext6 0x60ca7b00 : { *(.ext6) }
  .ext7 0x612a4b98 : { *(.ext7) }
  .arm_hook 0x602f0b95 : { *(.arm_hook) }
- .st8 0x613f2ed8 : { *(.st8) }
  .extvec 0x613f2ffc : { *(.extvec) }
  .refresh_hook 0x602e0826 : { *(.refresh_hook) }
  .creset_hook 0x602db531 : { *(.creset_hook) }
  .refresh_cases 0x604997f0 : { *(.refresh_cases) }
- .refresh_guard 0x605af560 : { *(.refresh_guard) }
  .pm_s1 0x602e0f82 : { *(.pm_s1) }
  .pm_s2 0x602e1119 : { *(.pm_s2) }
  .pm_s4 0x602e0fe8 : { *(.pm_s4) }
@@ -65,7 +63,7 @@ loaded_bits = 0xa26e2694;
 prop_byte = 0x602bbed5;
 wc_set = 0x602f5173;
 wc_get = 0x602f514d;
-/* Heap state block (hsl.s .st8). The handle is the padding halfword after the
+/* Heap state block (hsl.s .ext2). The handle is the padding halfword after the
  * HLS event manager's task id (object 0x6218c250, id at +0xac, next field +0xb0). */
 st_handle = 0x6218c2fe;
 st_handle_u = 0xa218c2fe;   /* the same halfword in RAM, past any CPU's cache */
@@ -89,5 +87,6 @@ MS_C = 0x61e43b98;
 scr_obj = 0x61e588f4;      /* the direct-setting screen object; +4 = its panel updater (vtable entry 0) */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
-ASSERT(st_ptr == 0x613f2ed8, "wb.ld binds st_ptr")
-ASSERT(SIZEOF(.st8) <= 0x613f2ffc - 0x613f2ed8, ".st8 runs into the extension vector")
+ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
+ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
+ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")
