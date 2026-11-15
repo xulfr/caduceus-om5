@@ -339,3 +339,20 @@ existing developer builder (not added to patch.py or the launchers). CLAUDE.md's
 - Open: no camera has run alpha5; the "Reset OK-hold" hint seen on the strip after a look step (same in alpha4
   and alpha5) was not investigated; the super control panel's Color Profile icon is still missing in OM-Emu.
   `camera_tested` stays false and the `UNTESTED` gate remains.
+
+## Continuation checkpoint 11 — alpha5 camera result: boot loop (2026-11-15)
+
+**Negative camera result.** Owner flashed v0.1.0-alpha5 (made with the launcher, so package
+`98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2`) to their OM-5 Mark II 1.1 with `OM5MOD/LOOKS.BIN`
+on the card, skipping first-flash steps 0 and 1. Update showed a red light, then blinking. Power cycle: immediate
+boot loop, before any half-press. OM's 1.1 restore file flashed fine and the camera recovered.
+Record: [research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md](research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md).
+
+- Four boot failures now (4, 5, 8, 15 Nov). The heap-state design (no image stores) does not prevent a boot loop.
+  The loop precedes arming, so look loading/films.s runtime and `LOOKS.BIN` are not the cause; suspects are the
+  boot-time data edits, the resource alias, un-gated hooks (`pm_s*`) and loaded-tail copying by the real loader.
+- `patch.py` refuses any release whose patch.json has `blocked` (alpha1–alpha5 set); `tools/oly_patch.py` lists the
+  alpha5 package in `KNOWN_BOOT_FAILURES`. README, SAFETY, FAQ, tour banner and CHANGELOG say do not install.
+- Next session: plan a hardware bisection with minimal builds (owner flashes each, each recorded); ask the owner
+  whether a Color Profile / C1–C4 profile was selected before the update and whether the red light also appears
+  with OM's own file. The alpha5 code review and emulator results remain valid as emulator-only evidence.

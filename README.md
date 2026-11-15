@@ -13,9 +13,9 @@
 </p>
 
 > [!CAUTION]
-> ### Nobody has run this on a camera yet
-> Everything here has only been tried in an **emulator**, a program that imitates the camera on a computer. Three
-> earlier versions of this work left the owner's OM-5 Mark II stuck restarting (November 2026). Each time, OM's own
+> ### Do not install: the latest build failed on a camera
+> v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
+> versions did (November 2026). The installer now refuses every release until this is fixed. Each time, OM's own
 > firmware could be put back from the memory card, but there is no guarantee that will always work.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
 > We are looking for someone willing to make the first careful camera test: see [the test plan](docs/FIRST_FLASH.md).
@@ -24,7 +24,7 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha5, 15 Nov 2026 | Emulator-tested. **Never run on a camera.** One-step installer included. |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha5, 15 Nov 2026 | **Boot loop on the owner's camera, 15 Nov 2026.** Blocked in the installer. |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator

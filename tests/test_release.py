@@ -17,12 +17,17 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaises(patch.Refuse):
             patch.build(rel, b'wrong camera')
 
-    def test_untested_gate_precedes_file_access(self):
-        result = subprocess.run([sys.executable, str(ROOT / 'patch.py'), '--stock', 'missing-stock.bin'],
-                                input='NO\n', text=True, capture_output=True)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn('stopped; nothing was written', result.stdout)
-        self.assertNotIn('Traceback', result.stderr)
+    def test_failed_releases_are_refused_before_file_access(self):
+        # alpha5 boot-looped on a camera (15 Nov 2026); alpha1-4 share its startup code.
+        for source in sorted((ROOT / 'releases').glob('*/patch.json')):
+            name = source.parent.name
+            self.assertTrue(json.loads(source.read_text()).get('blocked'), name)
+            result = subprocess.run([sys.executable, str(ROOT / 'patch.py'), '--release', name,
+                                     '--stock', 'missing-stock.bin', '--i-accept-untested'],
+                                    text=True, capture_output=True)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn('Do not flash it', result.stdout)
+            self.assertNotIn('Traceback', result.stderr)
 
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):

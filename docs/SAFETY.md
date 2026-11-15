@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, looks load from the card and reach the slot's settings, nothing writes into the firmware image. |
-| Real OM-5 Mark II | **Nothing for this build.** |
-| Earlier builds on a real OM-5 Mark II | **Three failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
+| Real OM-5 Mark II | **v0.1.0-alpha5 failed** (15 November 2026): immediate boot loop after the update; OM's 1.1 restored from the card. The installer refuses alpha1–alpha5. |
+| Earlier builds on a real OM-5 Mark II | **Three more failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
 | Going back | After each failure OM's firmware was put back from the card (hold **OK**, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did. |
 
 The third failure was traced to the patch storing its working values inside the firmware's own memory, which OM's

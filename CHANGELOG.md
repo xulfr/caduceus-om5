@@ -1,5 +1,10 @@
 # Changelog
 
+## Camera result — 2026-11-15
+
+**v0.1.0-alpha5 boot-looped on the owner's OM-5 Mark II** immediately after the update; OM's 1.1 restored from
+the card. The installer now refuses alpha1–alpha5. Details: [fourth boot failure](research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md).
+
 ## v0.1.0-alpha5 — 2026-11-15
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256

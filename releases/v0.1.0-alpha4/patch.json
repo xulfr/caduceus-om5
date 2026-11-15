@@ -654,5 +654,6 @@
   "file": "DCOLYMP/E1489999.BIN",
   "bytes": 90832896,
   "sha256": "590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648"
- }
+ },
+ "blocked": "Shares the startup code of alpha5, which caused a boot loop on 15 Nov 2026; never flashed."
 }

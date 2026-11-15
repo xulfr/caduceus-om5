@@ -26,8 +26,8 @@ UNTESTED = """
   ************************************************************************
   THIS RELEASE HAS NOT RUN ON A CAMERA.
 
-  Three earlier OM-5 Mark II builds of this work left the owner's camera
-  in a boot loop (November 2026). Each time OM's own firmware could be
+  Four OM-5 Mark II builds of this work left the owner's camera in a
+  boot loop (November 2026). Each time OM's own firmware could be
   put back from the card, but nothing shows that this will always work.
   A camera that cannot start may need OM service, at your cost.
 
@@ -158,6 +158,8 @@ def main():
             raise Refuse(f'no release {name}')
         rel = json.loads((folder / 'patch.json').read_text())
         print(f'Caduceus for OM-5, release {name}: {rel["model"]}, firmware {rel["firmware"]}')
+        if rel.get('blocked'):
+            raise Refuse(rel['blocked'] + ' Do not flash it. See docs/SAFETY.md; nothing was written')
         if not rel.get('camera_tested') and not a.i_accept_untested:
             print(UNTESTED)
             if input('> ').strip() != 'UNTESTED':
