@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.0-alpha4 — 2026-11-15
+
+**OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256
+`590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648`.
+
+- Fixed the look title after returning from the lower Picture Mode rows and stepping looks again.
+- Reject `@` display commands and invalid name bytes in look banks. Older saved names display `?` for those
+  bytes without changing stored settings. LookLab and the Python writer reject `@` too.
+- Installer reruns preserve custom `LOOKS.BIN` files. Complete firmware files replace their destinations
+  only after writing succeeds, and the restore file is prepared before the patched update is published.
+- The Mac launcher returns the patcher's failure status after its closing prompt, as the Windows launcher does.
+- Added regressions for the reported failures, persisted names, startup gates and installer I/O failures.
+  See the [audit](research/OM5II-ALPHA4-AUDIT-2026-11-15.md) for evidence and remaining hardware gaps.
+
 ## v0.1.0-alpha3 — 2026-11-15
 
 **OM-5 Mark II, E148 firmware 1.1. Emulator only.** Package SHA-256

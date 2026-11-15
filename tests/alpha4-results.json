@@ -1,0 +1,103 @@
+[
+  {
+    "case": "four-films",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "next-film",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "slot-two",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "wrap",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "ten-films",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "oversized-bank",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "bad-crc",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "bad-range",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "name-control",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "persisted-name",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "other-rows",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "row-return",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "title-redraw",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "scp-name",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "empty-card",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "no-card",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "name-markup",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "row-return-title",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "unarmed-delete",
+    "status": "passed",
+    "image_stores_beyond_stock": 0
+  },
+  {
+    "case": "startup-fault-injection",
+    "status": "passed",
+    "image_stores_beyond_stock": 0,
+    "incomplete_section_masks": 1023
+  }
+]

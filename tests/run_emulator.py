@@ -29,6 +29,12 @@ def main():
     crc_bad = bytearray(good); crc_bad[-1] ^= 1
     range_bad = bytearray(good); range_bad[32] = 8
     struct.pack_into('<I', range_bad, 8, zlib.crc32(range_bad[12:]))
+    markup_bad = bytearray(good)
+    markup_bad[96:112] = b'@A034@'.ljust(16, b'\0')
+    struct.pack_into('<I', markup_bad, 8, zlib.crc32(markup_bad[12:]))
+    control_bad = bytearray(good)
+    control_bad[96 + 80 * (len(films) - 1)] = 31
+    struct.pack_into('<I', control_bad, 8, zlib.crc32(control_bad[12:]))
     selected = lambda i: dict(films[i], index=i)
     to_slot = 's1 ok ok ' + 'right ' * 8
     a.out.mkdir(parents=True, exist_ok=True)
@@ -54,9 +60,13 @@ def main():
         ('oversized-bank', max_bank + b'\0', True, 'delete', 2, 0, [None] * 3),
         ('bad-crc', crc_bad, True, 'delete', 2, 0, [None] * 3),
         ('bad-range', range_bad, True, 'delete', 2, 0, [None] * 3),
+        ('name-markup', markup_bad, True, 'delete', 2, 0, [None] * 3),
+        ('name-control', control_bad, True, 'delete', 2, 0, [None] * 3),
+        ('persisted-name', good, True, 'delete', 1, 4, [selected(0), None, None]),
         # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
         ('other-rows', good, True, 'down delete down delete down delete down delete down delete', 1, 4, [None] * 3),
         ('row-return', good, True, 'down down down down down down delete', 1, 4, [selected(0), None, None]),
+        ('row-return-title', twins, True, 'delete down down down down down down delete delete', 1, 2, [twin(0), None, None]),
         # Two films that differ only in name: the frame must change on each step (title repaint).
         ('title-redraw', twins, True, 'delete delete', 1, 2, [twin(1), None, None]),
         ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),
@@ -74,7 +84,7 @@ def main():
         if data is not None:
             (card / 'LOOKS.BIN').write_bytes(data)
         expected = folder / 'expect.json'
-        expected.write_text(json.dumps(dict(state=state, count=count, slots=slots)))
+        expected.write_text(json.dumps(dict(case=name, state=state, count=count, slots=slots)))
         pre = ROOT / 'tools/dev/mount.mjs' if mounted else ROOT / 'tests/unmounted.mjs'
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(pre), POST=str(ROOT / 'tests/emulator_assert.mjs'), OM5_EXPECT=str(expected))
         if state is None:
@@ -125,6 +135,8 @@ def main():
                 assert frames[-11 + k] == frames[-12 + k], f'{name}: Delete acted on row {k // 2}'
         if name == 'scp-name':
             assert frames[-1] != stock_frames[-1], 'scp-name: the control panel shows no film name'
+        if name == 'row-return-title':
+            assert frames[-1] != frames[-2], 'row-return-title: different look names render the same title after returning to the strip'
         if name == 'unarmed-delete':
             assert summaries[-1]['steps'][-1].startswith('delete: 0x418 ')
             assert frames[-1] == frames[-2], 'unarmed-delete: Delete changed the Picture Mode screen'

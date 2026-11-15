@@ -69,7 +69,9 @@ fl_str_cp:
 /* ---- section 6: before the page controller lays its children out (hsl.s
  * pages_hook; a3 = the controller, child 15 = the title label). The label
  * skips a text it already shows by string id, and a film step keeps the id,
- * so after a step forget the id once. Preserves d0, d1, a0, a1.
+ * so after a step forget the id once. Restore the slot's title id on the
+ * mode strip, where stock substitutes "Picture Mode" after a row return.
+ * Preserves d0, d1, a0, a1.
  * call pg_title,[d2,d3,a2,a3],36 */
 .section .ext6,"ax"
 .global pg_title
@@ -81,11 +83,32 @@ pg_title:
  call st_ptr,[],8
  cmp 0,a0
  beq pg_t_out
- movbu (FL_DIRTY,a0),d0
+ mov a0,a2
+ /* Saved a0 points to the controller's RAM copy of the row descriptor:
+  * +0 kind, +4 title id. Only named Color Profiles on the mode strip. */
+ mov (12,sp),a0
+ movbu (a0),d0
+ cmp 4,d0
+ bne pg_t_dirty
+ mov 111,d0
+ call stock_get,[],4
+ sub 54,d0
+ cmp 3,d0
+ bcc pg_t_dirty
+ mov d0,d3
+ add 2749,d3
+ mov a2,a0
+ call fl_name,[d2,d3,a2,a3],28
+ cmp 0,a0
+ beq pg_t_dirty
+ mov (12,sp),a0
+ mov d3,(4,a0)
+pg_t_dirty:
+ movbu (FL_DIRTY,a2),d0
  cmp 0,d0
  beq pg_t_out
  clr d0
- movbu d0,(FL_DIRTY,a0)
+ movbu d0,(FL_DIRTY,a2)
  mov a3,a0
  mov 15,d0
  call child_get,[],0
@@ -220,6 +243,27 @@ fl_c_next:
  inc d1
  cmp 47,d1
  bne fl_c_byte
+ /* Names go through OM's formatted-text renderer. '@' starts a command,
+  * not a literal character (e.g. @A034@ draws an icon). Reject commands
+  * and non-printable/non-ASCII bytes before any settings are written. */
+ movbu (64,a0),d0
+ cmp 0,d0
+ beq fl_c_bad
+ mov 64,d1
+fl_c_name:
+ movbu (d1,a0),d0
+ cmp 0,d0
+ beq fl_c_name_next
+ cmp 32,d0
+ bcs fl_c_bad
+ cmp 126,d0
+ bhi fl_c_bad
+ cmp 64,d0
+ beq fl_c_bad
+fl_c_name_next:
+ inc d1
+ cmp 76,d1
+ bne fl_c_name
  add FL_REC,a0
  add -1,d2
  bne fl_c_rec
@@ -501,6 +545,19 @@ fl_n_word:
 fl_n_char:
  mov d0,d3
  and 255,d3
+ /* Older builds could persist renderer commands. Make existing names
+  * literal too, without rewriting their stored settings. */
+ cmp 0,d3
+ beq fl_n_literal
+ cmp 32,d3
+ bcs fl_n_replace
+ cmp 126,d3
+ bhi fl_n_replace
+ cmp 64,d3
+ bne fl_n_literal
+fl_n_replace:
+ mov 63,d3
+fl_n_literal:
  movhu d3,(a3)
  add 2,a3
  lsr 8,d0

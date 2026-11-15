@@ -13,9 +13,9 @@ The owner performs any physical test; development sessions prepare and check fil
 - Implemented in v0.1.0-alpha2 (emulator only): the title and values repaint on each look step; the
   trash button steps looks only on the Picture Mode row; the super control panel shows the look name
   while its Picture Mode cell is highlighted; the mounted-card, missing-file case is a regression test.
-- Open, cosmetic: after returning from the lower rows the stock title reads "Picture Mode" rather than
-  the look name; in the emulator the super control panel's Picture Mode cell draws no icon for a
-  Color Profile.
+- Implemented in v0.1.0-alpha4 (emulator only): the look name remains visible after returning from the lower
+  rows. Look names cannot inject camera display commands. Installer reruns preserve custom look banks.
+- Open, cosmetic: in the emulator the super control panel's Picture Mode cell draws no icon for a Color Profile.
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   [first camera test plan](docs/FIRST_FLASH.md) and record the exact package hash.

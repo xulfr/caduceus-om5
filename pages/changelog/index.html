@@ -7,6 +7,19 @@
 <header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
 <div class="banner"><strong>Untested on a camera.</strong> Emulator only. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="doc" id="content"><h1 id="changelog">Changelog</h1>
+<h2 id="v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</h2>
+<p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
+<code>590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648</code>.</p>
+<ul>
+<li>Fixed the look title after returning from the lower Picture Mode rows and stepping looks again.</li>
+<li>Reject <code>@</code> display commands and invalid name bytes in look banks. Older saved names display <code>?</code> for those
+  bytes without changing stored settings. LookLab and the Python writer reject <code>@</code> too.</li>
+<li>Installer reruns preserve custom <code>LOOKS.BIN</code> files. Complete firmware files replace their destinations
+  only after writing succeeds, and the restore file is prepared before the patched update is published.</li>
+<li>The Mac launcher returns the patcher's failure status after its closing prompt, as the Windows launcher does.</li>
+<li>Added regressions for the reported failures, persisted names, startup gates and installer I/O failures.
+  See the <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA4-AUDIT-2026-11-15.md">audit</a> for evidence and remaining hardware gaps.</li>
+</ul>
 <h2 id="v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
 <code>f56a13335e1085e73f79db66e58440839022349a72746e1dcb5b32e2bc08e242</code>.</p>

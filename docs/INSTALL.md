@@ -28,6 +28,10 @@ You get a folder `card`:
 | `card/OM5MOD/LOOKS.BIN` | the ten starter looks |
 | `card/restore/DCOLYMP/E1489999.BIN` | OM's own firmware, to go back. **Keep it.** |
 
+Running the installer again keeps any existing `card/OM5MOD/LOOKS.BIN`, so your custom looks are not replaced.
+It prepares the restore file before publishing the update file. If file preparation fails, fix the reported
+problem and run it again before copying anything to the card.
+
 ## 2. Copy to the SD card
 
 Copy the folders `DCOLYMP` and `OM5MOD` from `card` to the top of the SD card (not inside `DCIM`).

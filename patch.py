@@ -13,7 +13,7 @@ Writes  DIR/DCOLYMP/E1489999.BIN       the patched update (copy the DCOLYMP fold
 Needs only Python 3.8+. It never talks to a camera. It contains no OM firmware: it works on the official file,
 checks that file's SHA-256, applies this project's changes and checks the result against the release's SHA-256.
 """
-import argparse, json, shutil, sys, time
+import argparse, json, os, sys, tempfile, time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -127,6 +127,23 @@ def build(rel, stock):
     return image
 
 
+def atomic_write(path, data):
+    """Publish a complete file; a failed write must not truncate an existing update."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix='.' + path.name + '.',
+                                         suffix='.tmp', delete=False) as f:
+            temporary = Path(f.name)
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--stock', type=Path)
@@ -149,23 +166,27 @@ def main():
         stock = path.read_bytes() if path else fetch_stock(rel)
         image = build(rel, stock)
         out = a.out
-        for sub, data in ((Path('DCOLYMP'), image), (Path('restore') / 'DCOLYMP', stock)):
-            (out / sub).mkdir(parents=True, exist_ok=True)
-            (out / sub / 'E1489999.BIN').write_bytes(data)
-        if (folder / 'LOOKS.BIN').is_file():
-            (out / 'OM5MOD').mkdir(exist_ok=True)
-            shutil.copy(folder / 'LOOKS.BIN', out / 'OM5MOD' / 'LOOKS.BIN')
+        # Publish recovery first and the install last. Never replace a user's looks.
+        atomic_write(out / 'restore/DCOLYMP/E1489999.BIN', stock)
+        looks = out / 'OM5MOD/LOOKS.BIN'
+        kept_looks = looks.exists()
+        if not kept_looks and (folder / 'LOOKS.BIN').is_file():
+            atomic_write(looks, (folder / 'LOOKS.BIN').read_bytes())
+        atomic_write(out / 'DCOLYMP/E1489999.BIN', image)
         print(f'\nDone. In {out}:')
         print('  DCOLYMP/E1489999.BIN          the patched update, SHA-256 ' + sha256(image))
         print('  restore/DCOLYMP/E1489999.BIN  OM\'s firmware 1.1, to go back')
         if (out / 'OM5MOD' / 'LOOKS.BIN').is_file():
-            print('  OM5MOD/LOOKS.BIN              the starter films')
+            print('  OM5MOD/LOOKS.BIN              ' + ('your existing looks (kept)' if kept_looks else 'the starter looks'))
         print('Next: docs/INSTALL.md')
     except Refuse as e:
         print(f'\nStopped: {e}')
         sys.exit(1)
     except (EOFError, KeyboardInterrupt):
-        print('\nStopped; nothing was written')
+        print('\nStopped; preparation may be incomplete. Run again before copying files.')
+        sys.exit(1)
+    except OSError as e:
+        print(f'\nStopped: {e}. Preparation is incomplete; run again before copying files.')
         sys.exit(1)
 
 

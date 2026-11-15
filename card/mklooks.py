@@ -33,8 +33,8 @@ def record(f):
     r[41:47] = struct.pack('6b', one('contrast', -2), one('sharpness', -2), one('shading', -5),
                            one('shadows', -7), one('midtones', -7), one('highlights', -7))
     name = f.get('name', '').encode('ascii')
-    if not 0 < len(name) <= 12 or name.strip() != name or any(not 32 <= c < 127 for c in name):
-        raise ValueError(f'{f.get("name")!r}: a name is 1 to 12 plain characters')
+    if not 0 < len(name) <= 12 or name.strip() != name or any(not 32 <= c < 127 or c == 64 for c in name):
+        raise ValueError(f'{f.get("name")!r}: a name is 1 to 12 plain characters, without @')
     return bytes(r) + name.ljust(NAME, b'\0')
 
 

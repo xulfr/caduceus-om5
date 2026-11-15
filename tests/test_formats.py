@@ -44,7 +44,7 @@ class LooksTests(unittest.TestCase):
         self.assertEqual(looks_bin([{'name': 'Default'}]).hex(), js(films=[{'name': 'Default'}])['result'])
 
     def test_writers_reject_invalid_input(self):
-        for bad in ({'name': ''}, {'name': ' thirteen chars'}, {'name': ' Film'}, {'name': 'é'},
+        for bad in ({'name': ''}, {'name': ' thirteen chars'}, {'name': ' Film'}, {'name': 'é'}, {'name': '@A034@'},
                     {'sat': [6] * 12}, {'hue': [0] * 13}, {'light': [0.5] * 12},
                     {'contrast': True}, {'shading': 6}, {'wb': []}, {'wb': [8, 0]}):
             with self.subTest(bad=bad):
@@ -59,7 +59,7 @@ class LooksTests(unittest.TestCase):
 
     def test_reader_rejects_corruption(self):
         good = looks_bin([{'name': 'Test'}])
-        for at, value in [(0, 0), (4, 0), (12, 2), (14, 11), (32, 8), (32 + 36, 2), (32 + 37, 8)]:
+        for at, value in [(0, 0), (4, 0), (12, 2), (14, 11), (32, 8), (32 + 36, 2), (32 + 37, 8), (96, 64), (96, 31), (96, 127)]:
             bad = bytearray(good)
             bad[at] = value
             if at >= 12:
@@ -68,6 +68,10 @@ class LooksTests(unittest.TestCase):
         bad = bytearray(good); bad[-1] ^= 1
         self.assertIn('error', js(read=bad.hex()))
         self.assertIn('error', js(read=good[:-1].hex()))
+        # Padding inside the twelve displayed bytes is also checked by firmware.
+        bad = bytearray(good); bad[101] = 64
+        struct.pack_into('<I', bad, 8, zlib.crc32(bad[12:]))
+        self.assertIn('error', js(read=bad.hex()))
 
 
 if __name__ == '__main__':

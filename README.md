@@ -24,7 +24,7 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha3, 15 Nov 2026 | Emulator-tested. **Never run on a camera.** One-step installer included. |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha4, 15 Nov 2026 | Emulator-tested. **Never run on a camera.** One-step installer included. |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator

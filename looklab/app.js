@@ -25,6 +25,7 @@ function nameProblem(name) {
   if (name !== name.trim()) return 'No spaces at the start or end.';
   if (name.length > NAME_MAX) return `At most ${NAME_MAX} characters (${name.length}).`;
   if (!/^[\x20-\x7e]+$/.test(name)) return 'Plain letters, digits, spaces and punctuation only.';
+  if (name.includes('@')) return 'Use a name without @; the camera treats it as a display command.';
   return null;
 }
 
@@ -60,6 +61,10 @@ function readLooks(buf) {
     const o = 32 + 80 * k, g = (at) => dv.getInt8(o + at), arr = (at) => Array.from({ length: 12 }, (_, i) => g(at + i));
     if (g(36) !== 0 && g(36) !== 1) throw new Error('Invalid WB flag');
     if (Math.abs(g(37)) > 7 || Math.abs(g(38)) > 7) throw new Error('Invalid WB shift');
+    for (let i = 0; i < NAME_MAX; i++) {
+      const c = b[o + 64 + i];
+      if (c && (c < 32 || c > 126 || c === 64)) throw new Error('Invalid name byte');
+    }
     let name = ''; for (let i = 0; i < NAME_MAX && b[o + 64 + i]; i++) name += String.fromCharCode(b[o + 64 + i]);
     films.push({ name, hue: arr(0), light: arr(12), sat: arr(24), wb: g(36) ? [g(37), g(38)] : null, contrast: g(41), sharpness: g(42), shading: g(43),
       shadows: g(44), midtones: g(45), highlights: g(46) });

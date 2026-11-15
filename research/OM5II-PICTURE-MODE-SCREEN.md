@@ -37,7 +37,10 @@ observations only.** Addresses are runtime addresses of the expanded main progra
   screen handler does (`(scr_obj)` → `(4,·)` → vtable entry 0).
 - `pg_title` (section 6, called first in `pages_hook`) consumes `FL_DIRTY`: it sets the title label's stored id
   (child 15, `+130`) to `0xffff`, so the `direct_layout` that follows lays the same id out again and the label
-  invalidates itself. No other widget is touched; without the flag the hook is stock behaviour plus one test.
+  invalidates itself.
+- Alpha4 also restores the named Color Profile's title id in the controller's RAM row descriptor before
+  layout. This is limited to an armed state, a Color Profile with a stored name and row kind 4. It fixes
+  the generic title after returning from the lower rows; those rows retain their own titles.
 
 ## The highlighted row
 
@@ -46,6 +49,8 @@ Mode row (the strip of modes), 0 on the colour wheel, tone, Shading, Sharpness a
 `+20 = 4`, a slider, instead). `+140` is the title's string id for the Picture Mode row: the mode's name on
 entry, 203 ("Picture Mode") after coming back from the lower rows. `fl_delete` steps a film only when `+136`
 reads 4. In the colour wheel the container consumes the press first (axis switch), as before.
+The controller copies this block to controller + 884. At the `pages_hook` call, `a0` addresses its row
+descriptor (block + 120), with the title id at +4. Alpha4 edits this RAM copy, not the firmware image.
 
 ## Super control panel
 

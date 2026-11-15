@@ -30,7 +30,10 @@ Record (signed bytes; the offsets are those of the OM-3 project's `LOOKS.BIN` re
 
 Colours run clockwise from Yellow, as on the camera's wheel: Yellow, Orange, Orange-red, Red, Magenta, Violet,
 Blue, Blue-cyan, Cyan, Green-cyan, Green, Yellow-green. Bytes 39, 40 and 47..63 are not read (write zero).
-Name: ASCII, zero-padded; the camera shows the first 12 characters.
+Name: 1–12 printable ASCII characters, zero-padded. `@` is not allowed: the camera treats it as a display
+command. The camera checks the first 12 name bytes and rejects an empty name, `@`, control characters and
+non-ASCII bytes. Older saved names containing these bytes display `?` in their place; stored settings are
+not rewritten. LookLab and the Python writer also reject leading and trailing spaces.
 
 The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
 that fails is ignored as a whole. Writers: `card/mklooks.py`, LookLab (`looklab/app.js`), byte-identical.

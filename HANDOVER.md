@@ -275,3 +275,37 @@ existing developer builder (not added to patch.py or the launchers). CLAUDE.md's
 - The generic title after returning from a lower row and missing super control panel icon in
   OM-Emu remain open. No physical camera result exists for alpha3. The readiness test exercises
   the branch with missing code in OM-Emu. Physical boot, recovery and capture remain unverified.
+
+## Continuation checkpoint 9 — alpha3 bug hunt and alpha4 (2026-11-15)
+
+- Audited remote main `fecc129` and reproduced all prior release hashes before changes. Findings and
+  negative reproductions: [alpha4 audit](research/OM5II-ALPHA4-AUDIT-2026-11-15.md).
+- Fixed look-name display-command interpretation (including already-persisted names), the title after
+  returning from lower rows, installer overwriting custom look banks, publishing the install before a
+  usable restore and direct destination truncation, and the Mac launcher's lost failure exit status.
+- Alpha4 package: 90,832,896 bytes, SHA-256
+  `590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648`.
+  `patch.py` selects `releases/v0.1.0-alpha4` by default. The starter bank is byte-identical to alpha3.
+- Strict source build: `OM5_STOCK=... bash tools/dev/build.sh generated/alpha4-record --record`;
+  the record tool ended with its strict build. Created release with
+  `python tools/mkrelease.py v0.1.0-alpha4 generated/alpha4-record/strict STOCK`.
+  Independent comparison (`tests/audit_build.py`) found 1,020 changed expanded-main bytes against alpha3,
+  only in declared ranges in sections 6/7/10, unchanged loader bounds/resources and 768 ND selector cases.
+  Evidence: `tests/alpha4-build-audit.json`.
+- OM-Emu `bdb3347`, Node 26.13.0: all 19 look/menu cases pass, with zero image stores beyond matched stock.
+  `tests/startup_assert.mjs` separately passes 1,023 incomplete masks, task gates, allocation failure/retry,
+  state-clear bounds and handle bounds; its stores also equal stock. Evidence: `tests/alpha4-results.json`.
+  Raw runs: `generated/alpha4-targeted`, `generated/alpha4-regressions`, `generated/alpha4-startup.log`,
+  `generated/alpha4-stock-startup.log`. Negative cases: `generated/alpha3-deep-row-title` and
+  `generated/alpha3-deep-name`. See tests/README.md for repeat commands.
+- Host suite with `OM5_STOCK` set: 17 tests, 16 pass, E144 built-output check skipped. Reproduced alpha1–4;
+  new installer fault/preservation tests and generated-site checks pass. Log: `generated/alpha4-host-tests.log`.
+  Mac launcher checked with a Python stub returning 23: old exit 0, new exit 23 (Bash under WSL).
+- Prepared and verified `generated/alpha4-card`: patched image, byte-exact E148 stock restore and starter bank.
+  No camera accessed. Native loader, second CPU, ISP, real persistence, capture and recovery remain unverified.
+  `camera_tested: false`, the `UNTESTED` prompt and all warnings remain. The SCP cell icon is still absent in
+  OM-Emu and is logged as open. E144 pre-alpha remains pinned to the existing alpha2 donor revision.
+- Windows workspace: official inputs in `generated/stock`, emulator in `generated/om-emu`; WSL binutils 2.43
+  under `/home/tomrb/camera-firmware-lab/binutils-patch-build`. `generated/bin/mn10300-elf-{as,ld,objcopy}`
+  links point there for PATH. The pre-existing one-line `tools/dev/sess.mjs` after-step hook was left untouched
+  and is excluded from this commit; these tests do not depend on it.

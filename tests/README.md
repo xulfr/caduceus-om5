@@ -35,7 +35,9 @@ repaints the screen (two films that differ only in name must give different fram
 does nothing on the tone, Shading, Sharpness and Contrast rows, that it steps again after returning to the
 Picture Mode row, and that the super control panel's frame differs from stock once a slot holds a film.
 Alpha3 adds a valid maximum-size bank with a trailing byte and a pre-arm Delete case with the section-10
-extension replaced by stock bytes. Results are in `alpha3-results.json`. Medium-mounted status and, in
+extension replaced by stock bytes. Alpha4 adds a title check after returning from lower rows, name-command
+and control-byte rejection, and safe display of names persisted by older releases. Results are in
+`alpha4-results.json` (19 look/menu cases plus the separate startup probe). Medium-mounted status and, in
 armed cases, section-ready bits are injected because the emulator does not reproduce that hardware lifecycle.
 
 The same session is run on unmodified stock first. Every store into the image is logged. Any PC/address
@@ -44,6 +46,27 @@ from patch-origin writes; it does not prove that all hardware paths are safe.
 
 All results are **emulator only**. No loader, second CPU, ISP, physical persistence or exposure validation
 is implied. Do not change `camera_tested` after a passing run.
+
+## Startup fault injection and build audit
+
+`startup_assert.mjs` is a POST module for `sess.mjs`. It checks all incomplete section masks, task identity,
+allocation failure/retry, state-clear and handle bounds. Its arming entry address is from the current E148
+`hsl.s` ELF; update the probe if that symbol moves. Run a session without keys:
+
+```sh
+OM_EMU_MODEL=E148 PRE="$PWD/tools/dev/mount.mjs" POST="$PWD/tests/startup_assert.mjs" node tools/dev/sess.mjs generated/om-emu generated/strict/decoded/0100.bin generated/strict/decoded/0101.bin generated/startup '' --watch --json
+```
+
+Compare image stores to a stock session with the same empty key script and PRE, omitting POST.
+`audit_build.py` checks native loaded bounds, every declared preimage/postimage, containment of all byte
+changes against stock and a previous build, unchanged resources/loader bounds and the 768 ND selector inputs:
+
+```sh
+python tests/audit_build.py --build generated/strict --previous generated/previous --stock "$OM5_STOCK" --out generated/build-audit.json
+```
+
+Host tests in `test_installer.py` use temporary directories and fake firmware bytes to exercise custom-bank
+preservation, fresh starter creation, write failure and failed recovery preparation. They never download firmware.
 
 `github-actions.yml` can be installed as `.github/workflows/tests.yml` by a credential with workflow
 permission. It runs the source suite without firmware; no active workflow is claimed here.

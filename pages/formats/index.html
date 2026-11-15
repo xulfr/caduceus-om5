@@ -114,7 +114,10 @@
 </table>
 <p>Colours run clockwise from Yellow, as on the camera's wheel: Yellow, Orange, Orange-red, Red, Magenta, Violet,
 Blue, Blue-cyan, Cyan, Green-cyan, Green, Yellow-green. Bytes 39, 40 and 47..63 are not read (write zero).
-Name: ASCII, zero-padded; the camera shows the first 12 characters.</p>
+Name: 1–12 printable ASCII characters, zero-padded. <code>@</code> is not allowed: the camera treats it as a display
+command. The camera checks the first 12 name bytes and rejects an empty name, <code>@</code>, control characters and
+non-ASCII bytes. Older saved names containing these bytes display <code>?</code> in their place; stored settings are
+not rewritten. LookLab and the Python writer also reject leading and trailing spaces.</p>
 <p>The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
 that fails is ignored as a whole. Writers: <code>card/mklooks.py</code>, LookLab (<code>looklab/app.js</code>), byte-identical.</p>
 <h2 id="where-a-look-lives-in-the-camera">Where a look lives in the camera</h2>

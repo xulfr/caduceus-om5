@@ -40,5 +40,23 @@ export default function(g) {
       assert.equal(R(wb + 3), (R(wb) ^ R(wb + 1) ^ R(wb + 2) ^ 0x57420101) >>> 0, `slot ${p} WB checksum`);
     }
   }
+  if (expect.case === 'persisted-name') {
+    // Simulate a name saved by alpha1-3, then ask each stock label-id family
+    // for it. Invalid bytes must never reach the formatted-text renderer.
+    const bytes = Buffer.from('@A034@\x1f\x7f\x80ABC', 'latin1');
+    const saved = [R(917), R(918), R(919)];
+    const write = (id, value) => g.__call(0x602f5121, { d0: id, d1: 1, a0: value });
+    try {
+      for (let k = 0; k < 3; k++) write(917 + k, bytes.readUInt32LE(4*k));
+      for (const id of [2749, 2752, 2859]) {
+        const addr = g.__call(0x60d52ed5, { d0: id }).a0 >>> 0;
+        assert.equal(Buffer.from(g.__M.dbgRead(addr, 26)).toString('utf16le').replace(/\0.*$/, ''),
+                     '?A034????ABC', `literal persisted name for string ${id}`);
+      }
+      for (let k = 0; k < 3; k++) assert.equal(R(917 + k), bytes.readUInt32LE(4*k), 'display does not rewrite stored names');
+    } finally {
+      saved.forEach((value, k) => write(917 + k, value));
+    }
+  }
   console.log('ASSERTIONS passed');
 }
