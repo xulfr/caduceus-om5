@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit an E148 decoded build against stock and its predecessor. No camera access."""
+"""Audit an E148 decoded build against stock and an optional predecessor. No camera access."""
 import argparse
 import importlib.util
 import json
@@ -69,8 +69,9 @@ def rebuild_resources(resources, stock_payload, spec):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    for name in ('build', 'previous', 'stock', 'out'):
+    for name in ('build', 'stock', 'out'):
         ap.add_argument('--' + name, type=Path, required=True)
+    ap.add_argument('--previous', type=Path, help='decoded predecessor build (default: stock)')
     a = ap.parse_args()
     spec = json.loads((ROOT / 'firmware/om5ii/patch.json').read_text())
     stock = a.stock.read_bytes()
@@ -78,7 +79,7 @@ def main():
     blocks = {b.kind: b for b in patch.parse(stock)}
     original = patch.expand_image(blocks[0x100].payload)
     current = (a.build / 'decoded/0100.bin').read_bytes()
-    previous = (a.previous / 'decoded/0100.bin').read_bytes()
+    previous = (a.previous / 'decoded/0100.bin').read_bytes() if a.previous else original
     report = json.loads((a.build / 'build.json').read_text())
     assert len(original) == len(current) == len(previous)
     assert patch.sha256(current) == spec['components']['0x100']['after_sha256']
@@ -86,7 +87,8 @@ def main():
     resources = (a.build / 'decoded/0101.bin').read_bytes()
     assert patch.sha256(resources) == spec['components']['0x101']['after_sha256']
     rebuild_resources(resources, blocks[0x101].payload, spec)
-    resource_change = resource_delta(resources, (a.previous / 'decoded/0101.bin').read_bytes(), spec)
+    previous_resources = (a.previous / 'decoded/0101.bin').read_bytes() if a.previous else blocks[0x101].payload
+    resource_change = resource_delta(resources, previous_resources, spec)
     regions = loader_regions(original)
     owners = audit_ranges(original, spec['ranges'], spec.get('data_edits', []))
     edits = [r for r in spec['ranges'] if r['component'] == '0x100' and 'address' in r]
@@ -127,7 +129,7 @@ def main():
               'previous_expanded_sha256': patch.sha256(previous),
               'expanded_sha256': patch.sha256(current), 'changed_ranges': changed,
               'all_edits_declared': True, 'previous_bytes_back_to_stock': back_to_stock, 'native_loader_bounds_unchanged': True,
-              'resources_unchanged': resources == (a.previous / 'decoded/0101.bin').read_bytes(), 'resource_alias_words_changed': resource_change,
+              'resources_unchanged': resources == previous_resources, 'resource_alias_words_changed': resource_change,
               'nd_selector_cases': cases,
               'section_tail_space': {r['name']: next(s['end'] for s in regions if s['id'] == owners[r['name']])
                                      - int(r['address'], 16) - r['bytes']

@@ -85,11 +85,21 @@ class ReleaseTests(unittest.TestCase):
             end = start + len(bytes.fromhex(edit['bytes']))
             self.assertFalse(any(start < address + size and end > address for address, size in restored), edit)
 
-    def test_newest_release_is_alpha11(self):
-        self.assertEqual(patch.newest(), 'v0.1.0-alpha11')
+    def test_newest_release_is_alpha12(self):
+        self.assertEqual(patch.newest(), 'v0.1.0-alpha12')
         releases = ROOT / 'releases'
-        self.assertEqual((releases / patch.newest() / 'LOOKS.BIN').read_bytes(),
-                         (releases / 'v0.1.0-alpha10/LOOKS.BIN').read_bytes())
+        alpha11 = releases / 'v0.1.0-alpha11'
+        alpha12 = releases / 'v0.1.0-alpha12'
+        self.assertEqual((alpha12 / 'LOOKS.BIN').read_bytes(), (alpha11 / 'LOOKS.BIN').read_bytes())
+        prev = json.loads((alpha11 / 'patch.json').read_text())
+        rel = json.loads((alpha12 / 'patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertEqual(rel['resource'], prev['resource'])
+        edits = {int(edit['address'], 16): len(bytes.fromhex(edit['bytes'])) for edit in rel['main']['edits']}
+        self.assertTrue(any(start <= 0x610d9bc0 < start + size for start, size in edits.items()))
+        for address, width in ((0x610d9738, 4), (0x610d979e, 16), (0x610d97be, 16)):
+            self.assertFalse(any(start < address + width and start + size > address
+                                 for start, size in edits.items()))
 
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):
