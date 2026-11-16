@@ -17,7 +17,7 @@ from om5ii_boot_audit import audit_ranges, loader_regions, BASE
 def resource_delta(current, previous, spec):
     """Image IDs whose record-0 pointer word differs from the previous build. Anything else that differs is
     refused: other records (bitmaps, language, fonts) byte for byte, and every decoded record-0 byte apart from
-    the pointer words of aliases declared in patch.json."""
+    the pointer words of aliases and artwork sprite IDs declared in patch.json."""
     from oly_compress import _sequences
     if current == previous:
         return []
@@ -34,6 +34,13 @@ def resource_delta(current, previous, spec):
     load = struct.unpack_from('<I', new)[0] - 8
     table = struct.unpack_from('<I', new, 4)[0] - load
     declared = {int(t, 16) for g in spec.get('resource_aliases', []) for t, _ in g['aliases']}
+    # Artwork sprite IDs are declared too, but every ID of one sprite must point at the same bitmap.
+    word = lambda i: struct.unpack_from('<I', new, table + 4 * i)[0]
+    for g in spec.get('resource_aliases', []):
+        for sprite in g.get('artwork', {}).get('sprites', []):
+            ids = [int(i, 16) for i in sprite['ids']]
+            assert len({word(i) for i in ids}) == 1, f'artwork sprite {sprite["ids"][0]} IDs point at different bitmaps'
+            declared.update(ids)
     words = sorted({(i - table) // 4 for i in range(len(new)) if new[i] != old[i]})
     for w in words:
         assert w >= 0 and w in declared, f'undeclared record-0 change at image ID {w:#x}'

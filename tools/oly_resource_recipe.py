@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Add image aliases to a patch.json resource group and record the new record-0 LZ4 recipe.
+"""Add image aliases or artwork IDs to a patch.json resource group and record the new record-0 LZ4 recipe.
 
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN TARGET=SOURCE [...]
+    python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --artwork ANCHOR=TARGET [...]
+
+TARGET=SOURCE points the placeholder TARGET at stock image SOURCE (resource_aliases). --artwork ANCHOR=TARGET
+adds TARGET to the ids of the artwork sprite that already lists ANCHOR, so TARGET shows the same bitmap.
 
 The record-0 stream is re-encoded from the current recipe's own stream (oly_compress._repack with split
 matches), so only the sequences around each changed pointer word differ. The recipe window is the span of
@@ -18,7 +22,8 @@ from oly_resource import alias_images, _recipe
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('patch'); p.add_argument('--stock', required=True); p.add_argument('alias', nargs='+')
+    p.add_argument('patch'); p.add_argument('--stock', required=True); p.add_argument('alias', nargs='*')
+    p.add_argument('--artwork', action='append', default=[], metavar='ANCHOR=TARGET')
     a = p.parse_args()
     spec_path = Path(a.patch) / 'patch.json'
     spec = json.loads(spec_path.read_text())
@@ -26,7 +31,13 @@ def main():
     stock = next(b for b in oly_patch.parse(Path(a.stock).read_bytes()) if b.kind == 0x101).payload
     aliases = [(int(t, 16), int(s, 16)) for t, s in group['aliases']]
     extra = [tuple(int(x, 16) for x in item.split('=')) for item in a.alias]
-    if {t for t, _ in extra} & {t for t, _ in aliases}:
+    art = [tuple(int(x, 16) for x in item.split('=')) for item in a.artwork]
+    if not extra and not art:
+        sys.exit('nothing to add')
+    sprites = group.get('artwork', {}).get('sprites', [])
+    listed = {int(i, 16) for sp in sprites for i in sp['ids']}
+    new = [t for t, _ in extra] + [t for _, t in art]
+    if len(set(new)) != len(new) or set(new) & ({t for t, _ in aliases} | listed):
         sys.exit('alias already present')
     current = alias_images(stock, aliases, group['lz4_recipe'], group.get('artwork'))
     at = 2016
@@ -43,6 +54,14 @@ def main():
         if struct.unpack_from('<I', data, table + 4 * target)[0] != placeholder:
             sys.exit(f'{target:#x} is not a placeholder')
         struct.pack_into('<I', data, table + 4 * target, struct.unpack_from('<I', stock_decoded, table + 4 * source)[0])
+    for anchor, target in art:
+        sprite = next((sp for sp in sprites if f'{anchor:#x}' in sp['ids']), None)
+        if sprite is None:
+            sys.exit(f'{anchor:#x} is not an artwork id')
+        if struct.unpack_from('<I', data, table + 4 * target)[0] != placeholder:
+            sys.exit(f'{target:#x} is not a placeholder')
+        struct.pack_into('<I', data, table + 4 * target, struct.unpack_from('<I', data, table + 4 * anchor)[0])
+        sprite['ids'].append(f'{target:#x}')
     encoded = _repack(decoded, bytes(data), rows, split=True)
     if length_fault(len(encoded)) or len(encoded) + 32 > span:
         sys.exit(f'packed length {len(encoded)}: {length_fault(len(encoded)) or "exceeds span"}')
