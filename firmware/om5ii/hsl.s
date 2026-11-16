@@ -57,6 +57,8 @@ ST_MAGIC_VALUE = 0x55444143
  .long paint_axis
 .section .tone_pointer,"a"
  .long paint_tone
+.section .filter_pointer,"a"
+ .long paint_filter
 .section .cp_any_hook,"ax"
  call cp_any_nd,[],4
 .section .pages_hook,"ax"
@@ -662,8 +664,8 @@ pages_off:
 /* The colour page's view paints the axis title and the wheel, the tone page's
  * the curve, and OM invalidates neither when a value, the selected colour or
  * the axis changes (only the label that changed). Each panel layout that
- * shows one of them (flag +245 colour, +247 tone) therefore invalidates that
- * page (child 4 / 2) with OM's own widget invalidate (d0 = 1, a1 = 0: the
+ * shows one of them (flag +245 colour, +247 tone, +246 Monochrome colour
+ * filter) invalidates that page (child 4 / 2 / 3) with OM's widget invalidate (d0 = 1, a1 = 0: the
  * widget's whole area, as a label does in 0x60d8df09..0x60d8df13). The layout
  * runs once per consumed command. d2 = data struct, a3 = controller.
  * call pg_axis,[d2,d3,a2,a3],24 */
@@ -675,6 +677,10 @@ pg_axis:
  beq pg_inval
  movbu (247,a0),d0
  mov 2,d1
+ cmp 1,d0
+ beq pg_inval
+ movbu (246,a0),d0               /* Monochrome colour filter page */
+ mov 3,d1
  cmp 1,d0
  bne pg_axis_out
 pg_inval:
@@ -2089,6 +2095,33 @@ pt_out:
  add 12,sp
  ret [d2,d3,a2,a3],16
 
+/* Monochrome Color Filter view 0x610d9b20. Preserve the stock painter and
+ * draw only the filter swatches for an armed paint event. */
+paint_filter:
+ movm [d2,d3,a2,a3],(sp)
+ add -12,sp
+ mov a1,(8,sp)
+ call stock_paint,[a2,a3],16
+ mov (8,sp),a1
+ mov d0,(8,sp)
+ cmp 0,a1
+ beq pf_out
+ movhu (4,a1),d0
+ cmp 2,d0
+ bne pf_out
+ mov (8,a1),a2
+ cmp 0,a2
+ beq pf_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pf_out
+ mov a2,a0
+ call gfx_filter,[d2,d3,a2,a3],44
+pf_out:
+ mov (8,sp),d0
+ add 12,sp
+ ret [d2,d3,a2,a3],16
+
 .section .ext10,"ax"
 /* a0 = context. Shadows / Midtones / Highlights of the selected profile
  * (976+3p.. Color, 1021+3p.. Monochrome; stored Highlights, Midtones,
@@ -2278,3 +2311,107 @@ cp_any_out:
 cp_any_none:
  clr d0
  ret [],4
+
+.section .ext5,"ax"
+/* a0 = context. Monochrome Profile p (111 = 57..59) only: filter 1007+p
+ * (values: 0 None, 1 Yellow, 2 Orange, 3 Red, 4 Green, 5 Yellow-green,
+ * 6 Magenta, 7 Blue, 8 Cyan; names 0x611b46c8). Eight 26 px swatches in the
+ * dial's order round a centre block, Yellow at the top, clockwise: Yellow,
+ * Orange, Red, Magenta, Blue, Cyan, Green, Yellow-green. The selected swatch
+ * has a white edge and the centre block takes its colour (grey for None).
+ * Frame: pen at sp+4..23, selected slot at sp+24 (8 = None).
+ * call gfx_filter,[d2,d3,a2,a3],44 */
+FX = 556                        /* ring centre and radius */
+FY = 236
+gfx_filter:
+ mov a0,a2
+ mov 111,d0
+ call stock_get,[],4
+ sub 57,d0
+ cmp 3,d0
+ bcc gf_out
+ add 1007,d0
+ call stock_get,[],4
+ cmp 9,d0
+ bcc gf_out
+ mov ftab_slot,a0
+ add d0,a0
+ movbu (a0),d0
+ mov d0,(24,sp)
+ mov sp,a1
+ add 4,a1
+ call gfx_save,[],4
+ clr d2
+gf_loop:
+ mov (24,sp),d0
+ cmp d2,d0
+ bne gf_swatch
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 34,d1
+ call gf_block,[d2,d3,a2,a3],28
+gf_swatch:
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 26,d1
+ call gf_block,[d2,d3,a2,a3],28
+ inc d2
+ cmp 8,d2
+ bcs gf_loop
+ mov (24,sp),d2
+ mov C_GREY,d0
+ cmp 8,d2
+ bcc gf_centre
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+gf_centre:
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 8,d2
+ mov 46,d1
+ call gf_block,[d2,d3,a2,a3],28
+ mov sp,a1
+ add 4,a1
+ call gfx_restore,[],4
+gf_out:
+ ret [d2,d3,a2,a3],44
+
+
+.section .ext10,"ax"
+/* d2 = slot 0..7 round the ring, 8 = centre; d1 = size: a square block.
+ * call gf_block,[d2,d3,a2,a3],28 */
+gf_block:
+ mov d1,d3
+ mov ftab_dx,a0
+ add d2,a0
+ movbu (a0),d0
+ extb d0
+ add FX,d0
+ movbu (9,a0),d1
+ extb d1
+ add FY,d1
+ mov d3,d2
+ lsr 1,d2
+ sub d2,d0
+ sub d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+
+/* slot offsets (45 degree steps, radius 80; then the centre) */
+ftab_dx:
+ .byte 0,57,80,57,0,-57,-80,-57,0
+ftab_dy:
+ .byte -80,-57,0,57,80,57,0,-57,0
+/* swatch colours (gfx_wheel's palette indices): Yellow, Orange, Red,
+ * Magenta, Blue, Cyan, Green, Yellow-green */
+ftab_col:
+ .byte 123,92,122,89,105,107,22,116
+/* filter value 0..8 -> slot */
+ftab_slot:
+ .byte 8,0,1,2,6,7,3,4,5

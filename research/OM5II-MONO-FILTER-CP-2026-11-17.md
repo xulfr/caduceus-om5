@@ -119,3 +119,18 @@ no filter graphic. See the [alpha10 camera report](OM5II-ALPHA10-CAMERA-2026-11-
   pointer at header +16 shows ND8 and ND16 in `0x2060` and `0x2061`, respectively.
 - OM-Emu ran the carousel constructor and enumerated 7 and 8. The raw key and CP event
   probes did not produce a carousel frame. Icon validation is static pending the owner's check.
+
+## Alpha12 filter graphic
+
+The owner confirmed alpha11 boots, the CP icons appear and the filter page stays
+open and responds to the dial. The centre remained blank with the stock painter.
+[Alpha11 camera report](OM5II-ALPHA11-CAMERA-2026-11-16.md).
+
+Alpha12 restores the graphic part of the paint hook at `0x610d9bc0` and the child 3
+invalidation for flag +246. The hook calls the stock painter first and draws
+only on an armed type-2 paint event in Monochrome Profiles 1–3. The renderer
+takes a 44-byte frame, validates the profile and filter indices, and uses the
+same pen save and restore as the colour wheel and tone curve. The stock header,
+word image `0x107e` and widget rectangles stay in place. The font and text calls
+from alpha10 are omitted. The physical cause of the alpha10 restart remains a
+hypothesis pending camera results for the reduced paint path.

@@ -6,8 +6,7 @@
 The filter page (Monochrome Profile p, second sidebar row) steps setting 1007+p with the sub dial in the
 OM-3's order (None, Yellow, Orange, Red, Magenta, Blue, Cyan, Green, Yellow-Green; list 0x6050cb23) and the
 main dial steps the level shown as "+n". Check the native header and setting stores (0x602d19b6),
-persistence after leaving the screen, and that Monochrome Profile 2 is unchanged. Alpha11 ships
-the stock page painter, so this test does not check the postponed ring or the "Level" word.
+the selected swatch and centre, persistence on re-entry, and that Monochrome Profile 2 is unchanged.
 Frames are Y/Cb/Cr in the PNG's R/G/B.
 Emulator only.
 """
@@ -19,10 +18,14 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from run_page_graphics import frame, px
+from run_page_graphics import COLOURS, GREY, WHITE, frame, px
 
 ROOT = Path(__file__).resolve().parents[1]
 MONO = 's1 ok ok ' + 'right ' * 11          # Monochrome Profile 1, Picture Mode row
+FX, FY, R, D = 556, 236, 80, 57
+SLOT_XY = [(0, -R), (D, -D), (R, 0), (D, D), (0, R), (-D, D), (-R, 0), (-D, -D)]
+SLOT_COLOUR = [COLOURS[i] for i in (0, 1, 3, 4, 7, 8, 10, 11)]   # Y, O, R, M, B, C, G, YG
+SLOT_OF = {0: None, 1: 0, 2: 1, 3: 2, 6: 3, 7: 4, 8: 5, 4: 6, 5: 7}
 DIAL = [1, 2, 3, 6, 7, 8, 4, 5, 0, 1, 2, 3]  # 1007 after each sub-1 from None (wraps once)
 HEADER, LEVEL_VALUE = (470, 72, 650, 108), (567, 362, 602, 392)
 
@@ -38,6 +41,22 @@ def run(a, name, keys):
 def region(rows, box, level=150):
     x0, y0, x1, y1 = box
     return frozenset((x, y) for y in range(y0, y1) for x in range(x0, x1) if px(rows, x, y)[0] > level)
+
+
+def ring(rows, value):
+    """Faults of the filter graphic for a stored value."""
+    bad, sel = [], SLOT_OF[value]
+    for s, (dx, dy) in enumerate(SLOT_XY):
+        x, y = FX + dx, FY + dy
+        if not all(px(rows, x + u, y + v) == SLOT_COLOUR[s] for u in (-10, 0, 10) for v in (-10, 0, 10)):
+            bad.append(f'slot {s}: swatch {px(rows, x, y)}')
+        edge = all(px(rows, x + u, y + v) == WHITE for u, v in ((-15, 0), (15, 0), (0, -15), (0, 15)))
+        if edge != (s == sel):
+            bad.append(f'slot {s}: white edge {edge}')
+    want = GREY if sel is None else SLOT_COLOUR[sel]
+    if not all(px(rows, FX + u, FY + v) == want for u in (-20, 0, 20) for v in (-20, 0, 20)):
+        bad.append(f'centre {px(rows, FX, FY)}, expected {want}')
+    return bad
 
 
 def main():
@@ -71,9 +90,11 @@ def main():
             cur = []
     per_key = per_key[n0 + 1:]                  # drop 'start' and the keys of MONO
     header0 = region(f(0), HEADER)
+    faults += [f'entry: {b}' for b in ring(f(0), 0)]
     headers = [header0]
     for k, value in enumerate(DIAL, 1):
         rows = f(k)
+        faults += [f'step {k}: {b}' for b in ring(rows, value)]
         stores = [v for i, v in per_key[k] if i in (1007, 1008, 1009)] if k < len(per_key) else []
         ids = {i for i, _ in per_key[k] if i in (1007, 1008, 1009)} if k < len(per_key) else set()
         if stores[-1:] != [value] or ids - {1007}:
@@ -84,17 +105,20 @@ def main():
     if headers[9] != header0:
         faults.append('header: None after the wrap differs from None on entry')
     k = len(DIAL) + 1                           # main+1: level
+    faults += [f'level change: {b}' for b in ring(f(k), DIAL[-1])]
     if region(f(k), LEVEL_VALUE) == region(f(k - 1), LEVEL_VALUE):
         faults.append('level: "+n" did not change on main+1')
     if not any(i in (1011, 1012) for i, _ in per_key[k]):
         faults.append(f'level: no store to 1011 / 1012 on main+1 ({per_key[k]})')
     back = len(DIAL) + 4                        # s1 ok ok: the screen again, on the filter row
+    faults += [f're-entry: {b}' for b in ring(f(back), DIAL[-1])]
     if region(f(back), HEADER) != headers[len(DIAL)]:
         faults.append('re-entry: header differs from before leaving')
     if region(f(back), LEVEL_VALUE) != region(f(k), LEVEL_VALUE):
         faults.append('re-entry: level differs from before leaving')
     mp2 = frame(frames['base'][max(frames['base'])])
     mp2_after = f(len(steps) - 1)
+    faults += [f'Profile 2: {b}' for b in ring(mp2_after, 0)]
     if region(mp2, (380, 40, 720, 400)) != region(mp2_after, (380, 40, 720, 400)):
         faults.append('Monochrome Profile 2: filter page differs after editing Profile 1')
     for fault in faults:
@@ -102,7 +126,7 @@ def main():
     if faults:
         sys.exit('mono filter regressions failed')
     print(f'mono filter passed: {len(DIAL)} dial steps (all 9 filters and the wrap) stored to 1007; '
-          'header follows; +n changes; values kept after leaving the screen; Profile 2 unchanged')
+          'header and ring follow; +n changes; values kept after leaving the screen; Profile 2 unchanged')
 
 
 if __name__ == '__main__':
