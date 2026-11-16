@@ -45,12 +45,12 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('lz4_recipe', rel['resource'])
         self.assertFalse(rel['camera_tested'])
 
-    def test_alpha9_is_untested(self):
-        # Emulator only: no camera report exists for this package, so the installer must ask for UNTESTED.
+    def test_alpha9_boot_confirmed(self):
+        # Owner report 16 Nov 2026: boots. Still camera_tested false (selected functions only, as alpha8).
         rel = json.loads((ROOT / 'releases/v0.1.0-alpha9/patch.json').read_text())
         self.assertFalse(rel['camera_tested'])
-        self.assertNotIn('camera_status', rel)
-        self.assertNotIn('camera_report', rel)
+        self.assertEqual(rel['camera_status'], 'boot-confirmed')
+        self.assertTrue((ROOT / rel['camera_report']).is_file())
         self.assertEqual(rel['main']['stream_length'], 'stock-page')
         self.assertIn('lz4_recipe', rel['resource'])
         ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}

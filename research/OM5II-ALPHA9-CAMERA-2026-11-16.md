@@ -1,10 +1,14 @@
 # Alpha9 camera report
 
 The owner reported a successful boot of `v0.1.0-alpha9` on a physical OM-5 Mark II (E148, stock firmware 1.1) on
-16 November 2026, relayed in the development session. Release package SHA-256:
-`2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50` (releases/v0.1.0-alpha9). The report did not
-quote the hash of the flashed file; it is recorded here as the alpha9 release package, which `patch.py` checks
-before writing. Confirm the hash before changing the release's `camera_status`.
+16 November 2026, relayed in the development session. Package SHA-256:
+`2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50` (releases/v0.1.0-alpha9).
+
+How the hash is established: the owner did not read the hash, but made the card with the installer (`patch.py`)
+from branch `claude/pensive-hamilton-pg8dpr` before reporting. From `ec30622` (17:19 UTC) until `a20743e` (19:00 UTC)
+the newest release there was alpha9, the report arrived before the alpha10 work began (`49a85cf`, 18:24 UTC), and
+`patch.py` writes nothing unless the result equals the release's package SHA-256. The owner confirmed this on
+16 November 2026, and the release is marked `camera_status: boot-confirmed` (`camera_tested` stays false).
 
 ## Confirmed on the camera
 

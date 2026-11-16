@@ -25,10 +25,13 @@ The owner performs any physical test; development sessions prepare and check fil
   checks only: set WB while a Color Profile is selected, switch profile and back).
 - Planned: a **Monochrome colour filter picker**. The Color Filter page shows the filter but its dials do not
   change it, and nothing is drawn. The OM-3 has the native picker to follow (its filter list, not an HSL wheel).
-- Deferred with the other effects (Glow, Halation): **colour grain for Color Profiles**. The camera applies
-  Film Grain for Monochrome Profiles; a Color Profile would need its own grain row and storage.
-- Open: ND64 / ND32 digit artwork on the shooting screen; the "any CP item ticked" test still ignores ND32 / ND64
-  (with every other CP item unticked, the CP button treats them as nothing ticked).
+- Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
+  Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
+  Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).
+  Then the other effects (Glow, Halation).
+- Before alpha10 is released: the "any CP item ticked" test still ignores ND32 / ND64 (with every other CP item
+  unticked, the CP button treats them as nothing ticked), and the Monochrome colour filter picker (above).
+- Open: ND64 / ND32 digit artwork on the shooting screen.
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   [camera test checklist](docs/FIRST_FLASH.md) and record the exact package hash.

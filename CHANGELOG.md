@@ -5,7 +5,10 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)
+## v0.1.0-alpha10 — candidate, not released (emulator only; not run on a camera)
+
+Still to do before release: the Monochrome colour filter picker and the CP-button "any item" fix.
+
 
 **Alpha10 has not been run on any camera. Alpha9 booted on the owner's camera.** To install alpha9 instead:
 `python3 patch.py --release v0.1.0-alpha9`.

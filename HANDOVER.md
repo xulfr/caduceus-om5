@@ -3,15 +3,16 @@
 ## Known-good baseline
 
 - **v0.1.0-alpha9** (`2e9777ce…fbc50`): the owner reported boot and a working CPU-drawn colour wheel on an
-  OM-5 Mark II (E148, stock 1.1) on 16 November 2026. The flashed file's hash was not quoted; confirm it before
-  setting the release's `camera_status`. research/OM5II-ALPHA9-CAMERA-2026-11-16.md.
+  OM-5 Mark II (E148, stock 1.1) on 16 November 2026; made with the branch installer while alpha9 was its newest release (owner confirmed),
+  so the package is `2e9777ce…fbc50`. `camera_status: boot-confirmed`. research/OM5II-ALPHA9-CAMERA-2026-11-16.md.
 - v0.1.0-alpha8 (`709ca9d4…3b68`): boot, Color Profiles, looks and Live ND32/64. research/OM5II-ALPHA8-CAMERA-2026-11-15.md.
 
 ## Active work: v0.1.0-alpha10 (17 November 2026)
 
 Branch `claude/pensive-hamilton-pg8dpr`. **Emulator only; not camera-tested.** releases/v0.1.0-alpha10 is the
 installer default (`camera_tested` false). Package `1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27`.
-Not merged; the owner intends to open the PR to main as the first proper alpha.
+**Candidate, not a release yet**: the owner wants the CP-button fix and the Monochrome colour filter picker in
+alpha10 first; re-cut releases/v0.1.0-alpha10 afterwards (its hash will change). Then the PR to main.
 
 Fixes from the alpha9 report (`49a85cf`):
 - **Color Profile Shading** 912..914 had no setting descriptor (OM's 1589 static descriptors at `0x6050dad4`,
