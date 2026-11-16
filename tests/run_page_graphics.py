@@ -71,8 +71,9 @@ def wheel(rows, values, selected):
         if edge != (s in selected):
             bad.append(f'sector {s}: white edge {edge}, expected {s in selected}')
         for t in (-5, 5):
-            if t != values[s]:
-                tx, ty = spoke(s, t)
+            tx, ty = spoke(s, t)
+            # the block (and the white edge of a selected colour, 7 px each way) covers the dot of the next step
+            if t != values[s] and max(abs(tx - x), abs(ty - y)) > 7:
                 if GREY not in (px(rows, tx, ty), px(rows, tx - 1, ty - 1)):
                     bad.append(f'sector {s}: no scale dot at step {t}')
     return bad
