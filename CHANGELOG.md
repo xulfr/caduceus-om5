@@ -5,7 +5,18 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha11 (camera check pending)
+## v0.1.0-alpha12 (camera check pending)
+
+- Restores the Monochrome Color Filter swatches, selection outline and centre colour.
+  The hook draws the ring over the stock page. The panel requests a repaint when the filter page is active.
+  Alpha12 keeps the stock labels and widget positions.
+- Package SHA-256 `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. [Validation results](tests/alpha12-results.json).
+- Use alpha11 until alpha12 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha11`.
+
+## v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)
+
+The owner confirmed boot, both CP icons and an operable Monochrome Color Filter page.
+The centre graphic was absent. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md).
 
 - The Monochrome Color Filter page returns to alpha9's rendering. Restored the stock `0x107e` image,
   both widget rectangles and the stock painter. Removed the paint hook, ring, “Level” text and
@@ -14,10 +25,8 @@
 - The out-of-range `0xffff` image lookup is the leading hypothesis for the alpha10 restart.
   The physical cause remains unproved. See the [filter and CP investigation](research/OM5II-MONO-FILTER-CP-2026-11-17.md#alpha11-follow-up).
 - The CP carousel's ND32 and ND64 slots now reference existing ND32 and ND64 artwork.
-  Static verification covers the image IDs and resource pointers. The carousel still needs a camera check.
+  Static verification covers the image IDs and resource pointers. The owner confirmed both icons on the camera.
 - Package SHA-256 `5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a`. [Validation results](tests/alpha11-results.json).
-
-Use alpha9 until the owner checks alpha11 on the camera. Run `python3 patch.py --release v0.1.0-alpha9`.
 
 ## v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)
 

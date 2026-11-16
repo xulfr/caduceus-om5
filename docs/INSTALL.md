@@ -1,7 +1,7 @@
 # Install
 
-> **Use alpha9 while alpha11 awaits its camera check.** The installer defaults to alpha11.
-> To make alpha9, run `python3 patch.py --release v0.1.0-alpha9`. Read [Safety](SAFETY.md)
+> **Use alpha11 while alpha12 awaits its camera check.** The installer defaults to alpha12.
+> To make alpha11, run `python3 patch.py --release v0.1.0-alpha11`. Read [Safety](SAFETY.md)
 > first, and follow [the first-flash plan](FIRST_FLASH.md) rather than this page if you are the first to try it.
 
 About 15 minutes.
@@ -14,7 +14,7 @@ About 15 minutes.
 ## 1. Make the card files
 
 1. Download this project: on GitHub, **Code › Download ZIP**, and unzip it.
-2. Open a terminal in the unzipped folder and run `python3 patch.py --release v0.1.0-alpha9`.
+2. Open a terminal in the unzipped folder and run `python3 patch.py --release v0.1.0-alpha11`.
    The double-click scripts use the newest release.
 3. It displays an experimental firmware warning and asks you to type `UNTESTED`. Then it downloads OM's official firmware 1.1
    from OM's server (90 MB), checks it, adds Caduceus and checks the result against this release's checksum.

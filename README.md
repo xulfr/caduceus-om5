@@ -13,11 +13,11 @@
 </p>
 
 > [!CAUTION]
-> ### Use alpha9 while alpha11 awaits its camera check
+> ### Use alpha11 while alpha12 awaits its camera check
 > Alpha10 booted and restarted the camera when the owner opened the Monochrome Color Filter page.
 > ND32 and ND64 worked from the CP carousel with empty icons. [Alpha10 camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
-> The default installer now makes **v0.1.0-alpha11**. To make the camera-checked baseline, run
-> `python3 patch.py --release v0.1.0-alpha9`.
+> The default installer makes **v0.1.0-alpha12**. To make the camera-checked baseline, run
+> `python3 patch.py --release v0.1.0-alpha11`.
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
 > The owner confirmed alpha8 boot, Color Profiles and Live ND32/64, and alpha9 boot with the colour wheel
@@ -30,7 +30,8 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha11 | **Camera check pending.** Restores the alpha9 filter page and adds ND32/64 carousel artwork. [Changes](CHANGELOG.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha12 | **Camera check pending.** Restores the Monochrome filter swatches. [Changes](CHANGELOG.md). |
+| | v0.1.0-alpha11 | **Booted on one camera.** Both alpha10 defects resolved. The native filter controls work. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha10, 17 Nov 2026 | **Booted on one camera.** Opening Monochrome Color Filter restarted the camera. ND32/64 icons were blank in the CP carousel. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md). |
 | | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
@@ -51,7 +52,7 @@ the earlier camera failures. Only a report from a real camera can change the sta
 | Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
 | Sharpness, Contrast, Shading | Yes | Yes |
 | Own white balance, remembered per profile (the camera's usual WB setting, see below) | Yes | No |
-| Colour filter, toning, grain | No | Yes (filter picker graphic postponed) |
+| Colour filter, toning, grain | No | Yes (filter graphic restored in alpha12) |
 | Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
 
 Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
@@ -96,7 +97,7 @@ In short:
 
 1. Check the camera is an **OM-5 Mark II** on firmware **1.1** (Menu › Setup › Firmware), and charge the battery.
 2. On this page, **Code › Download ZIP**, then unzip it. You need [Python 3](https://www.python.org/downloads/).
-3. In the unzipped folder, run `python3 patch.py --release v0.1.0-alpha9`. Type `UNTESTED` when prompted.
+3. In the unzipped folder, run `python3 patch.py --release v0.1.0-alpha11`. Type `UNTESTED` when prompted.
    The installer downloads OM's official firmware, applies Caduceus, verifies the package and creates `card`.
 4. Copy `DCOLYMP` and `OM5MOD` from `card` to the top of the SD card. **Keep `card/restore`**: it is OM's own
    firmware, to go back.
@@ -123,7 +124,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | Alpha8 and alpha9 boot and selected features confirmed. Alpha10 booted and crashed on the filter page. Alpha11 camera check pending. |
+| Tested on a camera | yes | Alpha11 boot and both alpha10 fixes confirmed. Alpha12 camera check pending. |
 
 ## How it works, briefly
 

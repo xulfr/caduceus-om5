@@ -1,14 +1,14 @@
 # Safety
 
-**Use alpha9 until alpha11 is checked on the camera.** The installer defaults to alpha11.
-Run `python3 patch.py --release v0.1.0-alpha9` to make the alpha9 package.
+**Use alpha11 until alpha12 is checked on the camera.** The installer defaults to alpha12.
+Run `python3 patch.py --release v0.1.0-alpha11` to make the alpha11 package.
 
 ## What is known
 
 | | |
 |---|---|
 | Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, looks load from the card and reach the slot's settings, nothing writes into the firmware image. |
-| Real OM-5 Mark II | **Alpha5 and alpha6 boot-looped** on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. **Alpha8 and alpha9 booted on the owner’s camera** ([alpha9 report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). Alpha10 booted and restarted on the Monochrome Color Filter page. [Alpha10 report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md). Color Profiles, SD-card looks and Live ND32/64 were exercised. [Camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
+| Real OM-5 Mark II | **Alpha5 and alpha6 boot-looped** on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. **Alpha8 and alpha9 booted on the owner’s camera** ([alpha9 report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). Alpha11 fixed the CP icons and filter-page restart ([owner report](../research/OM5II-ALPHA11-CAMERA-2026-11-16.md)). Alpha10 booted and restarted on the Monochrome Color Filter page. [Alpha10 report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md). Color Profiles, SD-card looks and Live ND32/64 were exercised. [Camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | Earlier builds on a real OM-5 Mark II | **Three more failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
 | Going back | After each failure OM's firmware was put back from the card (hold **OK**, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did. |
 

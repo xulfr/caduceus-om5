@@ -21,10 +21,10 @@ The owner performs any physical test; development sessions prepare and check fil
   look's shift.
 - Alpha9 is the camera-checked baseline. Alpha10 added Color Profile Shading, the Monochrome Film Grain
   and Color Filter sidebar icons, and ND32/64 selection in the CP carousel.
-- Alpha11 restores the alpha9 filter page, retains those sidebar icons and fills the ND32/64 carousel icons.
-  Start the owner's camera check with the Monochrome Color Filter page and both dials.
-- The Monochrome colour filter picker and “Level” label are postponed. Revisit after the owner checks the
-  restored page. Per-profile white balance still needs its camera check.
+- Alpha11 is the camera-checked baseline. Its stock filter painter and the CP carousel artwork resolved both
+  alpha10 defects. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md).
+- Alpha12 restores the filter ring with the stock text and layout. Start the camera check on that page and turn
+  both dials. Per-profile white balance still needs its camera check.
 - Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).

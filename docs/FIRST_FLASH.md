@@ -1,18 +1,19 @@
 # Camera test checklist
 
-## Alpha11 camera checks
+## Alpha12 camera checks
 
 The [alpha10 camera report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md) records a restart on the Color Filter page.
-Use alpha9 until alpha11 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha9`.
+Use alpha11 until alpha12 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha11`.
 
-For the owner's alpha11 check, record package SHA-256
-`5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a`. After the startup checks (steps 0–3 below),
+The owner confirmed that alpha11 resolved the restart and CP icon defects. [Camera report](../research/OM5II-ALPHA11-CAMERA-2026-11-16.md).
+For the alpha12 check, verify the installer gives package SHA-256
+`cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. After the startup checks (steps 0–3 below),
 do step 19 first. If the camera restarts or freezes, stop the checklist, record what happened and follow
 [stock recovery](SAFETY.md#going-back-to-oms-firmware).
 
 | Step | Do | Expect |
 |---|---|---|
-| 19 | Open Monochrome Profile 1 › Color Filter. Turn both dials. Cycle the filter dial through all values, change the level, then leave and re-enter. Check Profile 2 separately. Take a red-filter and a blue-filter JPEG of the same scene. | The page opens and stays open. The header names each filter through the wrap. The two filters render colours differently in the JPEGs. The other dial changes `+n`. Both values persist after re-entry, and Profile 2 keeps its own values. Alpha11 shows the stock “Vivid” word and the filter ring is postponed. |
+| 19 | Open Monochrome Profile 1 › Color Filter. Turn both dials. Cycle the filter dial through all values, change the level, then leave and re-enter. Check Profile 2 separately. Take a red-filter and a blue-filter JPEG of the same scene. | The page opens and stays open. The header names each filter through the wrap. The two filters render colours differently in the JPEGs. The other dial changes `+n`. Both values persist after re-entry, and Profile 2 keeps its own values. The ring marks the selected swatch. The centre follows the selected colour and is grey for None. The stock “Vivid” word stays visible. |
 | 16 | Tick ND32 and ND64 in CP Button Settings. Hold CP and turn the dial past ND16. Select each, then untick them and repeat. | ND32 and ND64 each show their own icon when offered. Selection gives the matching shooting label and exposure. Unticked items disappear. |
 | 20 | After a half-press, untick every CP item except ND32. Hold CP, then repeat with only ND64 ticked. | Each item can be offered, shows its icon and can be selected when it is the only item ticked. |
 | 15 | Color Profile 1 › Shading. Turn the dials in both directions and re-enter the screen. | Green knob and a setting that steps and persists. |
@@ -42,7 +43,7 @@ numbers then.
 
 ### Alpha9 additions
 
-The owner confirmed that alpha9 (package `2e9777ce…fbc50`) boots. After the alpha11 checks and baseline checks, repeat:
+The owner confirmed that alpha9 (package `2e9777ce…fbc50`) boots. After the alpha12 checks and baseline checks, repeat:
 
 | Step | Do | Expect |
 |---|---|---|
