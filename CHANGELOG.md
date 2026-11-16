@@ -5,11 +5,24 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)
+## v0.1.0-alpha11 (camera check pending)
 
+- The Monochrome Color Filter page returns to alpha9's rendering. Restored the stock `0x107e` image,
+  both widget rectangles and the stock painter. Removed the paint hook, ring, “Level” text and
+  child 3 invalidation. The native filter header and both dials remain available. The picker graphic
+  is postponed pending camera validation.
+- The out-of-range `0xffff` image lookup is the leading hypothesis for the alpha10 restart.
+  The physical cause remains unproved. See the [filter and CP investigation](research/OM5II-MONO-FILTER-CP-2026-11-17.md#alpha11-follow-up).
+- The CP carousel's ND32 and ND64 slots now reference existing ND32 and ND64 artwork.
+  Static verification covers the image IDs and resource pointers. The carousel still needs a camera check.
+- Package SHA-256 `5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a`. [Validation results](tests/alpha11-results.json).
 
-**Alpha10 has not been run on any camera. Alpha9 booted on the owner's camera.** To install alpha9 instead:
-`python3 patch.py --release v0.1.0-alpha9`.
+Use alpha9 until the owner checks alpha11 on the camera. Run `python3 patch.py --release v0.1.0-alpha9`.
+
+## v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)
+
+The owner reported that alpha10 booted. Opening Monochrome Color Filter restarted the camera once, and
+ND32 / ND64 worked from the CP carousel with empty icons. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
 
 Fixes from the [alpha9 camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md):
 
@@ -34,11 +47,7 @@ Fixes from the [alpha9 camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md
 
 ## v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)
 
-The owner reported that alpha9 boots and the colour wheel draws correctly on the camera; the defects found are
-fixed in alpha10.
-
-**Alpha9 has not been run on any camera. Alpha8 is the last build confirmed to boot.** To install alpha8 instead:
-`python3 patch.py --release v0.1.0-alpha8`. Package `2e9777ce…fbc50`.
+The owner reported that alpha9 boots and the colour wheel draws correctly on the camera. Package `2e9777ce…fbc50`. [Camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md).
 
 - Color Profiles 1–3 and Monochrome Profiles 1–3 show their own numbered icon in the carousel, sidebar, super
   control panel and shooting screen (alpha8 showed C2 or M for all three).

@@ -18,11 +18,11 @@
   <a class="tab" href="../changelog/">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha10 has not been run on a camera; alpha9 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Use alpha9 until alpha11 is checked on a camera. Alpha10 booted and restarted on the Monochrome Color Filter page. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="questions">Questions</h1>
-<p><strong>Is it safe?</strong> Alpha10, which the installer now makes, has not been run on a camera. Alpha9 booted on the owner’s camera. Alpha8 booted on the owner’s OM-5 Mark II and has <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">known UI defects</a>. Alpha5 and alpha6 boot-looped on the owner's camera, as three earlier builds did. The installer refuses alpha1–alpha7. <a href="../safety/">Safety</a>.</p>
+<p><strong>Is it safe?</strong> Alpha10 booted and restarted on the Monochrome Color Filter page. The installer defaults to alpha11, whose camera check is pending. Use alpha9 with <code>python3 patch.py --release v0.1.0-alpha9</code>. Alpha8 booted on the owner’s OM-5 Mark II and has <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">known UI defects</a>. Alpha5 and alpha6 boot-looped on the owner's camera, as three earlier builds did. The installer refuses alpha1–alpha7. <a href="../safety/">Safety</a>.</p>
 <p><strong>Which cameras?</strong> The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The original OM-5
 has a separate <a href="../om5-prealpha/">pre-alpha for testers</a>, never run on any camera.</p>
 <p><strong>Why only three look slots, when the OM-3 has twenty?</strong> The OM-3's firmware had hundreds of kilobytes of room that

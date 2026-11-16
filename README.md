@@ -13,9 +13,11 @@
 </p>
 
 > [!CAUTION]
-> ### Alpha10 has not been run on a camera. Alpha9 booted on the owner's camera.
-> The installer now makes **v0.1.0-alpha10** (17 November 2026), which has passed the emulator checks only. To make
-> alpha9 instead, run `python3 patch.py --release v0.1.0-alpha9`.
+> ### Use alpha9 while alpha11 awaits its camera check
+> Alpha10 booted and restarted the camera when the owner opened the Monochrome Color Filter page.
+> ND32 and ND64 worked from the CP carousel with empty icons. [Alpha10 camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
+> The default installer now makes **v0.1.0-alpha11**. To make the camera-checked baseline, run
+> `python3 patch.py --release v0.1.0-alpha9`.
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
 > The owner confirmed alpha8 boot, Color Profiles and Live ND32/64, and alpha9 boot with the colour wheel
@@ -28,8 +30,9 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha10, 17 Nov 2026 | **Emulator only; never run on a camera.** Fixes from the alpha9 report: Color Profile Shading, ND32/64 when holding the CP button, Monochrome Film Grain and Color Filter icons; Monochrome colour filter picker. [Changes](CHANGELOG.md). |
-| | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md), fixed in alpha10. |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha11 | **Camera check pending.** Restores the alpha9 filter page and adds ND32/64 carousel artwork. [Changes](CHANGELOG.md). |
+| | v0.1.0-alpha10, 17 Nov 2026 | **Booted on one camera.** Opening Monochrome Color Filter restarted the camera. ND32/64 icons were blank in the CP carousel. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md). |
+| | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
@@ -48,7 +51,7 @@ the earlier camera failures. Only a report from a real camera can change the sta
 | Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
 | Sharpness, Contrast, Shading | Yes | Yes |
 | Own white balance, remembered per profile (the camera's usual WB setting, see below) | Yes | No |
-| Colour filter, toning, grain | No | Yes (colour filter picker new in alpha10, emulator only) |
+| Colour filter, toning, grain | No | Yes (filter picker graphic postponed) |
 | Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
 
 Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
@@ -93,9 +96,8 @@ In short:
 
 1. Check the camera is an **OM-5 Mark II** on firmware **1.1** (Menu › Setup › Firmware), and charge the battery.
 2. On this page, **Code › Download ZIP**, then unzip it. You need [Python 3](https://www.python.org/downloads/).
-3. Double-click `Make SD card files (Mac).command` or `Make SD card files (Windows).bat`. It asks you to type
-   `UNTESTED` to confirm you understand, downloads OM's official firmware from OM's own server, adds Caduceus, and
-   checks the result. You get a folder `card`.
+3. In the unzipped folder, run `python3 patch.py --release v0.1.0-alpha9`. Type `UNTESTED` when prompted.
+   The installer downloads OM's official firmware, applies Caduceus, verifies the package and creates `card`.
 4. Copy `DCOLYMP` and `OM5MOD` from `card` to the top of the SD card. **Keep `card/restore`**: it is OM's own
    firmware, to go back.
 5. Camera off, **hold OK**, switch on, and wait until the light blinks.
@@ -121,7 +123,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | Alpha8 and alpha9 boot and selected features confirmed; alpha10 not yet |
+| Tested on a camera | yes | Alpha8 and alpha9 boot and selected features confirmed. Alpha10 booted and crashed on the filter page. Alpha11 camera check pending. |
 
 ## How it works, briefly
 

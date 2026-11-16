@@ -1,7 +1,7 @@
 # Roadmap
 
 Alpha8 and alpha9 booted on a physical OM-5 Mark II. [Alpha8 report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md),
-[alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). Alpha10 (emulator only) fixes the alpha9 defects.
+[alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). Alpha10 booted and restarted on the filter page. [Alpha10 report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
 The owner performs any physical test; development sessions prepare and check files only.
 
 ## First priority: OM-5 Mark II (E148, firmware 1.1)
@@ -19,12 +19,12 @@ The owner performs any physical test; development sessions prepare and check fil
 - Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.
-- Alpha9 fixed the alpha8 display defects and booted on the owner's camera. Alpha10 (emulator only) fixes
-  Color Profile Shading, ND32/64 in the CP-button carousel and the Monochrome Film Grain / Color Filter icons,
-  adds the Monochrome colour filter picker (ring of filter colours, "Level" label) and counts ND32 / ND64 in the
-  CP button's "any item ticked" test.
-- Next: the owner's alpha10 camera check, including per-profile white balance (implemented in alpha1, emulator
-  checks only: set WB while a Color Profile is selected, switch profile and back).
+- Alpha9 is the camera-checked baseline. Alpha10 added Color Profile Shading, the Monochrome Film Grain
+  and Color Filter sidebar icons, and ND32/64 selection in the CP carousel.
+- Alpha11 restores the alpha9 filter page, retains those sidebar icons and fills the ND32/64 carousel icons.
+  Start the owner's camera check with the Monochrome Color Filter page and both dials.
+- The Monochrome colour filter picker and “Level” label are postponed. Revisit after the owner checks the
+  restored page. Per-profile white balance still needs its camera check.
 - Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).

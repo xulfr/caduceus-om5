@@ -1,5 +1,26 @@
 # Camera test checklist
 
+## Alpha11 camera checks
+
+The [alpha10 camera report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md) records a restart on the Color Filter page.
+Use alpha9 until alpha11 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha9`.
+
+For the owner's alpha11 check, record package SHA-256
+`5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a`. After the startup checks (steps 0–3 below),
+do step 19 first. If the camera restarts or freezes, stop the checklist, record what happened and follow
+[stock recovery](SAFETY.md#going-back-to-oms-firmware).
+
+| Step | Do | Expect |
+|---|---|---|
+| 19 | Open Monochrome Profile 1 › Color Filter. Turn both dials. Cycle the filter dial through all values, change the level, then leave and re-enter. Check Profile 2 separately. Take a red-filter and a blue-filter JPEG of the same scene. | The page opens and stays open. The header names each filter through the wrap. The two filters render colours differently in the JPEGs. The other dial changes `+n`. Both values persist after re-entry, and Profile 2 keeps its own values. Alpha11 shows the stock “Vivid” word and the filter ring is postponed. |
+| 16 | Tick ND32 and ND64 in CP Button Settings. Hold CP and turn the dial past ND16. Select each, then untick them and repeat. | ND32 and ND64 each show their own icon when offered. Selection gives the matching shooting label and exposure. Unticked items disappear. |
+| 20 | After a half-press, untick every CP item except ND32. Hold CP, then repeat with only ND64 ticked. | Each item can be offered, shows its icon and can be selected when it is the only item ticked. |
+| 15 | Color Profile 1 › Shading. Turn the dials in both directions and re-enter the screen. | Green knob and a setting that steps and persists. |
+| 17 | Check Monochrome Profile 1's Film Grain row and strip, and the Color Filter sidebar row. | Off / Low / Std / High artwork, with visible grain in pictures, and a Filter sidebar icon. |
+| 18 | In Color Profile 1 set Daylight with an A/B shift. In Color Profile 2 set Shade. Revisit both profiles and Natural. | Each profile restores its own WB and shift. Natural keeps its own WB. |
+
+## Baseline startup and regression checks
+
 The [alpha8 camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records the successful boot and known UI defects. If the camera fails to start or freezes, follow [stock recovery](SAFETY.md#going-back-to-oms-firmware) and report what happened.
 
 **Before step 1, set Picture Mode to Natural in OM's firmware** for the shooting mode the camera
@@ -21,7 +42,7 @@ numbers then.
 
 ### Alpha9 additions
 
-Alpha9 (package `2e9777ce…fbc50`) has not been run on a camera. After steps 0 to 3, also check:
+The owner confirmed that alpha9 (package `2e9777ce…fbc50`) boots. After the alpha11 checks and baseline checks, repeat:
 
 | Step | Do | Expect |
 |---|---|---|
@@ -31,19 +52,6 @@ Alpha9 (package `2e9777ce…fbc50`) has not been run on a camera. After steps 0 
 | 12 | Colour wheel and tone curve pages. | The wheel and curve draw, and redraw after leaving and re-entering. Note any colour or flicker problem. |
 | 13 | Keep using the wheel, Tone Curve and trash look cycling for over 10 s; then leave the screen idle. | The screen stays open while used and closes about 8 s after the last action. |
 | 14 | Gear menu › CP Button Settings; hold the CP button; Live ND menu. | ND32 and ND64 listed, switchable and kept after a power cycle; `ND32-LV` / `ND64-LV` labels and their exposure. |
-
-### Alpha10 additions
-
-Alpha10 has not been run on a camera. After steps 0 to 3, repeat 9 to 14, then check:
-
-| Step | Do | Expect |
-|---|---|---|
-| 15 | Color Profile 1 › Shading row: turn the dials both ways. | Green knob; the value goes up and down and is kept after leaving and re-entering. |
-| 16 | Tick ND32 and ND64 in CP Button Settings. Hold the CP button and turn the dial. | ND32 and ND64 are offered after ND16; each gives its exposure and label. Untick them: they disappear. |
-| 17 | Monochrome Profile 1: Film Grain row and strip; Color Filter row. | Off / Low / Std / High in the strip and the sidebar; "Filter" on the Color Filter row. Grain still visible in pictures. |
-| 18 | Per-profile white balance: select Color Profile 1, set WB to Daylight with an A/B shift; select Color Profile 2 and set Shade; go back to Color Profile 1. | Color Profile 1 brings back Daylight and its shift; Color Profile 2 brings back Shade; Natural keeps its own WB. |
-| 19 | Monochrome Profile 1 › Color Filter page: turn the front dial through all values, then the rear dial. Leave the screen and come back; then open Monochrome Profile 2's page. | The header names each filter (None, Yellow, Orange, Red, Magenta, Blue, Cyan, Green, Yellow-Green); the ring of colour blocks outlines that colour and the centre shows it (grey for None). The rear dial changes "Level +n". The values are kept; Profile 2 keeps its own. Take a red-filter and a blue-filter photo of the same scene: skies should differ. |
-| 20 | CP Button Settings: untick everything except ND32 (then only ND64). Hold the CP button. | ND32 (ND64) is offered; before the fix the button found nothing. Do this after a half-press. |
 
 Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
 nobody else should flash it.

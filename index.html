@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Caduceus for OM-5 · Looks, your way</title>
-<meta name="description" content="Experimental OM-5 Mark II firmware: three look slots, one LOOKS.BIN, full colour controls and Live ND64. Alpha10 is emulator-tested only; alpha9 boot confirmed on one OM-5 Mark II.">
+<meta name="description" content="Experimental OM-5 Mark II firmware: three look slots, one LOOKS.BIN, full colour controls and Live ND64. Alpha9 is the camera-checked baseline. Alpha10 booted and restarted on the filter page. Alpha11 awaits a camera check.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -78,8 +78,8 @@ section:nth-of-type(even) { background: var(--bg2); }
 .status.emu { color: #e3d3b8; background: var(--warn-bg); border: 1px solid #5a4614; }
 .status.cam { color: var(--good); background: var(--good-bg); border: 1px solid var(--good-line); }
 
-.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.grid3 figcaption { color: var(--soft); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.grid2 figcaption { color: var(--soft); }
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 28px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: grid; gap: 10px; align-content: start; }
 .card h3 { font-size: 20px; font-weight: 700; }
@@ -114,7 +114,7 @@ footer a { color: var(--muted); }
   .hero .in, .feature { grid-template-columns: 1fr; gap: 32px; }
   .feature:nth-child(even) > div { order: 0; }
   .hero-small { left: auto; right: 0; }
-  .grid3 { grid-template-columns: 1fr; }
+  .grid2 { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
   .cards { grid-template-columns: 1fr; }
@@ -135,7 +135,7 @@ footer a { color: var(--muted); }
   <a class="tab" href="pages/safety/">Safety</a>
   <a class="tab gh" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><div class="in"><strong>Alpha10 has not been run on a camera.</strong> The installer makes it; alpha9 is the last build confirmed to boot on one OM-5 Mark II. Alpha5 and alpha6 boot-looped on a camera, like three earlier builds. The installer refuses alpha1–alpha7. <a href="pages/safety/">Read the safety notes before preparing firmware.</a></div></div>
+<div class="banner"><div class="in"><strong>Use alpha9 until alpha11 is checked on a camera.</strong> Alpha10 booted and restarted on the Monochrome Color Filter page. The installer defaults to alpha11. Alpha5 and alpha6 boot-looped on a camera, like three earlier builds. The installer refuses alpha1–alpha7. <a href="pages/safety/">Read the safety notes before preparing firmware.</a></div></div>
 <main id="content">
 
 <div class="hero"><div class="in">
@@ -154,16 +154,15 @@ footer a { color: var(--muted); }
 
 <section id="new"><div class="in">
   <div class="head">
-    <p class="eyebrow">New in alpha9 <span class="status cam">Booted on camera</span> and alpha10 <span class="status emu">Emulator only</span></p>
-    <h2>The Picture Mode screen, drawn in full.</h2>
-    <p>Alpha9 draws the colour wheel and tone curve, gives every profile its own numbered icon and keeps it on the shooting screen; it booted on the owner’s camera, and the wheel works there. Alpha10 fixes what that test found: Color Profile Shading, ND32 / ND64 when holding the CP button, and the Monochrome Film Grain and Color Filter icons. It also adds the Monochrome colour filter picker: the front dial steps through the nine filters and a ring of colour blocks shows the one chosen. <strong>Alpha10 has not been run on a camera yet.</strong></p>
+    <p class="eyebrow">What’s new in alpha11 <span class="status emu">Camera check pending</span></p>
+    <h2>Monochrome filter page and CP icons</h2>
+    <p>Alpha10 booted, then restarted the camera on the Monochrome Color Filter page. Alpha11 restores the alpha9 page with its native controls and postpones the ring graphic. The CP carousel now has artwork for ND32 and ND64. Alpha9’s colour wheel and tone curve are shown below.</p>
   </div>
-  <div class="grid3">
+  <div class="grid2">
     <figure><div class="lcd"><img loading="lazy" src="pages/showcase/img/wheel-sat.png" width="720" height="480" alt="Emulator colour wheel in Saturation mode with twelve coloured dots"></div><figcaption><b>Colour wheel.</b> Twelve colours as dots around the wheel; each moves out as you add saturation, hue or lightness.</figcaption></figure>
     <figure><div class="lcd"><img loading="lazy" src="pages/showcase/img/tone.png" width="720" height="480" alt="Emulator tone curve page with Shadows +4 and Highlights +1"></div><figcaption><b>Tone curve.</b> Shadows, Midtones and Highlights drawn as a curve, with a matching icon in the sidebar for every setting.</figcaption></figure>
-    <figure><div class="lcd"><img loading="lazy" src="pages/showcase/img/filter.png" width="720" height="480" alt="Emulator Monochrome Profile 1 Color Filter page: Red selected, a ring of eight filter colours with Red outlined and in the centre, Level +2"></div><figcaption><b>Colour filter.</b> Monochrome Profiles pick None, Yellow, Orange, Red, Magenta, Blue, Cyan, Green or Yellow-Green; Film Grain shows Off / Low / Std / High (new in alpha10).</figcaption></figure>
   </div>
-  <div class="links"><a href="pages/changelog/">Full changelog</a><a href="pages/first-flash/">Camera test checklist</a><a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha10-results.json">Emulator results</a></div>
+  <div class="links"><a href="pages/changelog/">Full changelog</a><a href="pages/first-flash/">Camera test checklist</a><a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha11-results.json">Emulator results</a></div>
 </div></section>
 
 <section id="at-a-glance"><div class="in">
@@ -193,10 +192,10 @@ footer a { color: var(--muted); }
     </ol><p>In the Monochrome Profiles the trash button does nothing; they are OM’s own monochrome profiles, brought back.</p><a class="more" href="pages/using/">All controls →</a></div>
     <div class="card"><h3>How to install</h3><ol>
       <li>Check the camera is an <strong>OM-5 Mark II on firmware 1.1</strong> and read the safety notes.</li>
-      <li>Download this project and double-click the launcher for Mac or Windows. It downloads OM's official firmware, adds Caduceus and checks the result.</li>
+      <li>Download this project and run <code>python3 patch.py --release v0.1.0-alpha9</code> in the unzipped folder. It downloads OM’s official firmware, adds Caduceus and verifies the package.</li>
       <li>Copy the <code>DCOLYMP</code> and <code>OM5MOD</code> folders to the card. Keep <code>restore</code>: it is OM's own firmware, to go back.</li>
       <li>Camera off, <strong>hold OK</strong>, switch on, and wait for the light to blink.</li>
-    </ol><p>The installer makes alpha10. To make alpha9, the last build confirmed on a camera: <code>python3 patch.py --release v0.1.0-alpha9</code>.</p><a class="more" href="pages/install/">Install guide →</a><a class="more" href="pages/safety/">Safety and camera results →</a></div>
+    </ol><p>Use alpha9 until alpha11 is checked on a camera.</p><a class="more" href="pages/install/">Install guide →</a><a class="more" href="pages/safety/">Safety and camera results →</a></div>
   </div>
 </div></section>
 
@@ -222,7 +221,7 @@ footer a { color: var(--muted); }
     <tr><th scope="row">Tested on a camera</th><td>Separate upstream project</td><td><span class="status cam">Alpha8 boot confirmed</span> <span class="status emu">Alpha9 not yet</span></td></tr>
   </tbody></table></div>
   <div class="cards">
-    <div class="card"><h3>Follow the experiment</h3><p>OM-5 Mark II (E148, firmware 1.1) comes first. Alpha8 and alpha9 booted on the owner’s camera; alpha10 fixes the alpha9 findings and waits for its camera check.</p><a class="more" href="pages/roadmap/">Roadmap →</a></div>
+    <div class="card"><h3>Follow the experiment</h3><p>OM-5 Mark II (E148, firmware 1.1) comes first. Alpha9 is the camera-checked baseline. The alpha11 camera check starts with the Monochrome Color Filter page and both dials.</p><a class="more" href="pages/roadmap/">Roadmap →</a></div>
     <div class="card"><h3>Own an original OM-5?</h3><p>A <strong>pre-alpha</strong> for the original OM-5 (2022, firmware 1.2) puts the whole Mark II program with Caduceus into the OM-5’s update file. It has <strong>never run on any camera</strong>, and nobody knows whether an OM-5 can be recovered if it fails. If you accept that risk, can use a terminal, and want to help, the tester page explains how to build it, a careful order of first steps, and how to report what happens.</p><a class="more" href="pages/om5-prealpha/">Original OM-5 pre-alpha: for testers →</a></div>
   </div>
   <div class="links"><a href="pages/roadmap/">Roadmap</a><a href="pages/changelog/">Changelog</a><a href="pages/first-flash/">Camera test checklist</a><a href="pages/formats/">File format</a></div>

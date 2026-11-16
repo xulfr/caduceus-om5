@@ -18,21 +18,36 @@
   <a class="tab" href="../changelog/" aria-current="page">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha10 has not been run on a camera; alpha9 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Use alpha9 until alpha11 is checked on a camera. Alpha10 booted and restarted on the Monochrome Color Filter page. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="changelog">Changelog</h1>
 </div>
-<nav class="toc" aria-label="On this page"><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha10-2026-11-17-emulator-only-not-run-on-a-camera">v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
+<nav class="toc" aria-label="On this page"><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha11-camera-check-pending">v0.1.0-alpha11 (camera check pending)</a><a href="#v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
 <section class="card">
 <h2 id="camera-result-2026-11-15">Camera result — 2026-11-15</h2>
 <p><strong>v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.</strong>
 <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md">Camera report</a>.</p>
 </section>
 <section class="card">
-<h2 id="v010-alpha10-2026-11-17-emulator-only-not-run-on-a-camera">v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)</h2>
-<p><strong>Alpha10 has not been run on any camera. Alpha9 booted on the owner's camera.</strong> To install alpha9 instead:
-<code>python3 patch.py --release v0.1.0-alpha9</code>.</p>
+<h2 id="v010-alpha11-camera-check-pending">v0.1.0-alpha11 (camera check pending)</h2>
+<ul>
+<li>The Monochrome Color Filter page returns to alpha9's rendering. Restored the stock <code>0x107e</code> image,
+  both widget rectangles and the stock painter. Removed the paint hook, ring, “Level” text and
+  child 3 invalidation. The native filter header and both dials remain available. The picker graphic
+  is postponed pending camera validation.</li>
+<li>The out-of-range <code>0xffff</code> image lookup is the leading hypothesis for the alpha10 restart.
+  The physical cause remains unproved. See the <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-MONO-FILTER-CP-2026-11-17.md#alpha11-follow-up">filter and CP investigation</a>.</li>
+<li>The CP carousel's ND32 and ND64 slots now reference existing ND32 and ND64 artwork.
+  Static verification covers the image IDs and resource pointers. The carousel still needs a camera check.</li>
+<li>Package SHA-256 <code>5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a</code>. <a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha11-results.json">Validation results</a>.</li>
+</ul>
+<p>Use alpha9 until the owner checks alpha11 on the camera. Run <code>python3 patch.py --release v0.1.0-alpha9</code>.</p>
+</section>
+<section class="card">
+<h2 id="v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</h2>
+<p>The owner reported that alpha10 booted. Opening Monochrome Color Filter restarted the camera once, and
+ND32 / ND64 worked from the CP carousel with empty icons. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA10-CAMERA-2026-11-17.md">Camera report</a>.</p>
 <p>Fixes from the <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA9-CAMERA-2026-11-16.md">alpha9 camera report</a>:</p>
 <ul>
 <li><strong>Color Profile Shading works.</strong> Its slider was grey and ignored the dials: OM's firmware has no setting
@@ -57,10 +72,7 @@
 </section>
 <section class="card">
 <h2 id="v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</h2>
-<p>The owner reported that alpha9 boots and the colour wheel draws correctly on the camera; the defects found are
-fixed in alpha10.</p>
-<p><strong>Alpha9 has not been run on any camera. Alpha8 is the last build confirmed to boot.</strong> To install alpha8 instead:
-<code>python3 patch.py --release v0.1.0-alpha8</code>. Package <code>2e9777ce…fbc50</code>.</p>
+<p>The owner reported that alpha9 boots and the colour wheel draws correctly on the camera. Package <code>2e9777ce…fbc50</code>. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA9-CAMERA-2026-11-16.md">Camera report</a>.</p>
 <ul>
 <li>Color Profiles 1–3 and Monochrome Profiles 1–3 show their own numbered icon in the carousel, sidebar, super
   control panel and shooting screen (alpha8 showed C2 or M for all three).</li>
