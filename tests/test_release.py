@@ -45,6 +45,18 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('lz4_recipe', rel['resource'])
         self.assertFalse(rel['camera_tested'])
 
+    def test_alpha9_is_untested(self):
+        # Emulator only: no camera report exists for this package, so the installer must ask for UNTESTED.
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha9/patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertNotIn('camera_status', rel)
+        self.assertNotIn('camera_report', rel)
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        self.assertIn('lz4_recipe', rel['resource'])
+        ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}
+        self.assertLessEqual({'0x3d5e', '0x3d5f', '0x3d60', '0x3d66', '0x3d67', '0x3d68'}, ids)
+        self.assertEqual(rel['package']['sha256'], '2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50')
+
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):
         stock = Path(os.environ['OM5_STOCK']).read_bytes()
