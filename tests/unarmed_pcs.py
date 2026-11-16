@@ -19,6 +19,7 @@ ALLOWED = {
     'display_hook', 'display_stock', 'label_get', 'label_get_done',
     'hsl_container', 'container_stock', 'container_restore', 'container_unarmed',
     'hsl_delete_action', 'delete_done', 'delete_restore', 'delete_stock',
+    'container_info', 'info_done',                                        # INFO: stock, then an armed-only branch
     'parent_hook', 'parent_restore', 'st_set_editor', 'st_set_editor_out',
     'reset_hook', 'st_reset_on', 'st_reset_off', 'st_reset_put', 'st_reset_out',
     'builder_hook', 'builder_stock',
@@ -34,7 +35,8 @@ def main():
     for unit in ('hsl', 'wb'):
         for line in subprocess.check_output(['mn10300-elf-nm', '-n', str(build / 'assembly' / unit / 'patch.elf')], text=True).splitlines():
             address, kind, name = line.split()[:3]
-            if kind in 'tT' and int(address, 16) > 0x60000000:
+            # Assembler-local labels (.L*) mark relaxed branches inside a function, not code of their own.
+            if kind in 'tT' and int(address, 16) > 0x60000000 and not name.startswith('.L'):
                 syms.append((int(address, 16), name))
     syms.sort()
     addresses = [a for a, _ in syms]

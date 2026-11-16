@@ -9,11 +9,79 @@ these observations to the exact release and records the limits of the test.
 
 [Camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) · [Alpha8 manifest](releases/v0.1.0-alpha8/patch.json) · [Emulator results](tests/alpha8-results.json)
 
-## UI candidate
+## WIP UI candidate 2 (16 November 2026)
+
+Branch `claude/pensive-hamilton-pg8dpr`, built from the UI candidate `ae96e94` (package `7ba9aba0…b92508`,
+reproduced byte for byte in this session). **Emulator only; not camera-tested.** Not a release: no tag, no
+manifest under `releases/`, `camera_tested` stays false.
+
+Strict source build package SHA-256: `32a0c5f124a4f80cdab8489d075828d7e15309f59d5d0e451174aa6908a0a5bd`
+(90,832,896 bytes, `DCOLYMP/E1489999.BIN`). [Findings](research/OM5II-WIP-UI2-2026-11-16.md).
+
+| Defect | Status | Change |
+| --- | --- | --- |
+| HSL title stuck after trash | Fixed in OM-Emu by invalidation count; camera check needed | Axis switch marks `P+56`; `pages_hook` invalidates the colour page with OM's `0x60d49294`. Baseline made no dirty mark; OM-Emu repaints the whole plane, so frames could not show it. |
+| Screen times out during custom controls | Fixed in OM-Emu | Axis switch, film step and INFO on the custom pages restart timer 500 (8000 ms) exactly as the stock container does. Idle still closes. |
+| Tone Curve sidebar icon | Fixed in OM-Emu | Image `0x38cc` aliased to stock tone-curve glyph `0x2aef` (28 × 28). |
+| ND32/ND64 in CP Button Settings | Menu and toggles fixed in OM-Emu; carousel unverified | Page `0x16f` lists 2217/2218; their descriptors are linked into OM's RAM hash after arming. |
+| Colour wheel / tone curve graphics | Unresolved | No new trace; next step unchanged (OM-3 draw requests). |
+| ND64 digit artefact | Cause identified, not changed | Digits narrowed to 13 px by column sampling in sprite `0x205d`. |
+
+Commits: `3209740` repaint and timeout, `7424c74` Tone Curve icon, `04903de` CP Button Settings, then the
+records commit with this handover. New sources: `firmware/om5ii/cp_nd.py`, `tools/oly_resource_recipe.py`,
+`tests/run_ui_activity.py`, `tests/ui_activity.mjs`. `tools/dev/sess.mjs` accepts `main+N` / `sub-N` dial input.
+
+State and image rules: new state is `P+56` (axis repaint) and `P+988..1003` (two hash nodes); the descriptor
+hash is OM's own RAM (`.bss`). No startup gate, section order, allocator or loader byte changed. Section tails
+left: ext6 345, ext7 92, ext10 602 bytes. All three section-2 data edits sit in the region color_profiles.py
+already frees.
+
+### Checks run on this candidate (`generated/w3`)
+
+- Strict build and package hash above; `tests/audit_build.py` against `ae96e94`: all edits declared, loader
+  bounds and 768 ND selector cases unchanged, resource delta exactly image `0x38cc`.
+- `tools/dev/static_rules.py`: no `0xfb`, 14 tables aligned, stream lengths safe.
+- Startup probe: 1023 masks, task gates, allocation retry, bounds, alignment and magic passed; startup image
+  stores equal stock (6/6, none beyond).
+- Gating: inert and applied passed; stale profile number passed; unarmed PC scan passed (now ignores
+  assembler `.L*` labels and allows the INFO gate `container_info`).
+- `tests/run_emulator.py`: 19 look/menu cases, see `tests/wip-ui2-results.json`.
+- `tests/run_ui_activity.py`: 10/10 (8 controls stay open, idle closes, axis 1→2→0 with 3 restarts and 3
+  invalidations; the axis case fails on `ae96e94` with 0/0).
+- Six Live ND label cases passed. Host suite with `OM5_STOCK`: 18 tests OK, 1 skipped (E144 inputs).
+- Not run: anything needing a camera, the CP-button carousel (button not wired in OM-Emu), C3D graphics.
+
+### Camera retest checklist (owner)
+
+Record model, stock 1.1, the package SHA-256 above, procedure and outcome for each.
+
+1. Boot and the step-0 restore check; half-press once before the tests below.
+2. Picture Mode carousel: Color Profile 1–3 and Monochrome 1–3 icons (1/2/3, M1/M2/M3) unchanged.
+3. SCP Picture Mode cell icon and look name; after cycling looks and after moving the SCP highlight.
+4. Sidebar: scroll down to Contrast and back; no overlap. Tone Curve row now shows a curve icon, selected and
+   unselected, aligned with the other icons.
+5. Colour wheel row: press trash repeatedly, slowly and quickly. The title must go Saturation → Hue →
+   Lightness → Saturation, changing on every press with no navigation. Turn the dials after each switch.
+6. Keep using controls for over 10 s each: trash look cycling on the mode strip, trash and INFO on the wheel,
+   dials and INFO on Tone Curve. The screen must stay open. Then leave it idle: it must close (about 8 s).
+7. Colour wheel and tone curve graphics: note whether either now draws (not expected from this candidate),
+   including after leaving and re-entering the editor.
+8. Gear menu → CP Button Settings: ND32 and ND64 listed after ND16; untick and re-tick each; ND2–ND16 and the
+   rest unaffected; settings kept after a power cycle.
+9. Hold the CP button: ND32/ND64 appear when ticked and are absent when unticked; selecting each gives ND32 /
+   ND64 exposure and the `ND32-LV` / `ND64-LV` label.
+10. Live ND menu: ND2–ND64 still selectable; labels and exposure as before. Note the ND64 digit artefact.
+11. HSL edits, tone edits and JPEG output for a look as in alpha8.
+
+## UI candidate (`ae96e94`)
 
 The strict source build at `ae96e94` produces package SHA-256
 `7ba9aba03cefb22969b9abde3cd387cd1d3390dc263b4117cbe52c509fb92508`.
-It has been exercised in OM-Emu. Alpha8 is the camera-tested release.
+It has been exercised in OM-Emu. Owner camera report (relayed 16 November 2026, OM-5 Mark II, stock 1.1, this
+package): M1–M3 and Color 1–3 icons, the SCP Picture Mode icon, the sidebar overlap (including scrolling) and
+the `ND32-LV` label are fixed; `ND64-LV` shows with a small artefact on the digits. New on camera: the HSL title
+lags behind trash presses, custom controls let the screen time out, the Tone Curve row has no icon and
+CP Button Settings lacks ND32/ND64. Alpha8 remains the released, camera-tested build.
 
 | Defect | Alpha8 in OM-Emu | Candidate and camera retest |
 | --- | --- | --- |

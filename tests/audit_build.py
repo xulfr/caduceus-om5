@@ -14,6 +14,33 @@ import patch
 from om5ii_boot_audit import audit_ranges, loader_regions, BASE
 
 
+def resource_delta(current, previous, spec):
+    """Image IDs whose record-0 pointer word differs from the previous build. Anything else that differs is
+    refused: other records (bitmaps, language, fonts) byte for byte, and every decoded record-0 byte apart from
+    the pointer words of aliases declared in patch.json."""
+    from oly_compress import _sequences
+    if current == previous:
+        return []
+    assert len(current) == len(previous)
+    span = struct.unpack_from('<I', current, 4)[0]
+    assert struct.unpack_from('<4I', current)[:2] == struct.unpack_from('<4I', previous)[:2], 'resource index changed'
+    at = 2016
+    assert current[:at] == previous[:at] and current[at + span:] == previous[at + span:], 'resource outside record 0 changed'
+    def decode(blob):
+        packed, raw = struct.unpack_from('<II', blob, at + 16)
+        return _sequences(blob[at + 32:at + 32 + packed], raw)[0]
+    new, old = decode(current), decode(previous)
+    assert len(new) == len(old)
+    load = struct.unpack_from('<I', new)[0] - 8
+    table = struct.unpack_from('<I', new, 4)[0] - load
+    declared = {int(t, 16) for g in spec.get('resource_aliases', []) for t, _ in g['aliases']}
+    words = sorted({(i - table) // 4 for i in range(len(new)) if new[i] != old[i]})
+    for w in words:
+        assert w >= 0 and w in declared, f'undeclared record-0 change at image ID {w:#x}'
+    assert all(new[i] == old[i] or (i >= table and (i - table) // 4 in declared) for i in range(len(new)))
+    return [hex(w) for w in words]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     for name in ('build', 'previous', 'stock', 'out'):
@@ -32,7 +59,7 @@ def main():
     assert patch.sha256(current) == report['components']['0x100']['expanded_sha256']
     resources = (a.build / 'decoded/0101.bin').read_bytes()
     assert patch.sha256(resources) == spec['components']['0x101']['after_sha256']
-    assert resources == (a.previous / 'decoded/0101.bin').read_bytes(), 'resource block changed'
+    resource_change = resource_delta(resources, (a.previous / 'decoded/0101.bin').read_bytes(), spec)
     regions = loader_regions(original)
     owners = audit_ranges(original, spec['ranges'], spec.get('data_edits', []))
     edits = [r for r in spec['ranges'] if r['component'] == '0x100' and 'address' in r]
@@ -73,7 +100,8 @@ def main():
               'previous_expanded_sha256': patch.sha256(previous),
               'expanded_sha256': patch.sha256(current), 'changed_ranges': changed,
               'all_edits_declared': True, 'previous_bytes_back_to_stock': back_to_stock, 'native_loader_bounds_unchanged': True,
-              'resources_unchanged': True, 'nd_selector_cases': cases,
+              'resources_unchanged': not resource_change, 'resource_alias_words_changed': resource_change,
+              'nd_selector_cases': cases,
               'section_tail_space': {r['name']: next(s['end'] for s in regions if s['id'] == owners[r['name']])
                                      - int(r['address'], 16) - r['bytes']
                                      for r in edits if r['name'] in ('ext6', 'ext7', 'ext10')}}
