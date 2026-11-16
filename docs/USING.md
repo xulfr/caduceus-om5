@@ -1,7 +1,5 @@
 # Using it
 
-> The [alpha8 camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records confirmed functions and known UI defects.
-
 **After switching on, half-press the shutter button once.** Until then the camera behaves exactly as OM's
 firmware (the Color Profiles are in the list, but their extra controls are asleep and no look file is read).
 A profile that was selected when the camera was switched off is applied at that half-press; a photo taken
@@ -24,7 +22,7 @@ before any half-press (by remote control, for example) uses the camera's stock v
 
 - **Color Profile 1, 2, 3**: your three look slots.
 - **Monochrome Profile 1, 2, 3**: OM's monochrome profiles (filter, toning, grain, tone), as on the OM-3 and PEN-F.
-  The Color Filter page cannot change the filter yet (no filter picker, [roadmap](../ROADMAP.md)).
+  On the Color Filter page, one dial picks the filter from a ring of eight colour swatches and the other sets its level.
 
 Each Color Profile has its own rows (press down from the list):
 

@@ -1,6 +1,6 @@
 # Safety
 
-**Alpha12 is the current experimental build.** The owner reports that the Monochrome Color Filter graphic works. The installer still asks for the experimental-build acknowledgement. [Alpha12 camera findings](../releases/v0.1.0-alpha12/README.md).
+**Caduceus is experimental firmware.** The current release runs on the developer’s own OM-5 Mark II. This page records everything known so far, including the early development builds that failed, so you can decide for yourself. The installer asks you to acknowledge the risk before it makes any files.
 
 ## What is known
 

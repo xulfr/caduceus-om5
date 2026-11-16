@@ -14,7 +14,7 @@ PAGES = {
     'ROADMAP.md': 'roadmap', 'CHANGELOG.md': 'changelog',
 }
 REPO = 'https://github.com/xulfr/caduceus-om5'
-BANNER = ('<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. '
+BANNER = ('<div class="banner"><strong>Experimental firmware.</strong> Caduceus is an early, unofficial release for the OM-5 Mark II on firmware 1.1. Installing any modified firmware carries a risk to your camera. '
           '<a href="../safety/">Read the safety notes.</a></div>')
 BANNERS = {'om5-prealpha': '<div class="banner"><strong>Pre-alpha for the original OM-5: never run on any camera.</strong> '
            'Recovery from a failure is unknown. For testers who accept that risk. '
