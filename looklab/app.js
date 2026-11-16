@@ -38,7 +38,7 @@ function looksBin(films) {
     f = { ...blank(), ...f };
     for (const key of ['hue', 'light', 'sat']) if (!Array.isArray(f[key]) || f[key].length !== 12) throw new Error(`${key} needs 12 values`);
     if (f.wb !== null && (!Array.isArray(f.wb) || f.wb.length !== 2)) throw new Error('WB needs two values');
-    const p = nameProblem(f.name); if (p) throw new Error(`${f.name || 'Film ' + (k + 1)}: ${p}`);
+    const p = nameProblem(f.name); if (p) throw new Error(`${f.name || 'Look ' + (k + 1)}: ${p}`);
     const o = 32 + 80 * k, put = (at, v, n) => { if (!Number.isInteger(v) || Math.abs(v) > n) throw new Error(`${f.name}: a value is out of range`); dv.setInt8(o + at, v); };
     for (let i = 0; i < 12; i++) { put(i, f.hue[i], RANGE.hue); put(12 + i, f.light[i], RANGE.light); put(24 + i, f.sat[i], RANGE.sat); }
     if (f.wb) { dv.setInt8(o + 36, 1); put(37, f.wb[0], RANGE.wb); put(38, f.wb[1], RANGE.wb); }
@@ -171,7 +171,7 @@ function slider(label, get, set, n, colour) {
 
 function drawEditor() {
   const f = cur(), ed = $('editor'); ed.replaceChildren();
-  const name = el('input', { type: 'text', value: f.name, maxlength: NAME_MAX, id: 'name', 'aria-label': 'Film name',
+  const name = el('input', { type: 'text', value: f.name, maxlength: NAME_MAX, id: 'name', 'aria-label': 'Look name',
     oninput: () => { f.name = name.value; const p = nameProblem(f.name); say(p || '', !!p); drawList(); save(); } });
   ed.append(el('div', { class: 'namerow' }, el('label', { for: 'name' }, 'Name'), name, el('span', { class: 'hint' }, `${NAME_MAX} characters`)));
   const tabs = el('div', { class: 'tabs', role: 'tablist' });
@@ -187,7 +187,7 @@ function drawEditor() {
     slider('Highlights', () => f.highlights, (v) => { f.highlights = v; }, RANGE.tone), slider('Contrast', () => f.contrast, (v) => { f.contrast = v; }, RANGE.contrast),
     slider('Sharpness', () => f.sharpness, (v) => { f.sharpness = v; }, RANGE.sharpness), slider('Shading', () => f.shading, (v) => { f.shading = v; }, RANGE.shading)));
   const on = el('input', { type: 'checkbox', id: 'wbon', onchange: () => { f.wb = on.checked ? [0, 0] : null; changed(); drawEditor(); } }); on.checked = !!f.wb;
-  ed.append(el('h3', {}, 'White balance shift'), el('label', { class: 'check', for: 'wbon' }, on, ' This film sets the A/B and G/M shift (otherwise the camera sets both to 0)'));
+  ed.append(el('h3', {}, 'White balance shift'), el('label', { class: 'check', for: 'wbon' }, on, ' This look sets the A/B and G/M shift (otherwise the camera sets both to 0)'));
   if (f.wb) ed.append(el('div', { class: 'grid' }, slider('A/B (amber +)', () => f.wb[0], (v) => { f.wb[0] = v; }, RANGE.wb), slider('G/M (green +)', () => f.wb[1], (v) => { f.wb[1] = v; }, RANGE.wb)));
   ed.append(el('p', { class: 'hint' }, 'Sharpness is not shown in the preview. The shift is applied to whatever white balance mode the camera is on.'));
 }
@@ -216,7 +216,7 @@ function loadSample(id) { sample = id; const img = new Image(); img.onload = () 
 function download(bytes, name) { const a = el('a', { href: URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })), download: name }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 
 function fillLibrary() {
-  const s = $('lib'); s.replaceChildren(el('option', { value: '' }, 'Add a film from the library…'));
+  const s = $('lib'); s.replaceChildren(el('option', { value: '' }, 'Add a look from the library…'));
   const groups = { neg: 'Colour negative', slide: 'Slide film', fuji: 'Fujifilm simulations', instant: 'Instant film', print: 'Cinema print' };
   for (const [g, label] of Object.entries(groups)) { const og = el('optgroup', { label }); library.filter((f) => f.group === g).forEach((f) => og.append(el('option', { value: f.name, title: f.desc }, f.name))); if (og.children.length) s.append(og); }
 }
@@ -237,9 +237,9 @@ async function start() {
   $('up').onclick = () => { [films[sel - 1], films[sel]] = [films[sel], films[sel - 1]]; sel--; drawAll(); };
   $('down').onclick = () => { [films[sel + 1], films[sel]] = [films[sel], films[sel + 1]]; sel++; drawAll(); };
   $('reset').onclick = () => { const n = cur().name; const lib = library.find((x) => x.name === n); films[sel] = lib ? fromLib(lib) : blank(n); drawAll(); say(lib ? `${n}: back to the library's values.` : `${n}: all values zero.`); };
-  $('savebin').onclick = () => { try { const b = looksBin(films); download(b, 'LOOKS.BIN'); say(`LOOKS.BIN saved (${films.length} films, ${b.length} bytes). Put it in a folder OM5MOD at the top of the SD card.`); } catch (e) { say(e.message, true); } };
-  $('openbin').onchange = async (e) => { const file = e.target.files[0]; e.target.value = ''; if (!file) return; try { films = readLooks(await file.arrayBuffer()); sel = 0; drawAll(); say(`${file.name}: ${films.length} films opened.`); } catch (err) { say(err.message, true); } };
-  $('starter').onclick = () => { films = starter.map((n) => library.find((f) => f.name === n)).filter(Boolean).map(fromLib); sel = 0; drawAll(); say('The ten starter films.'); };
+  $('savebin').onclick = () => { try { const b = looksBin(films); download(b, 'LOOKS.BIN'); say(`LOOKS.BIN saved (${films.length} looks, ${b.length} bytes). Put it in a folder OM5MOD at the top of the SD card.`); } catch (e) { say(e.message, true); } };
+  $('openbin').onchange = async (e) => { const file = e.target.files[0]; e.target.value = ''; if (!file) return; try { films = readLooks(await file.arrayBuffer()); sel = 0; drawAll(); say(`${file.name}: ${films.length} looks opened.`); } catch (err) { say(err.message, true); } };
+  $('starter').onclick = () => { films = starter.map((n) => library.find((f) => f.name === n)).filter(Boolean).map(fromLib); sel = 0; drawAll(); say('The ten starter looks.'); };
   const v = $('view'), hold = (on) => () => { showOriginal = on; drawPreview(); };
   v.addEventListener('pointerdown', hold(true)); v.addEventListener('pointerup', hold(false)); v.addEventListener('pointerleave', hold(false));
   drawList(); drawEditor(); loadSample(sample);
