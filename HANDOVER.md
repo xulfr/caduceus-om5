@@ -11,47 +11,46 @@ colour-profile, HSL, tone and Live ND functions. It is not a general safety or c
 
 The UI candidate `ae96e94` (package `7ba9aba0…b92508`) was also flashed by the owner (icons and ND labels).
 
-## Active work: alpha9 candidate (16 November 2026)
+## Active work: v0.1.0-alpha9 (16 November 2026)
 
-Branch `claude/pensive-hamilton-pg8dpr`, with `main` merged (`96d2c5c`). **Emulator only; not camera-tested.
-Not released.** The owner asked for this to become the next official alpha (v0.1.0-alpha9) with a PR to main,
-README and Pages refresh and new screenshots. That work is **not done**; see Next actions.
+Branch `claude/pensive-hamilton-pg8dpr` (main merged at `96d2c5c`). **Emulator only; not camera-tested.** Release
+files are in releases/v0.1.0-alpha9 (`camera_tested` false, no `camera_status`); the installer's default is now
+alpha9 and asks for `UNTESTED`. Not merged to main; no PR opened yet. Package SHA-256
+`2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50`. Main program identical to candidate 3.
 
-Strict source build package SHA-256: `43b0e367a7fed8ac968041f4fc9837a9786c4684456c0b70dd195d68ad962c1d`.
+On top of alpha8: UI candidate fixes, WIP UI candidates 2 and 3 (colour wheel and tone curve drawn on the OSD
+plane), the Tone Curve row icon in all 27 tone states (`7f53058`) and the edited-profile shooting-screen icon
+(`96bd3c0`). Details of candidates 2 and 3: docs/archive/HANDOVER-ui-candidates-2026-11-16.md,
+research/OM5II-WIP-UI2-2026-11-16.md, OM5II-WIP-UI3-2026-11-16.md.
 
-Contents on top of alpha8: UI candidate fixes, WIP UI candidates 2 and 3 (colour wheel and tone curve drawn on
-the OSD plane), and `7f53058`: the Tone Curve row icon in all 27 tone states. Details of candidates 2 and 3:
-docs/archive/HANDOVER-ui-candidates-2026-11-16.md, research/OM5II-WIP-UI2-2026-11-16.md, OM5II-WIP-UI3-2026-11-16.md.
+### Edited-profile icon (`96bd3c0`)
 
-### Tone Curve row icon (`7f53058`)
+- Traced with `tools/dev/imgwatch.mjs`: once a profile is edited the Picture Mode screen and the shooting screen
+  ask for `0x3d66..0x3d68` (Color 1–3) and `0x3d5e..0x3d60` (Monochrome 1–3) instead of `0x3d62..0x3d64` /
+  `0x3d5a..0x3d5c`. All six are stock placeholders. Carousel positions: `right` ×8..13 after `s1 ok ok`.
+- Added to the existing artwork sprites (same bitmap as the unedited ID). Record-0 recipe re-recorded with
+  `tools/oly_resource_recipe.py --artwork ANCHOR=TARGET` (new option): packed 764,886 bytes, same window.
+- `tests/audit_build.py` now accepts artwork sprite IDs, and requires all IDs of one sprite to share a bitmap.
+- `tests/run_profile_icons.py`: passes on alpha9, fails on `43b0e367` as intended.
 
-- The row asks for image `0x38cc` when Shadows / Midtones / Highlights are 0 and `0x38cd..0x38e6` otherwise
-  (traced per state with `tools/dev/imgwatch.mjs`). Only `0x38cc` was aliased, so the icon vanished after any edit.
-- Order: Midtones 0, then +, then −; within each (Sh, Hi) = (+,+) (+,−) (−,+) (0,+) (−,−) (0,−) (+,0) (−,0),
-  then (0,0) last in the two Midtones groups. E148's Highlight & Shadow glyphs `0x2ae0..0x2af9` have the same order.
-- Aliases: `0x38cd+k → 0x2ae0+k` (k = 0..25), `0x38cc → 0x20a` (stock gradation "Norm" icon).
-- Resource record 0 pointer words only (packed 764,848 bytes, length rule passes). The main program is
-  byte-identical to candidate 3.
+### Checks (alpha9 build, OM-Emu `bdb3347`): tests/alpha9-results.json
 
-### Checks
+All passed: strict build, 19 look/menu cases (no image stores beyond stock), startup probe (stores equal stock),
+inert / applied gating, unarmed PC scan, stale numbers, UI activity 10/10, page graphics 10/10, tone icons 27/27,
+profile icons 6/6, Live ND labels 6/6, static rules, host suite with `OM5_STOCK` (alpha1–alpha9 reproduce),
+`audit_build.py` against candidate 3 (tests/alpha9-build-audit.json).
+**Not a pass:** `audit_build.py` against alpha8 refuses by design (record 37 artwork added since alpha8; candidate 3
+fails the same way). Extending the audit to verify record 37's appended artwork would close this.
 
-On candidate 3 (`62ff6d21…1425`, same main program), OM-Emu `bdb3347`, all passed: strict build, static rules,
-`tests/run_emulator.py` (all cases, no image stores beyond stock), startup probe (image stores equal stock),
-inert / applied gating, unarmed PC scan, stale profile number, `run_ui_activity.py` 10/10,
-`run_page_graphics.py` 10/10 (after correcting one expectation: a block's edge hides the next scale dot),
-six Live ND label cases, host suite with `OM5_STOCK`, `audit_build.py` against candidate 2.
+### Site and docs
 
-On the current build (`43b0e367…2c1d`): strict build, `tests/run_tone_icons.py` (27 states, 27 icons; fails on
-candidate 3 as intended). **Not yet run on it:** the full suite above and `audit_build.py` against candidate 3
-and alpha8. Run them before any release or camera test.
+README, CHANGELOG, Install, Safety, FAQ, Roadmap, the camera checklist (steps 9–14 for alpha9) and all banners say
+alpha9 has not run on a camera and how to make alpha8 (`python3 patch.py --release v0.1.0-alpha8`). Tour and guide
+pages restyled after androidfanman/caduceus-om3 (`3e5c7e5`); screenshots in pages/showcase/img from the alpha9
+build with the starter LOOKS.BIN (`38bd927`). LookLab still uses pages/site/site.css.
 
 ## Known defects (OM-Emu)
 
-- **Shooting screen shows no Picture Mode icon once a profile is edited or holds a look.** Unedited Color
-  Profile 1 asks for `0x3d62` (artwork, shown); edited it asks for `0x3d66` (placeholder). Expected, unconfirmed:
-  `0x3d66..0x3d68` for Color 1–3 and `0x3d5e..0x3d60` for Monochrome 1–3. Fix: add them to the artwork sprite
-  `ids` in firmware/om5ii/patch.json; record 0 then needs a new LZ4 recipe (`oly_resource_recipe.py` only handles
-  `aliases`, so extend it), re-record, rebuild, audit.
 - Monochrome Profiles: Color Filter row icon (`0x38cb`) and Film Grain row / strip icons (`0x38e7..0x38ee`) are
   placeholders; the Color Filter page shows a stray "Vivid" label. Present since alpha8.
 - ND64 shooting label digits are squashed (resampled artwork). ND32 has a gap between digits.
@@ -60,22 +59,16 @@ and alpha8. Run them before any release or camera test.
 
 ## Next actions
 
-1. Fix the edited-profile shooting icon (above); decide on the Monochrome icons.
-2. Run the full suite on the final build; record results in tests/alpha9-results.json and a build audit.
-3. Release: `tools/mkrelease.py v0.1.0-alpha9 BUILD STOCK`, `camera_tested` false, no `camera_status`, copy
-   LOOKS.BIN, update tests/test_release.py, CHANGELOG.md, README.md, docs, site banners; keep the warnings and say
-   plainly that alpha9 has not run on a camera and alpha8 is the last boot-confirmed build.
-4. New screenshots in pages/showcase/img from the release build with the starter LOOKS.BIN (frames are Y/Cb/Cr
-   in the PNG's R/G/B: convert with PIL `Image.merge('YCbCr', …)`). Current images are outdated.
-5. Restyle index.html and tools/mksite.py output after androidfanman/caduceus-om3's current site, then `python
-   tools/mksite.py`.
-6. Open the PR to main. Owner camera checklist: docs/archive/HANDOVER-ui-candidates-2026-11-16.md, plus the Tone
-   Curve icon in several states and the shooting-screen icon after loading a look.
+1. Owner review; then open the PR to main (owner approval needed to publish the release).
+2. Owner camera check of the alpha9 package: docs/FIRST_FLASH.md steps 0–3, then 9–14. Record the result with the
+   package hash before changing any release status.
+3. Monochrome Color Filter / Film Grain icons; ND64 / ND32 digit artwork.
+4. Optional: let `audit_build.py` verify record 37's appended artwork so builds can be audited against alpha8.
 
 ## Workspace
 
-- Stock E148 1.1 (`9de5d77e…d637`) and `binutils-2.43.tar.xz` are in the owner's lab folder
-  (`CameraFirmwareLab/firmware/user-om5ii`, `tools-local/mn103`); cloud sessions cannot reach OM's or GNU's servers.
+- Stock E148 1.1 (`9de5d77e…d637`): cloud sessions on 16 November 2026 could fetch it with `patch.fetch_stock`
+  (OM's server) and binutils from ftp.gnu.org. Also in the owner's lab folder (`CameraFirmwareLab/...`).
 - binutils: `configure --target=mn10300-elf --disable-nls --disable-werror --disable-gdb`, then
   `make MAKEINFO=true` and `make MAKEINFO=true install` (the variable must be a make argument).
 - OM-Emu: `xulfr/om-emu`, branch `fix/e148-ipi-stride`; Node 22 works.
