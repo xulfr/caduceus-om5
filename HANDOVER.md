@@ -14,8 +14,7 @@ colour filter picker and the CP "any item" fix: package `056aefb3c3f40b7cf41728c
 (`camera_tested` false; the earlier candidate `1530ca05…` is superseded). Owner opens the PR to main.
 
 **Unfinished at handover (usage limit):** (1) the 19 look/menu cases (`tests/run_emulator.py`) were at 15/19 passed
-on the re-cut build; (2) `unarmed_pcs.py` verdict; (3) host suite `python -m unittest discover -s tests` with
-`OM5_STOCK`. Re-run these three, then fill `tests/alpha10-results.json` (fields marked PENDING). Everything else in
+on the re-cut build; (2) `unarmed_pcs.py` verdict. The host suite with `OM5_STOCK` passed (21 OK, 1 skipped). Re-run these two, then fill `tests/alpha10-results.json` (fields marked PENDING). Everything else in
 the suite passed on the re-cut build (startup, image stores = stock, gating, stale numbers, static rules, UI
 activity, page graphics, tone/profile icons, profile rows, mono filter, Live ND labels 6/6, audits vs alpha9/alpha8).
 

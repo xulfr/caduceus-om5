@@ -127,7 +127,7 @@
   "First startup run failed 'state clear stops at its boundary': the probe pre-filled a hard-coded 1040 bytes (1024 + 16 guard), so with the 1040-byte block the guard band was never filled. Fixed the probe to fill SIZE + 16; rerun passed. No firmware change."
  ],
  "host": {
-  "result": "PENDING at handover time: python -m unittest discover -s tests with OM5_STOCK was running."
+  "result": "python -m unittest discover -s tests with OM5_STOCK on the re-cut release: 21 tests OK (1 skipped), all releases alpha1..alpha10 reproduce."
  },
  "previous_candidate": "1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27 (superseded; no filter picker, no CP any-item fix)",
  "look_menu_cases_status": "PENDING at handover time for the re-cut build: 15 of 19 passed, run still in progress (the case list below is from the candidate). Re-run tests/run_emulator.py to confirm."
