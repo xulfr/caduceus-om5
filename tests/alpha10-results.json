@@ -107,7 +107,7 @@
   "startup_image_stores": "Matched stock.",
   "profile_before_arming": "GATING inert passed.",
   "profile_at_arming": "GATING applied passed.",
-  "unarmed_pcs": "Session ran (rc 0); unarmed_pcs.py verdict pending at handover time.",
+  "unarmed_pcs": "UNARMED PCS passed: only gates and stock replays ran (re-cut build).",
   "stale_profile_numbers": "STALE ASSERTIONS passed.",
   "static_rules": "STATIC RULES passed.",
   "build_audit_vs_alpha9": "Passed (alpha10-build-audit.json). New: filter_pointer, cp_any_hook, mono_filter_word/icon/value; ext5/6/7/10 grew (films.s code relinked after the new hsl.s code).",
@@ -130,5 +130,5 @@
   "result": "python -m unittest discover -s tests with OM5_STOCK on the re-cut release: 21 tests OK (1 skipped), all releases alpha1..alpha10 reproduce."
  },
  "previous_candidate": "1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27 (superseded; no filter picker, no CP any-item fix)",
- "look_menu_cases_status": "PENDING at handover time for the re-cut build: 15 of 19 passed, run still in progress (the case list below is from the candidate). Re-run tests/run_emulator.py to confirm."
+ "look_menu_cases_rerun": "All 19 look/menu cases passed on the re-cut build (tests/run_emulator.py, rc 0)."
 }

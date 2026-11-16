@@ -13,10 +13,9 @@ Branch `claude/pensive-hamilton-pg8dpr`. **Emulator only; not camera-tested.** r
 colour filter picker and the CP "any item" fix: package `056aefb3c3f40b7cf41728cd9f466ba161a52d887db6ecebd2f0377bb0a38454`
 (`camera_tested` false; the earlier candidate `1530ca05…` is superseded). Owner opens the PR to main.
 
-**Unfinished at handover (usage limit):** (1) the 19 look/menu cases (`tests/run_emulator.py`) were at 15/19 passed
-on the re-cut build; (2) `unarmed_pcs.py` verdict. The host suite with `OM5_STOCK` passed (21 OK, 1 skipped). Re-run these two, then fill `tests/alpha10-results.json` (fields marked PENDING). Everything else in
-the suite passed on the re-cut build (startup, image stores = stock, gating, stale numbers, static rules, UI
-activity, page graphics, tone/profile icons, profile rows, mono filter, Live ND labels 6/6, audits vs alpha9/alpha8).
+**Full suite passed on the re-cut build** (tests/alpha10-results.json): 19 look/menu cases, startup (image stores
+= stock), gating, unarmed PCs, stale numbers, static rules, UI activity, page graphics, tone/profile icons,
+profile rows, mono filter, Live ND labels 6/6, audits vs alpha9/alpha8, host suite with OM5_STOCK (21 OK, 1 skipped).
 
 New in this re-cut (research/OM5II-MONO-FILTER-CP-2026-11-17.md):
 - **Colour filter picker**: the page (child 3, flag +246, view `0x610d9b20`) already stepped 1007+p in OM-Emu
@@ -63,7 +62,7 @@ icons, `run_profile_rows.py` (new), Live ND labels, static rules, audits vs alph
 1. Owner camera check of alpha10 (`056aefb3…8454`): docs/FIRST_FLASH.md steps 0–3, 9–20 (Shading, CP-button ND32/64, Monochrome
    icons, per-profile WB). Record the package hash with the report.
 2. Owner: open the PR to main (release approval is the owner's).
-3. Finish the pending checks above. ND digit artwork.
+3. ND digit artwork.
 
 ## Workspace
 
