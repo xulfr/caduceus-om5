@@ -5,13 +5,14 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha12 (camera check pending)
+## v0.1.0-alpha12 (owner camera checks complete)
 
 - Restores the Monochrome Color Filter swatches, selection outline and centre colour.
   The hook draws the ring over the stock page. The panel requests a repaint when the filter page is active.
   Alpha12 keeps the stock labels and widget positions.
 - Package SHA-256 `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. [Validation results](tests/alpha12-results.json).
-- Use alpha11 until alpha12 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha11`.
+- The owner reports that the remaining filter graphic issue is fixed. Alpha12 is the current
+  experimental build. [Release notes and camera findings](releases/v0.1.0-alpha12/README.md).
 
 ## v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)
 

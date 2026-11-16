@@ -1,7 +1,6 @@
 # Safety
 
-**Use alpha11 until alpha12 is checked on the camera.** The installer defaults to alpha12.
-Run `python3 patch.py --release v0.1.0-alpha11` to make the alpha11 package.
+**Alpha12 is the current experimental build.** The owner reports that the Monochrome Color Filter graphic works. The installer still asks for the experimental-build acknowledgement. [Alpha12 camera findings](../releases/v0.1.0-alpha12/README.md).
 
 ## What is known
 

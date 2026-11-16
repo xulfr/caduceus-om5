@@ -18,25 +18,26 @@
   <a class="tab" href="../changelog/" aria-current="page">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Experimental firmware.</strong> Use alpha11 until alpha12 is checked on a camera. Alpha10 booted and restarted on the Monochrome Color Filter page. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="changelog">Changelog</h1>
 </div>
-<nav class="toc" aria-label="On this page"><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha12-camera-check-pending">v0.1.0-alpha12 (camera check pending)</a><a href="#v010-alpha11-boot-and-both-alpha10-fixes-confirmed">v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)</a><a href="#v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
+<nav class="toc" aria-label="On this page"><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha12-owner-camera-checks-complete">v0.1.0-alpha12 (owner camera checks complete)</a><a href="#v010-alpha11-boot-and-both-alpha10-fixes-confirmed">v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)</a><a href="#v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
 <section class="card">
 <h2 id="camera-result-2026-11-15">Camera result — 2026-11-15</h2>
 <p><strong>v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.</strong>
 <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md">Camera report</a>.</p>
 </section>
 <section class="card">
-<h2 id="v010-alpha12-camera-check-pending">v0.1.0-alpha12 (camera check pending)</h2>
+<h2 id="v010-alpha12-owner-camera-checks-complete">v0.1.0-alpha12 (owner camera checks complete)</h2>
 <ul>
 <li>Restores the Monochrome Color Filter swatches, selection outline and centre colour.
   The hook draws the ring over the stock page. The panel requests a repaint when the filter page is active.
   Alpha12 keeps the stock labels and widget positions.</li>
 <li>Package SHA-256 <code>cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa</code>. <a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha12-results.json">Validation results</a>.</li>
-<li>Use alpha11 until alpha12 is checked on the camera. Run <code>python3 patch.py --release v0.1.0-alpha11</code>.</li>
+<li>The owner reports that the remaining filter graphic issue is fixed. Alpha12 is the current
+  experimental build. <a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">Release notes and camera findings</a>.</li>
 </ul>
 </section>
 <section class="card">

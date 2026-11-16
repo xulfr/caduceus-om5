@@ -3,9 +3,7 @@
 ## Alpha12 camera checks
 
 The [alpha10 camera report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md) records a restart on the Color Filter page.
-Use alpha11 until alpha12 is checked on the camera. Run `python3 patch.py --release v0.1.0-alpha11`.
-
-The owner confirmed that alpha11 resolved the restart and CP icon defects. [Camera report](../research/OM5II-ALPHA11-CAMERA-2026-11-16.md).
+The owner confirmed that alpha11 resolved the restart and CP icon defects and reports that alpha12 fixes the remaining filter graphic issue. [Alpha12 camera findings](../releases/v0.1.0-alpha12/README.md).
 For the alpha12 check, verify the installer gives package SHA-256
 `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. After the startup checks (steps 0–3 below),
 do step 19 first. If the camera restarts or freezes, stop the checklist, record what happened and follow

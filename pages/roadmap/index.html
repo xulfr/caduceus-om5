@@ -18,7 +18,7 @@
   <a class="tab" href="../changelog/">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Experimental firmware.</strong> Use alpha11 until alpha12 is checked on a camera. Alpha10 booted and restarted on the Monochrome Color Filter page. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="roadmap">Roadmap</h1>
@@ -43,18 +43,17 @@ The owner performs any physical test; development sessions prepare and check fil
 <li>Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.</li>
-<li>Alpha9 is the camera-checked baseline. Alpha10 added Color Profile Shading, the Monochrome Film Grain
+<li>Alpha10 added Color Profile Shading, the Monochrome Film Grain
   and Color Filter sidebar icons, and ND32/64 selection in the CP carousel.</li>
-<li>Alpha11 is the camera-checked baseline. Its stock filter painter and the CP carousel artwork resolved both
-  alpha10 defects. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA11-CAMERA-2026-11-16.md">Camera report</a>.</li>
-<li>Alpha12 restores the filter ring with the stock text and layout. Start the camera check on that page and turn
-  both dials. Per-profile white balance still needs its camera check.</li>
+<li>Alpha11’s stock filter painter and CP carousel artwork resolved both alpha10 defects. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA11-CAMERA-2026-11-16.md">Camera report</a>.</li>
+<li>Alpha12 is the current experimental build. The owner reports that the filter graphic works.
+  Per-profile white balance still needs a documented camera check. <a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">Alpha12 camera findings</a>.</li>
 <li>Planned after the first alpha: <strong>colour grain for Color Profiles</strong> (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).
   Then the other effects (Glow, Halation).</li>
 <li>Open: ND64 / ND32 digit artwork on the shooting screen.</li>
-<li>Physical validation remains open: boot, restart with a saved profile, settings persistence,
+<li>Physical validation remains open: restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   <a href="../first-flash/">camera test checklist</a> and record the exact package hash.</li>
 </ul>

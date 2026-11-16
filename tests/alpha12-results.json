@@ -2,7 +2,8 @@
  "build": "v0.1.0-alpha12",
  "package_sha256": "cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa",
  "camera_tested": false,
- "camera_status": "Alpha12 hardware check pending. The owner confirmed boot and both alpha10 fixes on alpha11.",
+ "camera_status": "The owner reports completing the alpha12 camera checks and fixing the remaining filter graphic defect. The installer acknowledgement remains enabled.",
+ "camera_report": "releases/v0.1.0-alpha12/README.md",
  "emulator": "OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8 (fix/e148-ipi-stride), Node 26.13.0",
  "look_menu_cases": [
   {
@@ -122,10 +123,9 @@
  "host": {
   "result": "22 run, 21 passed, 1 skipped. All 12 release manifests reproduce with OM5_STOCK.",
   "windows_launcher": "With hash-pinned E148 1.1 stock, reproduced the firmware hash and created OM5MOD/LOOKS.BIN in a fresh output folder.",
-  "wrapper": "Clean wrapper retry in progress at push time. Host, strict build, all 19 look/menu cases, and the corrected stock audit passed independently."
+  "wrapper": "scripts/check.py full --case four-films passed. The full 19 look/menu cases ran separately."
  },
  "not_run": [
-  "Physical-camera validation of alpha12.",
   "Rendered CP-button carousel in OM-Emu. No carousel input path available in the fixture.",
   "E144 installed-output check. No E144 build path supplied."
  ],
