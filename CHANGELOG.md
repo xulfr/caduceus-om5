@@ -5,9 +5,7 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha10 — candidate, not released (emulator only; not run on a camera)
-
-Still to do before release: the Monochrome colour filter picker and the CP-button "any item" fix.
+## v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)
 
 
 **Alpha10 has not been run on any camera. Alpha9 booted on the owner's camera.** To install alpha9 instead:
@@ -21,9 +19,17 @@ Fixes from the [alpha9 camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md
   offered the items in its list of allowed values, which stopped at ND16.
 - **Monochrome Film Grain shows Off / Low / Std / High** in the sidebar and the strip, and the **Color Filter row
   shows "Filter"** instead of an empty cell.
-- Known: the Monochrome Color Filter page cannot change the filter (no filter picker yet, roadmap); colour grain
-  for Color Profiles is deferred with the other effects; per-profile white balance is behind the scenes, not a
-  Picture Mode row (README).
+- **Monochrome colour filter picker.** The Color Filter page (Monochrome Profile 1–3, second sidebar row) now
+  draws the filter: eight colour blocks in the order the front dial steps them (None, Yellow, Orange, Red,
+  Magenta, Blue, Cyan, Green, Yellow-Green, as on the OM-3), the selected one outlined and repeated in the centre
+  (grey for None). The rear dial's value is labelled "Level" instead of a stray "Vivid". The dials already
+  changed and kept the filter and level in the emulator; alpha9's notes said otherwise because only the rear
+  dial was tried.
+- **CP button with only ND32 / ND64 ticked.** The CP button's "is any item ticked" test skipped ND32 and ND64,
+  so with only those ticked it found nothing to offer. It now counts them (after the first half-press).
+  Static analysis only: the emulator has no CP button for this camera.
+- Known: colour grain for Color Profiles is deferred with the other effects; per-profile white balance is behind
+  the scenes, not a Picture Mode row (README).
 - Emulator checks: see [results](tests/alpha10-results.json). The build audit can now also compare against alpha8.
 
 ## v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)

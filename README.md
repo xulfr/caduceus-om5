@@ -28,7 +28,7 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha10, 17 Nov 2026 | **Emulator only; never run on a camera.** Fixes from the alpha9 report: Color Profile Shading, ND32/64 when holding the CP button, Monochrome Film Grain and Color Filter icons. [Changes](CHANGELOG.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha10, 17 Nov 2026 | **Emulator only; never run on a camera.** Fixes from the alpha9 report: Color Profile Shading, ND32/64 when holding the CP button, Monochrome Film Grain and Color Filter icons; Monochrome colour filter picker. [Changes](CHANGELOG.md). |
 | | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md), fixed in alpha10. |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
@@ -48,7 +48,7 @@ the earlier camera failures. Only a report from a real camera can change the sta
 | Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
 | Sharpness, Contrast, Shading | Yes | Yes |
 | Own white balance, remembered per profile (the camera's usual WB setting, see below) | Yes | No |
-| Colour filter, toning, grain | No | Yes (Color Filter cannot yet be changed on the camera: [roadmap](ROADMAP.md)) |
+| Colour filter, toning, grain | No | Yes (colour filter picker new in alpha10, emulator only) |
 | Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
 
 Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
@@ -81,7 +81,7 @@ hidden from the menus. Caduceus brings them back and adds:
   appears on the super control panel. The chosen look is stored in the camera, so the card is only needed to change it.
 - **A full colour editor on the camera.** For 12 colours: Saturation, and new **Hue** and **Lightness** controls. Plus a
   tone curve (Shadows, Midtones, Highlights), Sharpness, Contrast, Shading and a white balance for each slot.
-- **Monochrome Profile 1–3**, with toning, grain and tone (and the colour filter, which cannot yet be set on the camera).
+- **Monochrome Profile 1–3**, with colour filter, toning, grain and tone.
 - **Live ND32 and ND64**, after the camera's ND2–ND16.
 
 It changes JPEG photos and the live view, as any picture mode does. RAW files are not affected.

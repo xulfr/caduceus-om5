@@ -20,17 +20,15 @@ The owner performs any physical test; development sessions prepare and check fil
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.
 - Alpha9 fixed the alpha8 display defects and booted on the owner's camera. Alpha10 (emulator only) fixes
-  Color Profile Shading, ND32/64 in the CP-button carousel and the Monochrome Film Grain / Color Filter icons.
+  Color Profile Shading, ND32/64 in the CP-button carousel and the Monochrome Film Grain / Color Filter icons,
+  adds the Monochrome colour filter picker (ring of filter colours, "Level" label) and counts ND32 / ND64 in the
+  CP button's "any item ticked" test.
 - Next: the owner's alpha10 camera check, including per-profile white balance (implemented in alpha1, emulator
   checks only: set WB while a Color Profile is selected, switch profile and back).
-- Planned: a **Monochrome colour filter picker**. The Color Filter page shows the filter but its dials do not
-  change it, and nothing is drawn. The OM-3 has the native picker to follow (its filter list, not an HSL wheel).
 - Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).
   Then the other effects (Glow, Halation).
-- Before alpha10 is released: the "any CP item ticked" test still ignores ND32 / ND64 (with every other CP item
-  unticked, the CP button treats them as nothing ticked), and the Monochrome colour filter picker (above).
 - Open: ND64 / ND32 digit artwork on the shooting screen.
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the

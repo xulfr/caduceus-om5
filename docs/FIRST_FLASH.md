@@ -42,6 +42,8 @@ Alpha10 has not been run on a camera. After steps 0 to 3, repeat 9 to 14, then c
 | 16 | Tick ND32 and ND64 in CP Button Settings. Hold the CP button and turn the dial. | ND32 and ND64 are offered after ND16; each gives its exposure and label. Untick them: they disappear. |
 | 17 | Monochrome Profile 1: Film Grain row and strip; Color Filter row. | Off / Low / Std / High in the strip and the sidebar; "Filter" on the Color Filter row. Grain still visible in pictures. |
 | 18 | Per-profile white balance: select Color Profile 1, set WB to Daylight with an A/B shift; select Color Profile 2 and set Shade; go back to Color Profile 1. | Color Profile 1 brings back Daylight and its shift; Color Profile 2 brings back Shade; Natural keeps its own WB. |
+| 19 | Monochrome Profile 1 › Color Filter page: turn the front dial through all values, then the rear dial. Leave the screen and come back; then open Monochrome Profile 2's page. | The header names each filter (None, Yellow, Orange, Red, Magenta, Blue, Cyan, Green, Yellow-Green); the ring of colour blocks outlines that colour and the centre shows it (grey for None). The rear dial changes "Level +n". The values are kept; Profile 2 keeps its own. Take a red-filter and a blue-filter photo of the same scene: skies should differ. |
+| 20 | CP Button Settings: untick everything except ND32 (then only ND64). Hold the CP button. | ND32 (ND64) is offered; before the fix the button found nothing. Do this after a half-press. |
 
 Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
 nobody else should flash it.

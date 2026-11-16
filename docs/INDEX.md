@@ -14,6 +14,7 @@
 - [Preserved Claude instructions](archive/CLAUDE.md)
 - [OM-5 II alpha8 camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md)
 - [OM-5 II alpha9 camera report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)
+- [Monochrome colour filter page and CP "any item" test (alpha10)](../research/OM5II-MONO-FILTER-CP-2026-11-17.md)
 
 The archive contains historical findings, not necessarily
 the current state of the repository.
