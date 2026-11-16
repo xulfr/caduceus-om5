@@ -87,6 +87,9 @@ class ReleaseTests(unittest.TestCase):
 
     def test_newest_release_is_alpha11(self):
         self.assertEqual(patch.newest(), 'v0.1.0-alpha11')
+        releases = ROOT / 'releases'
+        self.assertEqual((releases / patch.newest() / 'LOOKS.BIN').read_bytes(),
+                         (releases / 'v0.1.0-alpha10/LOOKS.BIN').read_bytes())
 
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):

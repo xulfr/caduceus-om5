@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Make releases/NAME/patch.json from a strict build (tools/oly_patch.py --decoded) and the stock update file.
+"""Make releases/NAME from a strict build (tools/oly_patch.py --decoded) and the stock update file.
 
     python3 tools/mkrelease.py NAME BUILD_DIR STOCK.BIN [--camera-tested]
 
@@ -8,7 +8,9 @@ resource-ID aliases, and the hashes patch.py checks. patch.py needs no assembler
 import json, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'tools'))
+from card.mklooks import looks_bin
 from oly_container import parse, sha256
 from oly_compress import expand_image
 
@@ -62,7 +64,12 @@ def main():
         if key in spec['resource_aliases'][0]:
             release['resource'][key] = spec['resource_aliases'][0][key]
     out = ROOT / 'releases' / name
+    library = json.loads((ROOT / 'looklab/films.json').read_text(encoding='utf-8'))['films']
+    by_name = {film['name']: film for film in library}
+    starter = json.loads((ROOT / 'card/starter.json').read_text(encoding='utf-8'))
+    bank = looks_bin([by_name[film] for film in starter])
     out.mkdir(parents=True, exist_ok=True)
+    (out / 'LOOKS.BIN').write_bytes(bank)
     (out / 'patch.json').write_text(json.dumps(release, indent=1) + '\n')
     print(f'{out}/patch.json: {len(edits)} runs, {sum(len(e["bytes"]) // 2 for e in edits)} bytes, package {release["package"]["sha256"]}')
 
