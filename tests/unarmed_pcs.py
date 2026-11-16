@@ -26,6 +26,7 @@ ALLOWED = {
     'creset', 'creset_stock', 'creset_orig',
     'pm_set_a3', 'pm_set_a2', 'pm_set', 'pm_set_done', 'pm_put', 'pm_put_done',
     'arm_hook', 'arm_back', 'paint_axis', 'paint_done',
+    'paint_tone', 'pt_out',                                               # stock painter, then an armed-only branch
 }
 
 

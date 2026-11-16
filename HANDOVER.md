@@ -9,6 +9,39 @@ these observations to the exact release and records the limits of the test.
 
 [Camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) · [Alpha8 manifest](releases/v0.1.0-alpha8/patch.json) · [Emulator results](tests/alpha8-results.json)
 
+## WIP UI candidate 3 (16 November 2026): colour wheel and tone curve
+
+Branch `claude/pensive-hamilton-pg8dpr`, on top of candidate 2. **Emulator only; not camera-tested.** Not a
+release. The session ran out of time before the full check suite: **treat the hash as unaudited**.
+
+Strict source build package SHA-256: `62ff6d21636fb2706cb3f288890f2176cba9b3c260eeb6c824a21d07fdea1425`
+(`DCOLYMP/E1489999.BIN`, build `generated/p6/strict`). [Findings](research/OM5II-WIP-UI3-2026-11-16.md).
+
+- Cause: OM-3 draws both graphics with a GPU request (`DRAW_PROFILE`, type 11) that does not exist in E148.
+- Change: both are now drawn by the CPU on the OSD plane with OM's pen, as axis-aligned blocks (slanted lines
+  overflow the OSD command buffer). `pg_axis` invalidates the shown page on every panel layout so they follow
+  edits. New code in sections 5, 6, 10; new pointer edit `tone_pointer` `0x610d6600`. No startup gate, section
+  order, allocator or loader byte changed. The wheel is a 12-spoke value display, not OM-3's artwork.
+- Section tails left: ext5 232, ext6 283, ext7 84, ext10 252 bytes.
+
+Checks run (OM-Emu `bdb3347`): strict build; `tests/run_page_graphics.py` (new) 8 of 10 passed on its last
+complete run, the two failures being wrong test expectations that were then corrected; **the corrected test was
+not rerun**. Frames inspected by eye for wheel edits, colour selection, axis switch, All, and tone Sh +2 / +7.
+
+**Not run on this build** (all passed on candidate 2; run before any camera test):
+`tests/audit_build.py` against `generated/w3`, `tools/dev/static_rules.py` (regex extended for `gtab_*`, untried),
+startup probe, inert / applied gating, unarmed PC scan (`paint_tone`, `pt_out` added to the allowlist, untried),
+`tests/run_emulator.py` (19 cases), `tests/run_ui_activity.py` (its axis case expects 3 invalidations for 3
+presses; should still hold), Live ND labels, host suite. Also untested: Monochrome Profile pages, EVF.
+
+Camera checklist additions (after the candidate 2 list below): wheel and curve visible and complete (no missing
+spokes: that would mean the command budget is smaller on the camera); colours plausible; they follow every dial
+step, colour change, trash and INFO without leftovers; no flicker or slowdown; other rows and screens unchanged.
+
+Workspace: stock E148 via `tools/fetch_stock.py`, binutils 2.43 `--target=mn10300-elf` (build with
+`MAKEINFO=true`), OM-Emu `fix/e148-ipi-stride`. `main` has a later workflow commit (`9ed7c9b`, AGENTS.md) not
+merged here.
+
 ## WIP UI candidate 2 (16 November 2026)
 
 Branch `claude/pensive-hamilton-pg8dpr`, built from the UI candidate `ae96e94` (package `7ba9aba0…b92508`,

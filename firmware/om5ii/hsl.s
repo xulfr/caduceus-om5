@@ -12,14 +12,13 @@
  * (.bss, zero at power-on). Until then every hook behaves as stock.
  *   P+0 axis (0 saturation, 1 hue, 2 lightness)   P+4 colour editor object
  *   P+8 reset-in-progress flag                    P+12 WB commit busy flag
- *   P+16..55 axis label text (UTF-16)             P+56 axis page must repaint
+ *   P+16..55 axis label text (UTF-16)             P+56 unused (was: repaint flag)
  *   P+64.. reserved (Caduceus) */
 ST_AXIS = 0
 ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_REPAINT = 56                 /* P+56: the axis changed; pages_hook invalidates the colour page */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -55,6 +54,8 @@ ST_MAGIC_VALUE = 0x55444143
  jmp parent_hook
 .section .paint_pointer,"a"
  .long paint_axis
+.section .tone_pointer,"a"
+ .long paint_tone
 .section .pages_hook,"ax"
  jmp pages_hook
  nop
@@ -170,15 +171,9 @@ container_axis:
  mov (a0),a1
  mov (a1),a1
  calls (a1)
- /* The axis title is painted by the colour page's view (paint_axis), which
-  * nothing invalidates for an axis change: have pages_hook invalidate the
-  * page when the panel lays out after this press. Then count the press as
-  * activity, as stock does for a command its child consumed. */
- call st_ptr,[],8
- cmp 0,a0
- beq container_unarmed
- mov 1,d0
- movbu d0,(ST_REPAINT,a0)
+ /* The axis title and wheel are painted by the colour page's view, which
+  * pages_hook invalidates when the panel lays out after this press. Count
+  * the press as activity, as stock does for a command its child consumed. */
  mov (4,sp),a0
  call ui_activity,[d2,d3],12
 container_unarmed:
@@ -400,6 +395,8 @@ paint_axis:
  mov (32,sp),a0
  call stock_font_release,[],4
 paint_restore:
+ mov a3,a0
+ call gfx_wheel,[d2,d3,a2,a3],48
  mov (48,sp),d0
  movhu d0,(52,a3)
  mov (52,sp),d0
@@ -659,21 +656,27 @@ pages_off:
  call show_page,[d2,d3,a2,a3],24
  jmp direct_ret
 
-/* After an axis switch (hsl_container), invalidate the colour page (child 4)
- * with OM's own widget invalidate (d0 = 1, a1 = 0: the widget's whole area, as
- * a label does in 0x60d8df09..0x60d8df13), so its view repaints the axis title
- * and wheel. a3 = controller. call pg_axis,[d2,d3,a2,a3],24 */
+/* The colour page's view paints the axis title and the wheel, the tone page's
+ * the curve, and OM invalidates neither when a value, the selected colour or
+ * the axis changes (only the label that changed). Each panel layout that
+ * shows one of them (flag +245 colour, +247 tone) therefore invalidates that
+ * page (child 4 / 2) with OM's own widget invalidate (d0 = 1, a1 = 0: the
+ * widget's whole area, as a label does in 0x60d8df09..0x60d8df13). The layout
+ * runs once per consumed command. d2 = data struct, a3 = controller.
+ * call pg_axis,[d2,d3,a2,a3],24 */
 pg_axis:
- call st_ptr,[],8
- cmp 0,a0
- beq pg_axis_out
- movbu (ST_REPAINT,a0),d0
- cmp 0,d0
- beq pg_axis_out
- clr d0
- movbu d0,(ST_REPAINT,a0)
+ mov d2,a0
+ movbu (245,a0),d0
+ mov 4,d1
+ cmp 1,d0
+ beq pg_inval
+ movbu (247,a0),d0
+ mov 2,d1
+ cmp 1,d0
+ bne pg_axis_out
+pg_inval:
  mov a3,a0
- mov 4,d0
+ mov d1,d0
  call child_get,[],0
  cmp 0,a0
  beq pg_axis_out
@@ -1796,3 +1799,447 @@ cp_nd_next:
  bcs cp_nd_one
  ret [d2,d3,a2,a3],24
 
+
+
+.section .ext5,"ax"
+/* ---- Colour wheel and tone curve graphics (section 5, armed only) ----
+ * OM-3 draws both through its GPU layer: the page controller sends
+ * guiUtility::chgBackGround DRAW_PROFILE (E147 0x612981c8, background id
+ * 0xffec -> VARIOUS_DRAW_PROFILE, type 11). E148 has neither that function
+ * nor the type (its table 0x6125fdf0 ends at SS_MENU, and its C3D library has
+ * no profile drawing), so the restored pages have no graphic to ask for.
+ * They are drawn here instead, on the OSD plane, with OM's own pen. A paint
+ * context's colour is an index into the screen's 128-entry palette:
+ *   pen_color 0x60d51e2c, pen_size 0x60d51eed, move_to 0x60d519e7,
+ *   line_to 0x60d51774 (context +36 colour, +40/+42 size, +48 style, +32 point).
+ * Every mark is an axis-aligned block: the OSD driver queues one command per
+ * block but one per pixel of a slanted line, and its command buffer
+ * (0x60cc647f) holds about a thousand per repaint; anything past that is
+ * dropped. The context's pen is saved and put back. a2 = context throughout. */
+GX = 290                        /* wheel centre */
+GY = 222
+G_ZERO = 84                     /* radius of value 0; 8 px per step, -7..7 */
+C_WHITE = 13
+C_GREY = 12
+TX = 194                        /* tone box: 192 x 192, 48 columns of 4 px */
+TY = 104
+
+/* a0 = context: the colour editor's 12 values on the active axis, one spoke
+ * each (ui_read; child k of the editor at +128, colour-wheel order from
+ * Yellow at the top, clockwise). A spoke is a dotted scale -5..+5, a bar of
+ * blocks from 0 to the value and a larger block at the value. Frame:
+ * (4..23,sp) the pen, (24,sp) the value, (28,sp) the step being drawn.
+ * call gfx_wheel,[d2,d3,a2,a3],48 */
+gfx_wheel:
+ mov a0,a2
+ /* the screen's container (scr_obj -> +0) focuses the colour editor on this
+  * row: the same object and checks as hsl_container */
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq gw_out
+ mov (a0),a0
+ cmp 0,a0
+ beq gw_out
+ mov (76,a0),a3
+ cmp 0,a3
+ beq gw_out
+ movhu (120,a3),d0
+ cmp 13,d0
+ bne gw_out
+ mov sp,a1
+ add 4,a1
+ call gfx_save,[],4
+ clr d2
+gw_loop:
+ mov d2,d0
+ asl2 d0
+ mov a3,a0
+ add d0,a0
+ mov (128,a0),a0
+ cmp 0,a0
+ beq gw_done
+ movhu (80,a0),d0
+ mov d0,d1
+ sub 928,d1
+ cmp 48,d1
+ bcc gw_done
+ call ui_read,[d2,d3,a2,a3],24
+ cmp -7,d0
+ bge gw_lo
+ mov -7,d0
+gw_lo:
+ cmp 7,d0
+ ble gw_hi
+ mov 7,d0
+gw_hi:
+ mov d0,(24,sp)
+ /* scale: a dot per step, a larger one at 0 */
+ mov C_GREY,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov -5,d3
+gw_scale:
+ mov 2,d1
+ cmp 0,d3
+ bne gw_tick
+ mov 4,d1
+gw_tick:
+ mov d3,d0
+ call gfx_dot,[d2,d3,a2,a3],28
+ inc d3
+ cmp 6,d3
+ blt gw_scale
+ /* the selected colour (editor +122: 1..12, 0 = all) gets a white edge */
+ movhu (122,a3),d0
+ cmp 0,d0
+ beq gw_edge
+ add -1,d0
+ cmp d2,d0
+ bne gw_fill
+gw_edge:
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov (24,sp),d0
+ mov 15,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+gw_fill:
+ mov gtab_col,a0
+ add d2,a0
+ movbu (a0),d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ clr d3
+gw_bar:
+ mov (24,sp),d0
+ cmp d0,d3
+ beq gw_head
+ mov d3,d0
+ mov 5,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+ mov (24,sp),d0
+ cmp 0,d0
+ blt gw_down
+ inc d3
+ bra gw_bar
+gw_down:
+ add -1,d3
+ bra gw_bar
+gw_head:
+ mov 11,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+ inc d2
+ cmp 12,d2
+ bcs gw_loop
+gw_done:
+ mov sp,a1
+ add 4,a1
+ call gfx_restore,[],4
+gw_out:
+ ret [d2,d3,a2,a3],48
+
+/* d0 = step (-7..7), d1 = size, d2 = sector 0..11 (clockwise from the top):
+ * a square centred on the spoke. sin(30 i) * 64; cos i = sin(i + 3).
+ * call gfx_dot,[d2,d3,a2,a3],28 */
+gfx_dot:
+ mov d1,d3
+ asl 3,d0
+ add G_ZERO,d0
+ mov d0,a3                       /* radius */
+ mov gtab_sin,a0
+ add d2,a0
+ movbu (a0),d0
+ extb d0
+ mov a3,d1
+ mul d1,d0
+ asr 6,d0
+ add GX,d0
+ movbu (3,a0),d1
+ extb d1
+ mov a3,d2
+ mul d2,d1
+ asr 6,d1
+ not d1
+ inc d1
+ add GY,d1
+ mov d3,d2
+ lsr 1,d2
+ sub d2,d0
+ sub d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+
+/* d0 = x, d1 = y, d2 = width, d3 = height: one filled block: a level line
+ * with a pen as tall as the block, or a plumb line with a pen as wide. call gfx_bar,[d2,d3,a2,a3],28 */
+gfx_bar:
+ mov d0,(4,sp)
+ mov d1,(8,sp)
+ cmp d3,d2
+ bcs gb_tall
+ mov 1,d0
+ mov d3,d1
+ mov a2,a0
+ call pen_size,[d2,d3],8
+ mov d3,d1
+ lsr 1,d1
+ mov (8,sp),d0
+ add d0,d1
+ mov d1,(8,sp)                   /* the pen is centred on the line */
+ mov (4,sp),d0
+ mov a2,a0
+ call move_to,[],4
+ mov (4,sp),d0
+ add d2,d0
+ add -1,d0
+ mov (8,sp),d1
+ bra gb_line
+gb_tall:                         /* taller than wide: a plumb line, pen as wide */
+ mov d2,d0
+ mov 1,d1
+ mov a2,a0
+ call pen_size,[d2,d3],8
+ mov d2,d0
+ lsr 1,d0
+ mov (4,sp),d1
+ add d1,d0
+ mov d0,(4,sp)
+ mov (8,sp),d1
+ mov a2,a0
+ call move_to,[],4
+ mov (4,sp),d0
+ mov (8,sp),d1
+ add d3,d1
+ add -1,d1
+gb_line:
+ mov a2,a0
+ call line_to,[d2,d3,a2,a3],32
+ ret [d2,d3,a2,a3],28
+
+/* Keep the context's pen in the caller's frame: a1 = 20 bytes.
+ * call gfx_save,[],4 */
+gfx_save:
+ mov (32,a2),d0
+ mov d0,(a1)
+ mov (36,a2),d0
+ mov d0,(4,a1)
+ mov (40,a2),d0
+ mov d0,(8,a1)
+ mov (48,a2),d0
+ mov d0,(12,a1)
+ mov (640,a2),d0
+ mov d0,(16,a1)
+ clr d0
+ movhu d0,(48,a2)                /* solid lines */
+ ret [],4
+/* a1 = the copy. call gfx_restore,[],4 */
+gfx_restore:
+ mov (a1),d0
+ mov d0,(32,a2)
+ mov (4,a1),d0
+ mov d0,(36,a2)
+ mov (8,a1),d0
+ mov d0,(40,a2)
+ mov (12,a1),d0
+ mov d0,(48,a2)
+ mov (16,a1),d0
+ mov d0,(640,a2)
+ ret [],4
+
+/* sin(30 i) * 64, i = 0..14 */
+gtab_sin:
+ .byte 0,32,55,64,55,32,0,-32,-55,-64,-55,-32,0,32,55
+/* palette indices: Yellow, Orange, Orange-red, Red, Magenta, Violet, Blue,
+ * Blue-cyan, Cyan, Green-cyan, Green, Yellow-green */
+gtab_col:
+ .byte 123,92,16,122,89,88,87,105,107,86,22,116
+
+.section .ext6,"ax"
+/* The tone page's view paint (vtable 0x610d6560, entry 0x610d6600, stock
+ * 0x60d47232): the stock painter, then the curve (section 10, armed only).
+ * Same event checks as paint_axis; in section 6 because a view may be asked
+ * to paint before arming. Entered through the vtable: a0 = view, a1 = paint event. */
+paint_tone:
+ movm [d2,d3,a2,a3],(sp)
+ add -12,sp
+ mov a1,(8,sp)
+ call stock_paint,[a2,a3],16
+ mov (8,sp),a1
+ mov d0,(8,sp)
+ cmp 0,a1
+ beq pt_out
+ movhu (4,a1),d0
+ cmp 2,d0
+ bne pt_out
+ mov (8,a1),a2
+ cmp 0,a2
+ beq pt_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pt_out
+ mov a2,a0
+ call gfx_tone,[d2,d3,a2,a3],64
+pt_out:
+ mov (8,sp),d0
+ add 12,sp
+ ret [d2,d3,a2,a3],16
+
+
+.section .ext10,"ax"
+/* a0 = context. Shadows / Midtones / Highlights of the selected profile
+ * (976+3p.. Color, 1021+3p.. Monochrome; stored Highlights, Midtones,
+ * Shadows) bend the diagonal with one bump each, centred on columns 12, 24
+ * and 36 of 48. Frame: (4,sp) loop, (8..19,sp) the three values,
+ * (20..39,sp) the pen, (40,sp) the curve at this column.
+ * call gfx_tone,[d2,d3,a2,a3],64 */
+gfx_tone:
+ mov a0,a2
+ mov sp,a1
+ add 20,a1
+ call gfx_save,[],4
+ mov 111,d0
+ call stock_get,[],4
+ sub 54,d0
+ cmp 6,d0
+ bcc gt_done
+ mov d0,d2
+ add d0,d0
+ add d0,d2
+ add 976,d2
+ cmp 976+9,d2
+ bcs gt_ids
+ add 36,d2
+gt_ids:
+ mov 2,d3
+gt_read:
+ mov d2,d0
+ call stock_get,[],4
+ cmp -7,d0
+ bge gt_lo
+ mov -7,d0
+gt_lo:
+ cmp 7,d0
+ ble gt_hi
+ mov 7,d0
+gt_hi:
+ mov d3,d1
+ asl2 d1
+ mov sp,a0
+ add d1,a0
+ mov d0,(8,a0)
+ inc d2
+ add -1,d3
+ bge gt_read
+ /* the box with a grid at the quarters */
+ mov C_GREY,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ clr d0
+gt_grid:
+ mov d0,(4,sp)
+ add TX,d0
+ mov TY,d1
+ mov 1,d2
+ mov 193,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d1
+ add TY,d1
+ mov TX,d0
+ mov 193,d2
+ mov 1,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ add 48,d0
+ cmp 193,d0
+ bcs gt_grid
+ /* the unbent diagonal, dotted */
+ clr d0
+gt_diag:
+ mov d0,(4,sp)
+ mov TY+191,d1
+ sub d0,d1
+ add TX,d0
+ mov 2,d2
+ mov d2,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ add 12,d0
+ cmp 192,d0
+ bcs gt_diag
+ /* the curve: each column spans its two ends */
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov sp,a3
+ add 8,a3
+ clr d0
+ mov d0,(4,sp)
+ call gfx_curve,[d2,d3],16
+ mov d0,(40,sp)
+gt_col:
+ mov (4,sp),d0
+ inc d0
+ call gfx_curve,[d2,d3],16
+ mov (40,sp),d1                  /* d1 = this end, d0 = the next */
+ mov d0,(40,sp)
+ mov d0,d3
+ sub d1,d3
+ bge gt_up
+ not d3
+ inc d3
+ mov d1,d0
+gt_up:
+ add 3,d3                        /* height; d0 = the higher end */
+ mov TY+190,d1
+ sub d0,d1
+ mov (4,sp),d0
+ asl2 d0
+ add TX,d0
+ mov 4,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ inc d0
+ mov d0,(4,sp)
+ cmp 48,d0
+ bcs gt_col
+gt_done:
+ mov sp,a1
+ add 20,a1
+ call gfx_restore,[],4
+ ret [d2,d3,a2,a3],64
+
+/* d0 = column 0..48, a3 = the three values -> d0 = height of the curve there
+ * (0..192): 4 per column plus value * bump / 8. Frame: (4,sp) index.
+ * call gfx_curve,[d2,d3],16 */
+gfx_curve:
+ mov d0,d2
+ clr d3
+ mov d0,d1
+ mov a3,a1
+gc_loop:
+ cmp 25,d1
+ bcc gc_skip
+ mov gtab_bump,a0
+ add d1,a0
+ movbu (a0),d0
+ mov d1,(4,sp)
+ mov (a1),d1
+ mul d1,d0
+ add d0,d3
+ mov (4,sp),d1
+gc_skip:
+ add 4,a1
+ add -12,d1
+ mov a3,a0
+ add 12,a0
+ cmp a0,a1
+ bne gc_loop
+ asr 3,d3
+ mov d2,d0
+ asl2 d0
+ add d3,d0
+ ret [d2,d3],16
+
+/* 16 (1 - cos(15 i)), i = 0..24 */
+gtab_bump:
+ .byte 0,1,2,5,8,12,16,20,24,27,30,31,32,31,30,27,24,20,16,12,8,5,2,1,0

@@ -10,6 +10,7 @@ SECTIONS {
  .builder_hook 0x603e7eb0 : { *(.builder_hook) }
  .parent_hook 0x60ea0180 : { *(.parent_hook) }
  .paint_pointer 0x610c1540 : { *(.paint_pointer) }
+ .tone_pointer 0x610d6600 : { *(.tone_pointer) }
  .pages_hook 0x60dad5f5 : { *(.pages_hook) }
  .ext2 0x605af4b0 : { *(.ext2) }
  .ext6 0x60ca7b00 : { *(.ext6) }
@@ -89,8 +90,13 @@ ui_timer = 0x60f10fd2;     /* restart GUI timer d0 for d1 ms (cancel 0x60d534c8,
 desc_find = 0x602e1edb;    /* setting id d0 -> a0 descriptor or 0 (RAM hash 0x620dc288); call ...,[],0 */
 desc_buckets = 0x620dc288; /* 128 bucket heads, RAM (.bss) */
 cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218 */
+pen_color = 0x60d51e2c;   /* a0 dc, d0 colour; call ...,[d2,d3,a2,a3],16 */
+pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
+move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */
+line_to = 0x60d51774;     /* a0 dc, d0 x, d1 y; call ...,[d2,d3,a2,a3],32 */
 ui_invalidate = 0x60d49294; /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
+ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
