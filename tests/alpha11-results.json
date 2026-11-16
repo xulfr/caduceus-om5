@@ -1,0 +1,141 @@
+{
+ "build": "v0.1.0-alpha11",
+ "package_sha256": "5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a",
+ "camera_tested": false,
+ "camera_status": "Owner check pending. Alpha9 is the camera-checked baseline.",
+ "emulator": "OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8 (fix/e148-ipi-stride), Node 26.13.0",
+ "date": "2026-11-16",
+ "look_menu_cases": [
+  {
+   "case": "four-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "next-film",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "slot-two",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "wrap",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "ten-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "oversized-bank",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-crc",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-range",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-markup",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-control",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "persisted-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "other-rows",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return-title",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "title-redraw",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "scp-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "empty-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "no-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "unarmed-delete",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  }
+ ],
+ "probes": {
+  "startup": "Passed. All 1023 incomplete masks, task gates, allocation retry, and state and handle bounds.",
+  "startup_image_stores": "Matched stock.",
+  "profile_before_arming": "GATING inert passed.",
+  "profile_at_arming": "GATING applied passed.",
+  "unarmed_pcs": "Passed. Only gates and stock replays ran.",
+  "stale_profile_numbers": "Passed.",
+  "static_rules": "Passed. Opcode, alignment and compressed stream length checks.",
+  "build_audit_vs_alpha10": "Passed. Restored filter-page ranges match stock and alpha9. Changed image-table slots 0x2358 and 0x2c84 only.",
+  "build_audit_vs_alpha9": "Passed. See alpha11-build-audit.json for both audits."
+ },
+ "ui": {
+  "ui_activity": "10/10 passed.",
+  "page_graphics": "10/10 passed.",
+  "tone_icons": "27/27 states passed.",
+  "profile_icons": "All six edited profiles passed.",
+  "profile_rows": "Passed. Color Profile Shading, Film Grain and Color Filter sidebar artwork.",
+  "mono_filter": "Passed. 12 dial steps cover nine filters and wrap with stores to 1007, matching native header, level changes, persistence on re-entry and Profile 2 isolation. The test no longer checks the ring or the Level word.",
+  "live_nd_labels": "6/6 passed.",
+  "cp_button_carousel": "Static validation of values 7 and 8 and the two artwork aliases. OM-Emu ran the constructor and listed both values. Raw key and event injection produced no carousel frame."
+ },
+ "host": {
+  "command": "OM5_STOCK=<official E148 1.1> python -m unittest discover -s tests -v",
+  "result": "22 run, 21 passed, 1 skipped. All 11 release manifests reproduce their package hashes.",
+  "skipped": "E144 installed-output test needs an E144 stock and build path."
+ },
+ "not_run": [
+  "Physical-camera validation, including the Color Filter restart, CP carousel behaviour and ND exposure.",
+  "Rendered CP carousel regression (the CP input path did not open the carousel in OM-Emu).",
+  "scripts/check.py full wrapper. Its audit lacks the required --previous argument. The checks ran directly on the single recorded alpha11 build, including audits with both predecessors."
+ ],
+ "negative_results": [
+  "Alpha10 reached the out-of-range 0xffff image-table read on the filter page in OM-Emu and continued. The physical restart remains unexplained.",
+  "The first host run read a generated install page from before the last documentation edit. Regenerated the site and reran the full host suite successfully."
+ ],
+ "local_logs": "generated/alpha11/checks/"
+}
