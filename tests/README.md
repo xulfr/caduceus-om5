@@ -128,3 +128,13 @@ the decoded record differs only at pointer words of aliases declared in patch.js
 re-record hashes with `tools/oly_patch_record.py` afterwards. `firmware/om5ii/cp_nd.py --spec STOCK` rewrites the
 CP Button Settings data edits. The unarmed PC scan ignores assembler-local `.L*` labels (relaxed branches inside
 a function).
+
+## Tone Curve row icons
+
+```sh
+python tests/run_tone_icons.py --emu generated/om-emu --build generated/strict --out generated/tone-icons
+```
+
+Steps Shadows, Highlights and Midtones through all 27 sign combinations on Color Profile 1 and reads the
+selected Tone Curve row: never blank, 27 different icons, and with Midtones at 0 the glyph bends the way the
+values say. `tools/dev/imgwatch.mjs` (PRE, `IMG_LO` / `IMG_HI`) prints each image-table read. Emulator only.
