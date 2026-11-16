@@ -57,6 +57,8 @@ ST_MAGIC_VALUE = 0x55444143
  .long paint_axis
 .section .tone_pointer,"a"
  .long paint_tone
+.section .filter_pointer,"a"
+ .long paint_filter
 .section .pages_hook,"ax"
  jmp pages_hook
  nop
@@ -660,8 +662,8 @@ pages_off:
 /* The colour page's view paints the axis title and the wheel, the tone page's
  * the curve, and OM invalidates neither when a value, the selected colour or
  * the axis changes (only the label that changed). Each panel layout that
- * shows one of them (flag +245 colour, +247 tone) therefore invalidates that
- * page (child 4 / 2) with OM's own widget invalidate (d0 = 1, a1 = 0: the
+ * shows one of them (flag +245 colour, +247 tone, +246 Monochrome colour
+ * filter) therefore invalidates that page (child 4 / 2 / 3) with OM's own widget invalidate (d0 = 1, a1 = 0: the
  * widget's whole area, as a label does in 0x60d8df09..0x60d8df13). The layout
  * runs once per consumed command. d2 = data struct, a3 = controller.
  * call pg_axis,[d2,d3,a2,a3],24 */
@@ -673,6 +675,10 @@ pg_axis:
  beq pg_inval
  movbu (247,a0),d0
  mov 2,d1
+ cmp 1,d0
+ beq pg_inval
+ movbu (246,a0),d0               /* Monochrome colour filter page */
+ mov 3,d1
  cmp 1,d0
  bne pg_axis_out
 pg_inval:
@@ -2087,6 +2093,42 @@ pt_out:
  add 12,sp
  ret [d2,d3,a2,a3],16
 
+/* The Monochrome Profile colour filter page (child 3 of the direct screen,
+ * flag +246;
+ * view vtable 0x610d9b20, built at 0x60dfa4d2; paint entry 0x610d9bc0,
+ * stock 0x60d47232): the stock painter, then the filter picker graphic and
+ * the bottom label's word (gfx_filter, armed only). Stock's sub dial and
+ * arrows already step setting 1007+p through its list 0x6050cb23 and the
+ * header names the filter; the main dial steps the level (1011, saved to
+ * 1012+p) shown as "+n". The page carried the colour page's word image
+ * 0x107e "Vivid" (layout record 0x610d9738, data edit mono_filter_word
+ * hides it); the OM-3 (E147 1.1, OM-Emu) labels that value "Level". */
+paint_filter:
+ movm [d2,d3,a2,a3],(sp)
+ add -12,sp
+ mov a1,(8,sp)
+ call stock_paint,[a2,a3],16
+ mov (8,sp),a1
+ mov d0,(8,sp)
+ cmp 0,a1
+ beq pf_out
+ movhu (4,a1),d0
+ cmp 2,d0
+ bne pf_out
+ mov (8,a1),a2
+ cmp 0,a2
+ beq pf_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pf_out
+ mov a2,a0
+ call gfx_filter,[d2,d3,a2,a3],72
+pf_out:
+ mov (8,sp),d0
+ add 12,sp
+ ret [d2,d3,a2,a3],16
+
+
 
 .section .ext10,"ax"
 /* a0 = context. Shadows / Midtones / Highlights of the selected profile
@@ -2246,3 +2288,146 @@ gc_skip:
 /* 16 (1 - cos(15 i)), i = 0..24 */
 gtab_bump:
  .byte 0,1,2,5,8,12,16,20,24,27,30,31,32,31,30,27,24,20,16,12,8,5,2,1,0
+
+.section .ext5,"ax"
+/* a0 = context. Monochrome Profile p (111 = 57..59) only: filter 1007+p
+ * (values: 0 None, 1 Yellow, 2 Orange, 3 Red, 4 Green, 5 Yellow-green,
+ * 6 Magenta, 7 Blue, 8 Cyan; names 0x611b46c8). Eight 26 px swatches in the
+ * dial's order round a centre block, Yellow at the top, clockwise: Yellow,
+ * Orange, Red, Magenta, Blue, Cyan, Green, Yellow-green. The selected swatch
+ * has a white edge and the centre block takes its colour (grey for None).
+ * About 11 OSD commands. Then "Level" where the hidden word was.
+ * Frame: (4..23,sp) the pen, (24,sp) slot (8 = None), (28,sp) / (32,sp)
+ * context +52 / +76, (36,sp) font, (40..47,sp) text box.
+ * call gfx_filter,[d2,d3,a2,a3],72 */
+FX = 556                        /* ring centre and radius */
+FY = 236
+gfx_filter:
+ mov a0,a2
+ mov 111,d0
+ call stock_get,[],4
+ sub 57,d0
+ cmp 3,d0
+ bcc gf_out
+ add 1007,d0
+ call stock_get,[],4
+ cmp 9,d0
+ bcc gf_out
+ mov ftab_slot,a0
+ add d0,a0
+ movbu (a0),d0
+ mov d0,(24,sp)
+ /* the word: font and style as paint_axis, both put back */
+ movhu (52,a2),d0
+ mov d0,(28,sp)
+ mov (76,a2),d0
+ mov d0,(32,sp)
+ mov a2,a0
+ mov 1,d0
+ call stock_font,[a2],8
+ cmp 0,a0
+ beq gf_pen
+ mov a0,(36,sp)
+ mov 2,d0
+ movhu d0,(52,a2)
+ mov 517,d0
+ movhu d0,(40,sp)
+ mov 360,d0
+ movhu d0,(42,sp)
+ mov 583,d0
+ movhu d0,(44,sp)
+ mov 392,d0
+ movhu d0,(46,sp)
+ mov text_level,d1
+ mov a2,a0
+ mov sp,a1
+ add 40,a1
+ mov text_style,d0
+ call stock_text,[d2,d3,a2,a3],16
+ mov (36,sp),a0
+ call stock_font_release,[],4
+gf_pen:
+ mov (28,sp),d0
+ movhu d0,(52,a2)
+ mov (32,sp),d0
+ mov d0,(76,a2)
+ mov sp,a1
+ add 4,a1
+ call gfx_save,[],4
+ clr d2
+gf_loop:
+ mov (24,sp),d0
+ cmp d2,d0
+ bne gf_swatch
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 34,d1
+ call gf_block,[d2,d3,a2,a3],28
+gf_swatch:
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 26,d1
+ call gf_block,[d2,d3,a2,a3],28
+ inc d2
+ cmp 8,d2
+ bcs gf_loop
+ mov (24,sp),d2
+ mov C_GREY,d0
+ cmp 8,d2
+ bcc gf_centre
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+gf_centre:
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 8,d2
+ mov 46,d1
+ call gf_block,[d2,d3,a2,a3],28
+ mov sp,a1
+ add 4,a1
+ call gfx_restore,[],4
+gf_out:
+ ret [d2,d3,a2,a3],72
+
+
+.section .ext10,"ax"
+/* d2 = slot 0..7 round the ring, 8 = centre; d1 = size: a square block.
+ * call gf_block,[d2,d3,a2,a3],28 */
+gf_block:
+ mov d1,d3
+ mov ftab_dx,a0
+ add d2,a0
+ movbu (a0),d0
+ extb d0
+ add FX,d0
+ movbu (9,a0),d1
+ extb d1
+ add FY,d1
+ mov d3,d2
+ lsr 1,d2
+ sub d2,d0
+ sub d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+
+/* slot offsets (45 degree steps, radius 80; then the centre) */
+ftab_dx:
+ .byte 0,57,80,57,0,-57,-80,-57,0
+ftab_dy:
+ .byte -80,-57,0,57,80,57,0,-57,0
+/* swatch colours (gfx_wheel's palette indices): Yellow, Orange, Red,
+ * Magenta, Blue, Cyan, Green, Yellow-green */
+ftab_col:
+ .byte 123,92,122,89,105,107,22,116
+/* filter value 0..8 -> slot */
+ftab_slot:
+ .byte 8,0,1,2,6,7,3,4,5
+.balign 2
+text_level:
+ .short 'L','e','v','e','l',0

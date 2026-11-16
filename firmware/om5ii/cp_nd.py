@@ -28,6 +28,14 @@ when the CP button is held, even when ticked (alpha9 camera report). The selecto
 0x60d2211a / 0x60d22182 and the GUI case 0x60e27f92 already handle items 6 and 7. Same method as nd64.py's 1710
 edit. Not changed: the "any item ticked" test 0x60d2230f still skips items 6..12 (ND32 / ND64 alone, with every
 other CP item unticked, is still treated as nothing ticked). 2026-11-17.
+ 6. mono_filter_word 0x610d9738: the Monochrome colour filter page's word image (layout record of view
+    0x610d9b20, the only reference is its widget list at 0x610d9988) 0x107e "Vivid" -> 0xffff (no image).
+    The word beside the level "+n" is "Level" on the OM-3 (E147 1.1, OM-Emu); hsl.s paint_filter draws it.
+    The page is shown only when armed (pages_hook). 2026-11-17.
+ 7. mono_filter_icon 0x610d97be, mono_filter_value 0x610d979e: the same page's widget rectangles {x, y, w, h}
+    for its two layouts (x + 80 in the second). Drawn in font 1, "Level" is about 66 px wide and the stock
+    gap between the rear-dial icon (widget 0x3d8) and the "+n" value (widget 0x3e2) is 58 px, so the icon
+    moves 10 left and the value 10 right. Each rectangle has one reference (its widget descriptor).
 """
 import hashlib, json, struct, sys
 from pathlib import Path
@@ -40,6 +48,7 @@ FREE_LO, FREE_HI = 0x604f24d8, 0x604f25e0
 DESC_2216, DESC_TABLE, DESC_N = 0x60515630, 0x6050dad4, 1589
 DESC_1017, SHADING = 0x60512868, (912, 913, 914)
 DESC_2228, VALUES_2228, NEW_VALUES = 0x60515694, 0x6050da8e, 0x604f2554
+MONO_WORD = 0x610d972c          # filter page layout record {0xffff, 7, 7, image}
 CP_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17)
 
 
@@ -70,6 +79,15 @@ def edits(img):
     assert struct.unpack('<10h', R(VALUES_2228, 20)) == (1, 2, 3, 4, 5, 6, 14, 15, 16, 17)
     out['cp_item_values'] = (NEW_VALUES, struct.pack('<12H', *CP_VALUES))
     out['cp_item_desc'] = (DESC_2228, struct.pack('<HHIIHHI', 2228, 0x80, NEW_VALUES, 0, 2 * len(CP_VALUES), 2, 0x500))
+    assert struct.unpack('<5I', R(MONO_WORD, 20)) == (0xffff, 7, 7, 0x107e, 0)
+    assert img.count(struct.pack('<I', MONO_WORD)) == 1 and struct.unpack('<I', R(0x610d9988, 4))[0] == MONO_WORD
+    out['mono_filter_word'] = (MONO_WORD + 12, struct.pack('<I', 0xffff))
+    for name, rect, ref, stock_xy, dx in (('mono_filter_icon', 0x610d97be, 0x610d98a4, (537, 461, 36, 24), -10),
+                                          ('mono_filter_value', 0x610d979e, 0x610d9834, (647, 458, 29, 30), 10)):
+        x, y, w, h = stock_xy
+        assert struct.unpack('<8h', R(rect, 16)) == (x, y, w, h, x + 80, y, w, h), name
+        assert img.count(struct.pack('<I', rect)) == 1 and struct.unpack('<I', R(ref, 4))[0] == rect, name
+        out[name] = (rect, struct.pack('<8h', x + dx, y, w, h, x + 80 + dx, y, w, h))
     return out
 
 
