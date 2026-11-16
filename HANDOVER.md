@@ -9,10 +9,23 @@
 
 ## Active work: v0.1.0-alpha10 (17 November 2026)
 
-Branch `claude/pensive-hamilton-pg8dpr`. **Emulator only; not camera-tested.** releases/v0.1.0-alpha10 is the
-installer default (`camera_tested` false). Package `1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27`.
-**Candidate, not a release yet**: the owner wants the CP-button fix and the Monochrome colour filter picker in
-alpha10 first; re-cut releases/v0.1.0-alpha10 afterwards (its hash will change). Then the PR to main.
+Branch `claude/pensive-hamilton-pg8dpr`. **Emulator only; not camera-tested.** releases/v0.1.0-alpha10 re-cut with the
+colour filter picker and the CP "any item" fix: package `056aefb3c3f40b7cf41728cd9f466ba161a52d887db6ecebd2f0377bb0a38454`
+(`camera_tested` false; the earlier candidate `1530ca05…` is superseded). Owner opens the PR to main.
+
+**Unfinished at handover (usage limit):** (1) the 19 look/menu cases (`tests/run_emulator.py`) were at 15/19 passed
+on the re-cut build; (2) `unarmed_pcs.py` verdict; (3) host suite `python -m unittest discover -s tests` with
+`OM5_STOCK`. Re-run these three, then fill `tests/alpha10-results.json` (fields marked PENDING). Everything else in
+the suite passed on the re-cut build (startup, image stores = stock, gating, stale numbers, static rules, UI
+activity, page graphics, tone/profile icons, profile rows, mono filter, Live ND labels 6/6, audits vs alpha9/alpha8).
+
+New in this re-cut (research/OM5II-MONO-FILTER-CP-2026-11-17.md):
+- **Colour filter picker**: the page (child 3, flag +246, view `0x610d9b20`) already stepped 1007+p in OM-Emu
+  (the old note tested only the main dial). hsl.s `paint_filter`/`gfx_filter` draw an 8-block ring in the OM-3's
+  dial order + "Level" text; `pg_axis` invalidates child 3. cp_nd.py hides image `0x107e` "Vivid" and moves the
+  dial icon / "+n" 10 px. Test: `tests/run_mono_filter.py` (+ `tests/store_log.mjs`).
+- **CP any item**: `cp_any_hook` 0x60d22357 → `cp_any_nd` (k 5, then k 6, 7 when armed). Static analysis only.
+- OM-3 reference: E147 1.1 SHA-256 `8c133084…696d`; Creative Dial = UI_IN group 5 code `0x1906` (position 0 MONO).
 
 Fixes from the alpha9 report (`49a85cf`):
 - **Color Profile Shading** 912..914 had no setting descriptor (OM's 1589 static descriptors at `0x6050dad4`,
@@ -39,23 +52,19 @@ icons, `run_profile_rows.py` (new), Live ND labels, static rules, audits vs alph
 
 - **Per-profile white balance** exists since alpha1 (wb.s): the camera's usual WB is stored per Color Profile and
   restored on selection. It is not a Picture Mode row. Emulator checks only; checklist step 18. README clarified.
-- **Monochrome Color Filter page**: dials do not change 1007+p in OM-Emu and nothing is drawn (the page reuses the
-  colour page's layout: "Color Filter / None" header, "Vivid" bottom label). Needs a filter picker modelled on the
-  OM-3's (9 values, list `0x6050cb23`: 5,0,1,2,3,6,7,8,4); roadmap.
 - **Colour grain for Color Profiles**: deferred with the other effects (needs a row and storage); roadmap.
 
 ## Known defects (OM-Emu)
 
 - ND64 shooting label digits squashed; ND32 gap between digits.
-- Monochrome Color Filter not settable (above); its stray "Vivid" label.
 - Not a defect: the selected row loses its outline after a dial turn (stock does the same in OM-Emu).
 
 ## Next actions
 
-1. Owner camera check of alpha10: docs/FIRST_FLASH.md steps 0–3, 9–18 (Shading, CP-button ND32/64, Monochrome
+1. Owner camera check of alpha10 (`056aefb3…8454`): docs/FIRST_FLASH.md steps 0–3, 9–20 (Shading, CP-button ND32/64, Monochrome
    icons, per-profile WB). Record the package hash with the report.
 2. Owner: open the PR to main (release approval is the owner's).
-3. Monochrome colour filter picker (OM-3 reference); ND digit artwork; the CP "any item" test.
+3. Finish the pending checks above. ND digit artwork.
 
 ## Workspace
 
