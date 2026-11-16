@@ -2,14 +2,34 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Changelog · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/" aria-current="page">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
 <div class="banner"><strong>Experimental firmware.</strong> Alpha9 has not been run on a camera; alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="changelog">Changelog</h1>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="changelog">Changelog</h1>
+</div>
+<nav class="toc" aria-label="On this page"><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha9-2026-11-16-emulator-only-not-run-on-a-camera">v0.1.0-alpha9 — 2026-11-16 (emulator only; not run on a camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
+<section class="card">
 <h2 id="camera-result-2026-11-15">Camera result — 2026-11-15</h2>
 <p><strong>v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.</strong>
 <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md">Camera report</a>.</p>
+</section>
+<section class="card">
 <h2 id="v010-alpha9-2026-11-16-emulator-only-not-run-on-a-camera">v0.1.0-alpha9 — 2026-11-16 (emulator only; not run on a camera)</h2>
 <p><strong>Alpha9 has not been run on any camera. Alpha8 is the last build confirmed to boot.</strong> To install alpha8 instead:
 <code>python3 patch.py --release v0.1.0-alpha8</code>. Package <code>2e9777ce…fbc50</code>.</p>
@@ -27,6 +47,8 @@
 <li>All 19 look/menu regressions, the startup, arming, unarmed-PC and stale-number probes, the UI, graphics, icon
   and Live ND checks, the static rules and the build audit passed in OM-Emu. <a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha9-results.json">Results</a>.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</h2>
 <ul>
 <li>The owner confirmed boot, SD-card look cycling and names, Color Profile controls, and Live ND32/64
@@ -39,12 +61,16 @@
 <li>All 19 look/menu regressions, the startup and arming probes, the unarmed PC check, and the build
   and static audits passed. <a href="https://github.com/xulfr/caduceus-om5/blob/main/tests/alpha8-results.json">Verification</a>.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</h2>
 <ul>
 <li>Added startup gating, RAM handle validation and stale profile-number repair.</li>
 <li>Some startup gates call section 8 from section 2 before section 8 is loaded. The installer refuses
   this package (<code>c6f3a8fa…243a</code>). <a href="https://github.com/xulfr/caduceus-om5/blob/main/HANDOVER.md">Load-order finding</a>.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</h2>
 <ul>
 <li>Same camera code as alpha5, byte for byte. Only the way the program is compressed in the update file changes.</li>
@@ -58,6 +84,8 @@
 </ul>
 <p><strong>v0.1.0-alpha5 boot-looped on the owner's OM-5 Mark II</strong> immediately after the update; OM's 1.1 restored from
 the card. The installer now refuses alpha1–alpha5. Details: <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-FOURTH-BOOT-FAILURE-2026-11-15.md">fourth boot failure</a>.</p>
+</section>
+<section class="card">
 <h2 id="v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
 <code>98bd2433bef76706f4c71706439feb23d05524477b4d078135c1675ab97880c2</code>.</p>
@@ -72,6 +100,8 @@ the card. The installer now refuses alpha1–alpha5. Details: <a href="https://g
 <li>Every emulator case now checks the row descriptor and each slot's WB record. See the
   <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA5-AUDIT-2026-11-15.md">audit</a> for evidence and remaining hardware gaps.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
 <code>590c2959206e8e06f5ab12efe4635f6674ac69e20879012e55ec6a798713d648</code>.</p>
@@ -85,6 +115,8 @@ the card. The installer now refuses alpha1–alpha5. Details: <a href="https://g
 <li>Added regressions for the reported failures, persisted names, startup gates and installer I/O failures.
   See the <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA4-AUDIT-2026-11-15.md">audit</a> for evidence and remaining hardware gaps.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only.</strong> Package SHA-256
 <code>f56a13335e1085e73f79db66e58440839022349a72746e1dcb5b32e2bc08e242</code>.</p>
@@ -96,6 +128,8 @@ the card. The installer now refuses alpha1–alpha5. Details: <a href="https://g
 <li>Pinned the original OM-5 pre-alpha 1 build instructions to the source revision for its published hash.</li>
 <li>Updated the site, guides and LookLab to use the term "looks" for named custom colour profiles.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</h2>
 <p><strong>Original OM-5, E144 firmware 1.2. Never run on any camera; for testers.</strong> Package SHA-256
 <code>70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4</code>, built by the tester from OM's two firmware files.</p>
@@ -105,12 +139,16 @@ the card. The installer now refuses alpha1–alpha5. Details: <a href="https://g
 <li>Tester page with the risks, a build guide, a step-by-step first test that starts with OM's own firmware, and a
   camera-test issue template. <code>tools/fetch_stock.py</code> downloads and checks OM's files.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</h2>
 <ul>
 <li>Original OM-5 developer candidate: ran the film regressions and a menu tour in OM-Emu's Mark II model (all pass,
   frames identical to alpha2), recorded that OM-Emu's OM-5 model cannot run it, and compared the two stock programs
   statically (SRAM layout, renumbered identifiers, controller firmware). Still developer-only and untested.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.</strong></p>
 <ul>
@@ -125,6 +163,8 @@ the card. The installer now refuses alpha1–alpha5. Details: <a href="https://g
 </ul>
 <p>Known limitations: after returning from the lower rows the title reads "Picture Mode" until the mode
 changes; the emulator limits listed under alpha1 are unchanged.</p>
+</section>
+<section class="card">
 <h2 id="development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</h2>
 <ul>
 <li>Added the GitHub Pages tour with labelled emulator screenshots, feature comparison and safety banner.</li>
@@ -144,6 +184,8 @@ changes; the emulator limits listed under alpha1 are unchanged.</p>
   E144 remains developer-only, with no default install output and no established hardware compatibility.</p>
 </li>
 </ul>
+</section>
+<section class="card">
 <h2 id="v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</h2>
 <p><strong>OM-5 Mark II, E148 firmware 1.1. Emulator only; untested on a camera.</strong></p>
 <ul>
@@ -160,6 +202,8 @@ changes; the emulator limits listed under alpha1 are unchanged.</p>
 <p>Known limitations: film changes need a highlight move to redraw; trash also changes films on other
 profile rows; no super control panel film name. The emulator cannot validate boot loading, the second
 processor, the image processor, physical persistence or actual exposures. Earlier builds in the
-source project's history caused three camera boot loops. See <a href="../safety/">Safety</a>.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/CHANGELOG.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+source project's history caused three camera boot loops. See <a href="../safety/">Safety</a>.</p>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/CHANGELOG.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>

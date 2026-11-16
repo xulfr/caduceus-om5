@@ -2,14 +2,31 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>File formats · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
 <div class="banner"><strong>Experimental firmware.</strong> Alpha9 has not been run on a camera; alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="file-formats">File formats</h1>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="file-formats">File formats</h1>
+</div>
+<section class="card">
 <h2 id="com5modlooksbin-om5f-version-1"><code>C:\OM5MOD\LOOKS.BIN</code> (OM5F, version 1)</h2>
 <p>Little-endian. 32 + 80 × n bytes, n = 1..10 (at most 832 bytes).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Offset</th>
@@ -54,9 +71,9 @@
 <td>looks: a 64-byte record, then a 16-byte name</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Record (signed bytes; the offsets are those of the OM-3 project's <code>LOOKS.BIN</code> record):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Offset</th>
@@ -111,7 +128,7 @@
 <td>−7..7</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Colours run clockwise from Yellow, as on the camera's wheel: Yellow, Orange, Orange-red, Red, Magenta, Violet,
 Blue, Blue-cyan, Cyan, Green-cyan, Green, Yellow-green. Bytes 39, 40 and 47..63 are not read (write zero).
 Name: 1–12 printable ASCII characters, zero-padded. <code>@</code> is not allowed: the camera treats it as a display
@@ -120,11 +137,15 @@ non-ASCII bytes. Older saved names containing these bytes display <code>?</code>
 not rewritten. LookLab and the Python writer also reject leading and trailing spaces.</p>
 <p>The camera checks the length, magic, version, count, CRC and every byte in the table against its range; a file
 that fails is ignored as a whole. Writers: <code>card/mklooks.py</code>, LookLab (<code>looklab/app.js</code>), byte-identical.</p>
+</section>
+<section class="card">
 <h2 id="where-a-look-lives-in-the-camera">Where a look lives in the camera</h2>
 <p>A look is written to the slot's own settings (profile p = 0..2): Saturation 928 + 12p + colour, Hue / Lightness in
 part 1 of the same cells (<code>0x4831</code> tag, hsl.s), Contrast 908 + p, Sharpness 904 + p, Shading 912 + p, Highlights /
 Midtones / Shadows 976 + 3p .. 978 + 3p, the WB shift in the current WB mode's shift settings (wb.s then keeps the
 profile's WB record). Its name and number are in part 1 of four otherwise unused cells: 916–919 (slot 1), 924–927
-(slot 2), 972–975 (slot 3): word 0 = <code>0x464C</code> &lt;&lt; 16 | number &lt;&lt; 8, words 1–3 = 12 name bytes.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FORMATS.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+(slot 2), 972–975 (slot 3): word 0 = <code>0x464C</code> &lt;&lt; 16 | number &lt;&lt; 8, words 1–3 = 12 name bytes.</p>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FORMATS.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>

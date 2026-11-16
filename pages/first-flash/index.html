@@ -2,17 +2,32 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Camera test checklist · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
 <div class="banner"><strong>Experimental firmware.</strong> Alpha9 has not been run on a camera; alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="camera-test-checklist">Camera test checklist</h1>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="camera-test-checklist">Camera test checklist</h1>
 <p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">alpha8 camera report</a> records the successful boot and known UI defects. If the camera fails to start or freezes, follow <a href="../safety/#going-back-to-oms-firmware">stock recovery</a> and report what happened.</p>
 <p><strong>Before step 1, set Picture Mode to Natural in OM's firmware</strong> for the shooting mode the camera
 will start in (and in Movie mode if you use it). Earlier test builds may have left a Color Profile stored there.
 Alpha8 activates profiles at the first shutter half-press after switching on and repairs stale profile
 numbers then.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -77,10 +92,10 @@ numbers then.</p>
 <td>The rest.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="alpha9-additions">Alpha9 additions</h3>
 <p>Alpha9 (package <code>2e9777ce…fbc50</code>) has not been run on a camera. After steps 0 to 3, also check:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -120,8 +135,10 @@ numbers then.</p>
 <td>ND32 and ND64 listed, switchable and kept after a power cycle; <code>ND32-LV</code> / <code>ND64-LV</code> labels and their exposure.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
-nobody else should flash it.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FIRST_FLASH.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+nobody else should flash it.</p>
+</div>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FIRST_FLASH.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>
