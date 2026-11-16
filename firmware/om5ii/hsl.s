@@ -12,13 +12,15 @@
  * (.bss, zero at power-on). Until then every hook behaves as stock.
  *   P+0 axis (0 saturation, 1 hue, 2 lightness)   P+4 colour editor object
  *   P+8 reset-in-progress flag                    P+12 WB commit busy flag
- *   P+16..55 axis label text (UTF-16)             P+64.. reserved (Caduceus) */
+ *   P+16..55 axis label text (UTF-16)             P+56 axis page must repaint
+ *   P+64.. reserved (Caduceus) */
 ST_AXIS = 0
 ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised (P+56 spare) */
+ST_REPAINT = 56                 /* P+56: the axis changed; pages_hook invalidates the colour page */
+ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
@@ -104,6 +106,10 @@ hsl_delete_action:
  cmp 0,a0
  beq delete_done
  call fl_delete,[d2,d3,a2,a3],44
+ cmp 0,d0
+ beq delete_done
+ /* A film step is user activity: restart the screen's timeout (films.s) */
+ call ui_film_activity,[d2,d3,a2,a3],24
 delete_done:
  mov (20,sp),d0
  add 24,sp
@@ -121,6 +127,8 @@ delete_stock:
  * to its focused child but drops 0x9016. Consume 0x9016 only when that child
  * is the 13-child colour editor whose cursor is a colour-selection setting. */
 hsl_container:
+ cmp 0x9014,d0
+ beq container_info
  cmp 0x9016,d0
  bne container_stock
  add -4,sp
@@ -138,9 +146,11 @@ hsl_container:
  sub 2197,d0
  cmp 8,d0
  bcc container_restore
+ mov (sp),a1                     /* the container */
  add 4,sp
  movm [d2,d3,a2,a3],(sp)
  add -8,sp
+ mov a1,(4,sp)
  mov a0,a2
  call st_ptr,[],8
  cmp 0,a0
@@ -160,6 +170,17 @@ container_axis:
  mov (a0),a1
  mov (a1),a1
  calls (a1)
+ /* The axis title is painted by the colour page's view (paint_axis), which
+  * nothing invalidates for an axis change: have pages_hook invalidate the
+  * page when the panel lays out after this press. Then count the press as
+  * activity, as stock does for a command its child consumed. */
+ call st_ptr,[],8
+ cmp 0,a0
+ beq container_unarmed
+ mov 1,d0
+ movbu d0,(ST_REPAINT,a0)
+ mov (4,sp),a0
+ call ui_activity,[d2,d3],12
 container_unarmed:
  mov 1,d0
  ret [d2,d3,a2,a3],24
@@ -169,6 +190,27 @@ container_restore:
  mov 0x9016,d0
 container_stock:
  jmp stock_container
+/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
+ * the tone curve's point). Stock runs it but restarts the screen's timeout
+ * only for other commands. Run stock, then count a consumed INFO as activity
+ * on the custom pages (section 10, armed only). Same frame use as
+ * hsl_delete_action: (0,sp) stays free for the nested calls. */
+container_info:
+ add -12,sp
+ mov a0,(4,sp)
+ calls stock_container
+ mov d0,(8,sp)
+ cmp 1,d0
+ bne info_done
+ call st_ptr,[],8
+ cmp 0,a0
+ beq info_done
+ mov (4,sp),a0
+ call ui_info_activity,[d2,d3,a2,a3],24
+info_done:
+ mov (8,sp),d0
+ add 12,sp
+ rets
 
 /* The native value label (stock "Vivid +n", 0x60e4ad08..0x60e4ae5e) reads the
  * selected sector's stored profile cell (IDs 928-975) through the settings
@@ -600,6 +642,7 @@ pages_armed:
  movbu (247,a0),d0
  mov 2,d1
  call show_page,[d2,d3,a2,a3],24
+ call pg_axis,[d2,d3,a2,a3],24
  jmp direct_ret
 pages_off:
  clr d0
@@ -615,6 +658,30 @@ pages_off:
  mov 2,d1
  call show_page,[d2,d3,a2,a3],24
  jmp direct_ret
+
+/* After an axis switch (hsl_container), invalidate the colour page (child 4)
+ * with OM's own widget invalidate (d0 = 1, a1 = 0: the widget's whole area, as
+ * a label does in 0x60d8df09..0x60d8df13), so its view repaints the axis title
+ * and wheel. a3 = controller. call pg_axis,[d2,d3,a2,a3],24 */
+pg_axis:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pg_axis_out
+ movbu (ST_REPAINT,a0),d0
+ cmp 0,d0
+ beq pg_axis_out
+ clr d0
+ movbu d0,(ST_REPAINT,a0)
+ mov a3,a0
+ mov 4,d0
+ call child_get,[],0
+ cmp 0,a0
+ beq pg_axis_out
+ mov 0,a1
+ mov 1,d0
+ call ui_invalidate,[],4
+pg_axis_out:
+ ret [d2,d3,a2,a3],24
 
 /* d0 = flag byte, d1 = child index, a3 = controller */
 show_page:
@@ -1625,3 +1692,56 @@ arm_refresh_next:
 .global ext_halfpress
 ext_halfpress:
  .long fl_entry
+
+.section .ext10,"ax"
+/* ---- inactivity: custom controls are user activity (section 10, armed) ----
+ * The direct-setting screen closes when its timer 500 runs out. Its container
+ * restarts it (8000 ms) when a child consumes a command and the container's
+ * +92 is 1 (stock 0x60e3ca89..0x60e3ca9b and 0x60e3c7ce..0x60e3c7de). The
+ * axis switch, a film step and INFO on the custom pages are consumed outside
+ * those paths; restart it the same way. Nothing else changes the timer.
+ * a0 = container. call ui_activity,[d2,d3],12 */
+.global ui_activity
+ui_activity:
+ cmp 0,a0
+ beq ui_act_out
+ mov (92,a0),d0
+ cmp 1,d0
+ bne ui_act_out
+ mov 500,d0
+ mov 8000,d1
+ call ui_timer,[d2,d3],12
+ui_act_out:
+ ret [d2,d3],12
+
+/* After fl_delete stepped a film: the screen's container is (scr_obj)+0.
+ * call ui_film_activity,[d2,d3,a2,a3],24 */
+ui_film_activity:
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq ui_film_out
+ mov (a0),a0
+ call ui_activity,[d2,d3],12
+ui_film_out:
+ ret [d2,d3,a2,a3],24
+
+/* INFO consumed by container a0: only the direct-setting screen's own
+ * container, with a Color or Monochrome Profile selected (the modes whose
+ * pages pages_hook shows). call ui_info_activity,[d2,d3,a2,a3],24 */
+ui_info_activity:
+ mov a0,a2
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq ui_info_out
+ mov (a0),a0
+ cmp a2,a0
+ bne ui_info_out
+ mov 111,d0
+ call stock_get,[],4
+ sub 54,d0
+ cmp 6,d0
+ bcc ui_info_out
+ mov a2,a0
+ call ui_activity,[d2,d3],12
+ui_info_out:
+ ret [d2,d3,a2,a3],24
