@@ -18,7 +18,9 @@ The owner performs any physical test; development sessions prepare and check fil
 - Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.
-- Next: fix the four alpha8 display defects in the [handover](HANDOVER.md).
+- Alpha9 (emulator only) addresses the alpha8 display defects; it needs a camera check.
+- Next: the owner's alpha9 camera check, then the ND64 / ND32 digit artwork and the Monochrome Color Filter and
+  Film Grain icons.
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   [camera test checklist](docs/FIRST_FLASH.md) and record the exact package hash.

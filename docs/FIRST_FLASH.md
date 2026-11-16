@@ -19,5 +19,18 @@ numbers then.
 | 7 | Take the card out, put another in, switch off and on. | Color Profile 1 still has the look and its name. | The look lives in the camera. |
 | 8 | Live ND: ND32 and ND64, on a tripod. Custom modes C1–C4 with a Color Profile. Monochrome Profile 1. | They work. | The rest. |
 
+### Alpha9 additions
+
+Alpha9 (package `2e9777ce…fbc50`) has not been run on a camera. After steps 0 to 3, also check:
+
+| Step | Do | Expect |
+|---|---|---|
+| 9 | Picture Mode carousel, sidebar and super control panel on Color 1–3 and Monochrome 1–3. | Numbered icons (1/2/3, M1/M2/M3), no overlap when scrolling the sidebar. |
+| 10 | Change any setting of Color Profile 1, confirm, return to the shooting screen. Repeat for one Monochrome Profile, and after loading a look. | The profile's icon stays on the shooting screen (alpha8 and earlier candidates lost it). |
+| 11 | Tone Curve row: change Shadows, Midtones and Highlights through several values. | An icon in every state, matching the curve's direction. |
+| 12 | Colour wheel and tone curve pages. | The wheel and curve draw, and redraw after leaving and re-entering. Note any colour or flicker problem. |
+| 13 | Keep using the wheel, Tone Curve and trash look cycling for over 10 s; then leave the screen idle. | The screen stays open while used and closes about 8 s after the last action. |
+| 14 | Gear menu › CP Button Settings; hold the CP button; Live ND menu. | ND32 and ND64 listed, switchable and kept after a power cycle; `ND32-LV` / `ND64-LV` labels and their exposure. |
+
 Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
 nobody else should flash it.

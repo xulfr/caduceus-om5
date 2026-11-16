@@ -14,7 +14,7 @@ PAGES = {
     'ROADMAP.md': 'roadmap', 'CHANGELOG.md': 'changelog',
 }
 REPO = 'https://github.com/xulfr/caduceus-om5'
-BANNER = ('<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. '
+BANNER = ('<div class="banner"><strong>Experimental firmware.</strong> Alpha9 has not been run on a camera; alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. '
           '<a href="../safety/">Read the safety notes.</a></div>')
 BANNERS = {'om5-prealpha': '<div class="banner"><strong>Pre-alpha for the original OM-5: never run on any camera.</strong> '
            'Recovery from a failure is unknown. For testers who accept that risk. '

@@ -5,6 +5,24 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
+## v0.1.0-alpha9 — 2026-11-16 (emulator only; not run on a camera)
+
+**Alpha9 has not been run on any camera. Alpha8 is the last build confirmed to boot.** To install alpha8 instead:
+`python3 patch.py --release v0.1.0-alpha8`. Package `2e9777ce…fbc50`.
+
+- Color Profiles 1–3 and Monochrome Profiles 1–3 show their own numbered icon in the carousel, sidebar, super
+  control panel and shooting screen (alpha8 showed C2 or M for all three).
+- The edited-profile icon on the shooting screen no longer disappears after a profile is changed
+  (images `0x3d66..0x3d68` and `0x3d5e..0x3d60`).
+- The Tone Curve row shows an icon for every Shadows / Midtones / Highlights state (27 states).
+- The colour wheel and tone curve are drawn on the Picture Mode screen (block graphics, not OM-3's artwork).
+- The shooting screen draws ND32 and ND64; CP Button Settings lists Live ND32 and ND64 and they can be switched.
+- Activity on the Picture Mode screen keeps it open, and the trash button repaints the HSL axis.
+- Known: ND64's digits look squashed and ND32 has a gap; Monochrome Color Filter and Film Grain rows still show
+  placeholders; the palette and drawing budget are unverified on a camera.
+- All 19 look/menu regressions, the startup, arming, unarmed-PC and stale-number probes, the UI, graphics, icon
+  and Live ND checks, the static rules and the build audit passed in OM-Emu. [Results](tests/alpha9-results.json).
+
 ## v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)
 
 - The owner confirmed boot, SD-card look cycling and names, Color Profile controls, and Live ND32/64

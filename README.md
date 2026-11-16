@@ -13,7 +13,9 @@
 </p>
 
 > [!CAUTION]
-> ### Alpha8 boots on the owner’s camera. It remains experimental.
+> ### Alpha9 has not been run on a camera. Alpha8 is the last build confirmed to boot.
+> The installer now makes **v0.1.0-alpha9** (16 November 2026), which has passed the emulator checks only. To make
+> alpha8 instead, run `python3 patch.py --release v0.1.0-alpha8`.
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
 > The owner confirmed alpha8 boot, Color Profiles and Live ND32/64. OM's own firmware was restored
@@ -25,7 +27,8 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha9, 16 Nov 2026 | **Emulator only; never run on a camera.** UI fixes on top of alpha8: numbered profile icons, colour wheel and tone curve graphics, ND32/64 labels. [Changes](CHANGELOG.md). |
+| | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
@@ -112,7 +115,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | Alpha8 boot and selected features confirmed |
+| Tested on a camera | yes | Alpha8 boot and selected features confirmed; alpha9 not yet |
 
 ## How it works, briefly
 

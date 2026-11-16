@@ -1,7 +1,8 @@
 # Install
 
-> **Alpha8 booted on one OM-5 Mark II and remains experimental.** Read [Safety](SAFETY.md) first, and follow
-> [the first-flash plan](FIRST_FLASH.md) rather than this page if you are the first to try it.
+> **The installer makes alpha9, which has not been run on any camera.** Alpha8 is the last build confirmed to boot
+> on one OM-5 Mark II; to make it instead, run `python3 patch.py --release v0.1.0-alpha8`. Read [Safety](SAFETY.md)
+> first, and follow [the first-flash plan](FIRST_FLASH.md) rather than this page if you are the first to try it.
 
 About 15 minutes.
 
