@@ -1,7 +1,6 @@
 # Install
 
-> **Alpha12 is the current experimental build.** The owner reports that the filter graphic works.
-> Read [Safety](SAFETY.md) and follow [the first-flash checklist](FIRST_FLASH.md) after installation.
+> **Experimental firmware.** Read [Safety](SAFETY.md) before you start, and keep the restore file the installer makes.
 
 About 15 minutes.
 
