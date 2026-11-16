@@ -1,6 +1,7 @@
 # Roadmap
 
-Alpha8 booted on a physical OM-5 Mark II with working Color Profiles and Live ND32/64. [Camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md).
+Alpha8 and alpha9 booted on a physical OM-5 Mark II. [Alpha8 report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md),
+[alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). Alpha10 (emulator only) fixes the alpha9 defects.
 The owner performs any physical test; development sessions prepare and check files only.
 
 ## First priority: OM-5 Mark II (E148, firmware 1.1)
@@ -18,9 +19,16 @@ The owner performs any physical test; development sessions prepare and check fil
 - Fixed in v0.1.0-alpha5 (emulator only): the title restore no longer writes a 32-bit word into the camera's
   16-bit row descriptor fields; a look without a WB shift sets the shift to 0 instead of keeping the previous
   look's shift.
-- Alpha9 (emulator only) addresses the alpha8 display defects; it needs a camera check.
-- Next: the owner's alpha9 camera check, then the ND64 / ND32 digit artwork and the Monochrome Color Filter and
-  Film Grain icons.
+- Alpha9 fixed the alpha8 display defects and booted on the owner's camera. Alpha10 (emulator only) fixes
+  Color Profile Shading, ND32/64 in the CP-button carousel and the Monochrome Film Grain / Color Filter icons.
+- Next: the owner's alpha10 camera check, including per-profile white balance (implemented in alpha1, emulator
+  checks only: set WB while a Color Profile is selected, switch profile and back).
+- Planned: a **Monochrome colour filter picker**. The Color Filter page shows the filter but its dials do not
+  change it, and nothing is drawn. The OM-3 has the native picker to follow (its filter list, not an HSL wheel).
+- Deferred with the other effects (Glow, Halation): **colour grain for Color Profiles**. The camera applies
+  Film Grain for Monochrome Profiles; a Color Profile would need its own grain row and storage.
+- Open: ND64 / ND32 digit artwork on the shooting screen; the "any CP item ticked" test still ignores ND32 / ND64
+  (with every other CP item unticked, the CP button treats them as nothing ticked).
 - Physical validation remains open: boot, restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   [camera test checklist](docs/FIRST_FLASH.md) and record the exact package hash.

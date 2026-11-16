@@ -5,7 +5,28 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
-## v0.1.0-alpha9 — 2026-11-16 (emulator only; not run on a camera)
+## v0.1.0-alpha10 — 2026-11-17 (emulator only; not run on a camera)
+
+**Alpha10 has not been run on any camera. Alpha9 booted on the owner's camera.** To install alpha9 instead:
+`python3 patch.py --release v0.1.0-alpha9`.
+
+Fixes from the [alpha9 camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md):
+
+- **Color Profile Shading works.** Its slider was grey and ignored the dials: OM's firmware has no setting
+  description for the Color Profiles' Shading, so it dropped every change. Caduceus now supplies one.
+- **ND32 and ND64 appear when holding the CP button** (when ticked in CP Button Settings). The CP carousel only
+  offered the items in its list of allowed values, which stopped at ND16.
+- **Monochrome Film Grain shows Off / Low / Std / High** in the sidebar and the strip, and the **Color Filter row
+  shows "Filter"** instead of an empty cell.
+- Known: the Monochrome Color Filter page cannot change the filter (no filter picker yet, roadmap); colour grain
+  for Color Profiles is deferred with the other effects; per-profile white balance is behind the scenes, not a
+  Picture Mode row (README).
+- Emulator checks: see [results](tests/alpha10-results.json). The build audit can now also compare against alpha8.
+
+## v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)
+
+The owner reported that alpha9 boots and the colour wheel draws correctly on the camera; the defects found are
+fixed in alpha10.
 
 **Alpha9 has not been run on any camera. Alpha8 is the last build confirmed to boot.** To install alpha8 instead:
 `python3 patch.py --release v0.1.0-alpha8`. Package `2e9777ce…fbc50`.

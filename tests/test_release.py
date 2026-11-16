@@ -57,6 +57,22 @@ class ReleaseTests(unittest.TestCase):
         self.assertLessEqual({'0x3d5e', '0x3d5f', '0x3d60', '0x3d66', '0x3d67', '0x3d68'}, ids)
         self.assertEqual(rel['package']['sha256'], '2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50')
 
+    def test_alpha10_is_untested(self):
+        # Emulator only (fixes from the alpha9 camera report): the installer must ask for UNTESTED.
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha10/patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertNotIn('camera_status', rel)
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        aliases = dict(map(tuple, rel['resource']['aliases']))
+        self.assertEqual([aliases[f'{i:#x}'] for i in range(0x38e7, 0x38ef)],
+                         ['0x2a2a', '0x2a2a', '0x2a3b', '0x2a3b', '0x2a3c', '0x2a3c', '0x2a3d', '0x2a3d'])
+        ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}
+        self.assertIn('0x38cb', ids)
+        self.assertEqual(rel['package']['sha256'], '1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27')
+
+    def test_newest_release_is_alpha10(self):
+        self.assertEqual(patch.newest(), 'v0.1.0-alpha10')
+
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):
         stock = Path(os.environ['OM5_STOCK']).read_bytes()

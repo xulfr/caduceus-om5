@@ -1,15 +1,15 @@
 # Safety
 
-**Alpha8 boots on the owner’s OM-5 Mark II and remains experimental. Alpha9, which the installer now makes, has
-not been run on any camera:** it passed the emulator checks only ([results](../tests/alpha9-results.json)). To make
-alpha8 instead: `python3 patch.py --release v0.1.0-alpha8`.
+**Alpha8 and alpha9 boot on the owner’s OM-5 Mark II and remain experimental. Alpha10, which the installer now
+makes, has not been run on any camera:** it passed the emulator checks only ([results](../tests/alpha10-results.json)).
+To make alpha9 instead: `python3 patch.py --release v0.1.0-alpha9`.
 
 ## What is known
 
 | | |
 |---|---|
 | Emulator (OM-Emu, OM-5 Mark II firmware 1.1) | The camera starts, the Picture Mode screens work, looks load from the card and reach the slot's settings, nothing writes into the firmware image. |
-| Real OM-5 Mark II | **Alpha5 and alpha6 boot-looped** on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. **Alpha8 booted on the owner’s camera.** Alpha9 has not been tried. Color Profiles, SD-card looks and Live ND32/64 were exercised. [Camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
+| Real OM-5 Mark II | **Alpha5 and alpha6 boot-looped** on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. **Alpha8 and alpha9 booted on the owner’s camera** ([alpha9 report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). Alpha10 has not been tried. Color Profiles, SD-card looks and Live ND32/64 were exercised. [Camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | Earlier builds on a real OM-5 Mark II | **Three more failures**, 4, 5 and 8 November 2026. Two never started (black screen, the lens hunting). The third started, then froze when the Picture Mode screen was used, and looped on every start after. |
 | Going back | After each failure OM's firmware was put back from the card (hold **OK**, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did. |
 

@@ -32,5 +32,16 @@ Alpha9 (package `2e9777ce…fbc50`) has not been run on a camera. After steps 0 
 | 13 | Keep using the wheel, Tone Curve and trash look cycling for over 10 s; then leave the screen idle. | The screen stays open while used and closes about 8 s after the last action. |
 | 14 | Gear menu › CP Button Settings; hold the CP button; Live ND menu. | ND32 and ND64 listed, switchable and kept after a power cycle; `ND32-LV` / `ND64-LV` labels and their exposure. |
 
+### Alpha10 additions
+
+Alpha10 has not been run on a camera. After steps 0 to 3, repeat 9 to 14, then check:
+
+| Step | Do | Expect |
+|---|---|---|
+| 15 | Color Profile 1 › Shading row: turn the dials both ways. | Green knob; the value goes up and down and is kept after leaving and re-entering. |
+| 16 | Tick ND32 and ND64 in CP Button Settings. Hold the CP button and turn the dial. | ND32 and ND64 are offered after ND16; each gives its exposure and label. Untick them: they disappear. |
+| 17 | Monochrome Profile 1: Film Grain row and strip; Color Filter row. | Off / Low / Std / High in the strip and the sidebar; "Filter" on the Color Filter row. Grain still visible in pictures. |
+| 18 | Per-profile white balance: select Color Profile 1, set WB to Daylight with an A/B shift; select Color Profile 2 and set Shade; go back to Color Profile 1. | Color Profile 1 brings back Daylight and its shift; Color Profile 2 brings back Shade; Natural keeps its own WB. |
+
 Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
 nobody else should flash it.

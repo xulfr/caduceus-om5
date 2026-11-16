@@ -18,7 +18,7 @@
   <a class="tab" href="../changelog/">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha9 has not been run on a camera; alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha10 has not been run on a camera; alpha9 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="camera-test-checklist">Camera test checklist</h1>
@@ -133,6 +133,39 @@ numbers then.</p>
 <td>14</td>
 <td>Gear menu › CP Button Settings; hold the CP button; Live ND menu.</td>
 <td>ND32 and ND64 listed, switchable and kept after a power cycle; <code>ND32-LV</code> / <code>ND64-LV</code> labels and their exposure.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="alpha10-additions">Alpha10 additions</h3>
+<p>Alpha10 has not been run on a camera. After steps 0 to 3, repeat 9 to 14, then check:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Do</th>
+<th>Expect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15</td>
+<td>Color Profile 1 › Shading row: turn the dials both ways.</td>
+<td>Green knob; the value goes up and down and is kept after leaving and re-entering.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Tick ND32 and ND64 in CP Button Settings. Hold the CP button and turn the dial.</td>
+<td>ND32 and ND64 are offered after ND16; each gives its exposure and label. Untick them: they disappear.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Monochrome Profile 1: Film Grain row and strip; Color Filter row.</td>
+<td>Off / Low / Std / High in the strip and the sidebar; "Filter" on the Color Filter row. Grain still visible in pictures.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Per-profile white balance: select Color Profile 1, set WB to Daylight with an A/B shift; select Color Profile 2 and set Shade; go back to Color Profile 1.</td>
+<td>Color Profile 1 brings back Daylight and its shift; Color Profile 2 brings back Shade; Natural keeps its own WB.</td>
 </tr>
 </tbody>
 </table></div>

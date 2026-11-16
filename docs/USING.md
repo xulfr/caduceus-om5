@@ -24,6 +24,7 @@ before any half-press (by remote control, for example) uses the camera's stock v
 
 - **Color Profile 1, 2, 3**: your three look slots.
 - **Monochrome Profile 1, 2, 3**: OM's monochrome profiles (filter, toning, grain, tone), as on the OM-3 and PEN-F.
+  The Color Filter page cannot change the filter yet (no filter picker, [roadmap](../ROADMAP.md)).
 
 Each Color Profile has its own rows (press down from the list):
 
@@ -35,7 +36,9 @@ Each Color Profile has its own rows (press down from the list):
 | Sharpness, Contrast | −2..+2 |
 
 Each Color Profile also remembers its own **white balance**: the mode, the Kelvin value and the A/B, G/M shift you
-set while it is selected come back when you select it again. All other picture modes share one white balance.
+set while it is selected come back when you select it again. All other picture modes share one white balance. This
+is not a row in the Picture Mode screen: set white balance as usual (WB button or super control panel). Not yet
+checked on a camera.
 
 **Hold OK** on a row resets it, as on OM's own picture modes.
 

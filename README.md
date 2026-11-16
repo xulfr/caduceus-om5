@@ -13,12 +13,13 @@
 </p>
 
 > [!CAUTION]
-> ### Alpha9 has not been run on a camera. Alpha8 is the last build confirmed to boot.
-> The installer now makes **v0.1.0-alpha9** (16 November 2026), which has passed the emulator checks only. To make
-> alpha8 instead, run `python3 patch.py --release v0.1.0-alpha8`.
+> ### Alpha10 has not been run on a camera. Alpha9 booted on the owner's camera.
+> The installer now makes **v0.1.0-alpha10** (17 November 2026), which has passed the emulator checks only. To make
+> alpha9 instead, run `python3 patch.py --release v0.1.0-alpha9`.
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
-> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64. OM's own firmware was restored
+> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64, and alpha9 boot with the colour wheel
+> drawn ([alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). OM's own firmware was restored
 > from the card after each failure. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
 > The [camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records what works and the remaining UI defects.
@@ -27,7 +28,8 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha9, 16 Nov 2026 | **Emulator only; never run on a camera.** UI fixes on top of alpha8: numbered profile icons, colour wheel and tone curve graphics, ND32/64 labels. [Changes](CHANGELOG.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha10, 17 Nov 2026 | **Emulator only; never run on a camera.** Fixes from the alpha9 report: Color Profile Shading, ND32/64 when holding the CP button, Monochrome Film Grain and Color Filter icons. [Changes](CHANGELOG.md). |
+| | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md), fixed in alpha10. |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
@@ -45,11 +47,15 @@ the earlier camera failures. Only a report from a real camera can change the sta
 | Hue, Saturation, Lightness for 12 colours | Yes | No |
 | Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
 | Sharpness, Contrast, Shading | Yes | Yes |
-| Own white balance, remembered per profile | Yes | No |
-| Colour filter, toning, grain | No | Yes |
+| Own white balance, remembered per profile (the camera's usual WB setting, see below) | Yes | No |
+| Colour filter, toning, grain | No | Yes (Color Filter cannot yet be changed on the camera: [roadmap](ROADMAP.md)) |
 | Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
 
 Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
+
+**White balance per profile** is not a row in the Picture Mode screen. Set white balance as usual (WB button or
+super control panel) while a Color Profile is selected: the mode, the Kelvin value and the A/B, G/M shift are kept
+for that profile and come back when you select it again. Not yet checked on a camera.
 
 **How to use looks**
 
@@ -75,7 +81,7 @@ hidden from the menus. Caduceus brings them back and adds:
   appears on the super control panel. The chosen look is stored in the camera, so the card is only needed to change it.
 - **A full colour editor on the camera.** For 12 colours: Saturation, and new **Hue** and **Lightness** controls. Plus a
   tone curve (Shadows, Midtones, Highlights), Sharpness, Contrast, Shading and a white balance for each slot.
-- **Monochrome Profile 1–3**, with filter, toning, grain and tone.
+- **Monochrome Profile 1–3**, with toning, grain and tone (and the colour filter, which cannot yet be set on the camera).
 - **Live ND32 and ND64**, after the camera's ND2–ND16.
 
 It changes JPEG photos and the live view, as any picture mode does. RAW files are not affected.
@@ -115,7 +121,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | Alpha8 boot and selected features confirmed; alpha9 not yet |
+| Tested on a camera | yes | Alpha8 and alpha9 boot and selected features confirmed; alpha10 not yet |
 
 ## How it works, briefly
 
