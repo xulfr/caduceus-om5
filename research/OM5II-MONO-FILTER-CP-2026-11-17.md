@@ -69,3 +69,53 @@ expanded main program (base `0x60021020`), E148 1.1 unless marked E147.
   switch at `0x60e27f92` (jump table `0x61190d84`) sends values 3..8 to the same Live ND case.
 - Not run: OM-Emu has no CP button for E148, and calling `0x60d2230f` from the lab task faults in its setting
   read (SCPU command, as `stock_get` does). Result is static analysis plus a disassembly of the built image.
+
+## Alpha11 follow-up
+
+The owner saw a restart on entering the alpha10 Color Filter page. Alpha9 opened the same page with
+no filter graphic. See the [alpha10 camera report](OM5II-ALPHA10-CAMERA-2026-11-17.md).
+
+### D2. Color Filter page restart
+
+- In stock E148, the widget at `0x60d8e4e0` reads the 16-bit image ID at layout offset +12 and passes
+  it to `0x60d52e84`. This helper special-cases zero and computes `table + 4 * (uint16_t)id` for
+  every other value. It performs no upper-bound or `0xffff` check. The widget's signed `-1` check at
+  `0x60d8e4f9` reads offset +0 of the layout record, a separate field.
+- Record 0's loaded image-table base is `0xa3435ccc`. The record ends at `0xa3456d74`, at most
+  `0x842a` four-byte entries from the base. ID `0xffff` produces `0xa3475cc8`, outside that record.
+  The draw path reads the slot at `0x60d8e57e`. `0x60d4e1c2` also reads it and checks the
+  returned pointer for zero after the read. The scan of 8,268 stock records matching the filter layout's
+  `{0xffff, 7, 7, image}` prefix found zero with `0xffff` in the image field.
+- With the exact alpha10 package reproduced, OM-Emu observed image ID `0xffff` at
+  `0x60d8ebf5`, `0x60d8ec97`, `0x60d8e57e`, `0x60d8e5d4` and `0x60d4e1c2` on entry.
+  The emulator continued to draw and accept a dial turn. The out-of-range lookup is established.
+  Its role in the physical restart remains the leading hypothesis.
+- `paint_filter` uses the same wrapper as `paint_tone`. It saves d2/d3/a2/a3, reserves 12 bytes,
+  saves a1 at sp+8 during stock paint, preserves the stock d0 result in that slot and restores the
+  frame at exit. It uses the same paint event and arming gates. `gfx_filter`'s 72-byte call frame
+  includes the 16 saved-register bytes and fits the local slots through sp+47. The font call and
+  style/font restoration follow `paint_axis`. The wrapper shows no evident mismatched return or
+  register-save error. Stack headroom in the camera's filter-page caller, the extra text and pen
+  operations, and child 3 invalidation remain unverified on camera.
+- Alpha11 restores image `0x107e`, both stock rectangles and the stock paint entry at `0x610d9bc0`.
+  It removes the ring, “Level” text and flag +246 invalidation. The page uses alpha9 rendering
+  with the native “Vivid” word. The Filter sidebar artwork survives from alpha10. The picker is
+  postponed. The CP any-item hook is reached from the CP button path and remains in place.
+
+### D1. CP carousel artwork
+
+- GUI `0x60e27d22` enumerates 2228. Values 7 and 8 use enable settings 2217 and 2218,
+  respectively. Their jump slots `0x61190d84 + 4 * (value - 3)` go to the shared ND case
+  `0x60e27f92`. The third field of the 12-byte records at `0x6118fe6c` gives display
+  string IDs `0xf9` and `0xfa`.
+- The direct viewer's CP entry `0x5c` at `0x611b3eac` points to the 18 icon rows at
+  `0x611b3598`, stride 12, with the image halfword at +6. Values 3–6 use
+  `0x2354..0x2357`. Values 7 and 8 use `0x2358` and `0x2c84`.
+  The second table at `0x611b3670` supplies type-4 caption IDs `0xfc9` and `0xfca`.
+- Both icon slots point to stock's zero-size placeholder `0xa3435cb8` in alpha10.
+  Alpha11 shares the type-14 bitmaps already made for shooting labels, using
+  `--artwork 2062=2358 --artwork 205d=2c84`. This changes two resource pointer
+  words and reuses the existing 58×28 and 56×28 artwork. Decoding the stock type-14
+  pointer at header +16 shows ND8 and ND16 in `0x2060` and `0x2061`, respectively.
+- OM-Emu ran the carousel constructor and enumerated 7 and 8. The raw key and CP event
+  probes did not produce a carousel frame. Icon validation is static pending the owner's check.

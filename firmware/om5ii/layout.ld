@@ -11,7 +11,6 @@ SECTIONS {
  .parent_hook 0x60ea0180 : { *(.parent_hook) }
  .paint_pointer 0x610c1540 : { *(.paint_pointer) }
  .tone_pointer 0x610d6600 : { *(.tone_pointer) }
- .filter_pointer 0x610d9bc0 : { *(.filter_pointer) }
  .cp_any_hook 0x60d22357 : { *(.cp_any_hook) }
  .pages_hook 0x60dad5f5 : { *(.pages_hook) }
  .ext2 0x605af4b0 : { *(.ext2) }
