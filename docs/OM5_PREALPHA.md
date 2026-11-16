@@ -4,9 +4,12 @@
 > either, and three earlier Mark II builds left the camera in a boot loop. Nobody knows whether an original OM-5 can
 > be brought back from the card if this fails. Read all of this page, and [Safety](SAFETY.md), before you start.
 >
-> **Hold off (15 November 2026).** A fourth Mark II build (alpha5) boot-looped. The likely cause is the length of a
-> compressed block in the update file ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Pre-alpha 1 was made
-> before that check existed and its block lengths have not been checked. Do not flash it; wait for a rebuilt pre-alpha.
+> **Pre-alpha 1 is withdrawn; pre-alpha 2 has no checksum yet (16 November 2026).** Pre-alpha 1 used the Mark II
+> alpha2 build, and Mark II alpha2 through alpha6 boot-looped. The builder now uses the current Mark II source,
+> **v0.1.0-alpha12**, the build the owner reports working on a Mark II. It packs the program with the same
+> stream-length rule as that build ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Nobody has built
+> pre-alpha 2 from OM's files yet, so there is no reference checksum. Do not flash it: report your `build.json`
+> (step 6) first.
 
 This page is for **owners of the original OM-5 (2022, firmware 1.2)** who are comfortable with a terminal, accept the
 risk to their camera, and want to help: by trying the first steps below and reporting what happens, good or bad, or
@@ -58,10 +61,10 @@ most of it building the assembler once.
 
    ```bash
    cd caduceus-om5
-   git switch --detach 02c3cb2a64687e3aa74b0639550c82a95cfd66d7
    ```
 
-   This revision pins the Mark II alpha2 donor used by the published pre-alpha 1 checksum.
+   The default branch builds from the current Mark II source (v0.1.0-alpha12). Pre-alpha 1 (alpha2 donor,
+   withdrawn) remains reproducible at revision `02c3cb2a64687e3aa74b0639550c82a95cfd66d7`. Do not flash it.
 
    ```bash
    python3 -m pip install pillow
@@ -93,22 +96,21 @@ most of it building the assembler once.
 5. Build. The output folder must not exist yet:
 
    ```bash
-   python3 patches/ports/om-5-i-from-ii/build.py --stock OLY_E_144_1200_0000_0000.BIN --donor-stock OLY_E_148_1100_0000_0000.BIN --out generated/om5-prealpha1 --write-untested-package
+   python3 patches/ports/om-5-i-from-ii/build.py --stock OLY_E_144_1200_0000_0000.BIN --donor-stock OLY_E_148_1100_0000_0000.BIN --out generated/om5-prealpha2 --write-untested-package
    ```
 
-6. **Check the result.** `generated/om5-prealpha1/build.json` must show
-
-   `"package_sha256": "70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4"`
-
-   If it shows anything else, stop and report it (a different `jpegtran` version is the likely cause). Do not flash
-   a file with another checksum.
+6. **Check the result.** Pre-alpha 2 has no published checksum yet. Report the `package_sha256`,
+   `donor_build.package_sha256` and `jpegtran_version` from `generated/om5-prealpha2/build.json`. The donor hash
+   should be alpha12's, `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`; if it is not, stop.
+   Do not flash until a checksum has been published here and yours matches it (a different `jpegtran` version is
+   the likely cause of a mismatch).
 
 You get:
 
 | | |
 |---|---|
-| `generated/om5-prealpha1/install/DCOLYMP/E1449999.BIN` | the pre-alpha |
-| `generated/om5-prealpha1/restore-stock/DCOLYMP/E1449999.BIN` | OM's own firmware 1.2, to go back. **Keep it.** |
+| `generated/om5-prealpha2/install/DCOLYMP/E1449999.BIN` | the pre-alpha |
+| `generated/om5-prealpha2/restore-stock/DCOLYMP/E1449999.BIN` | OM's own firmware 1.2, to go back. **Keep it.** |
 
 These files contain OM's firmware: keep them to yourself, do not share or upload them.
 

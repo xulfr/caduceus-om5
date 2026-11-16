@@ -26,6 +26,13 @@
   a per-step report with the flashed package hash. [Manifest](releases/v0.1.0-alpha12/patch.json),
   [results](tests/alpha12-results.json), and [build audit](tests/alpha12-build-audit.json).
 
+## Original OM-5 builder (`claude/tender-pascal-momfaz`)
+
+- `patches/ports/om-5-i-from-ii/build.py` now uses the alpha12 donor (`firmware/om5ii`). The tester page no longer
+  pins the alpha2 revision. The transplant repacks main with the donor's `stock-page` stream-length rule.
+- Not yet built from OM's files. Pre-alpha 2 needs a first reference `build.json` before a checksum can be
+  published. Any repack span or length fault from the E144 edits will show up there. [Tester page](docs/OM5_PREALPHA.md).
+
 ## Next camera checks
 
 1. Capture per-step filter and CP results with the installed package SHA-256.

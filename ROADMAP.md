@@ -40,7 +40,7 @@ using this project's donor patch. Fitting and checksum validation do not show th
 the E148 program can drive E144 hardware. This is not the Mark II patch applied to E144 stock.
 Since 2026-11-14 it is offered as a **pre-alpha for testers** ([docs/OM5_PREALPHA.md](docs/OM5_PREALPHA.md)): built
 by the tester with the developer builder, never run on a camera, with a step 0 that checks the card update with
-OM's own firmware first. It stays out of the one-step patcher. No recommendation to install it until camera
+OM's own firmware first. Since 2026-11-16 the builder uses the alpha12 donor with its stream-length rule; pre-alpha 2 still needs a first reference build. It stays out of the one-step patcher. No recommendation to install it until camera
 reports exist.
 Emulator and static work reached so far (2026-11-14): look regressions and a menu tour pass in OM-Emu's
 Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are the controller (010e) protocol,

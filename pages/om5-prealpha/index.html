@@ -26,9 +26,12 @@
 <p><strong>Pre-alpha. This has never run on any camera.</strong> The Mark II build it is made from has not run on a Mark II
 either, and three earlier Mark II builds left the camera in a boot loop. Nobody knows whether an original OM-5 can
 be brought back from the card if this fails. Read all of this page, and <a href="../safety/">Safety</a>, before you start.</p>
-<p><strong>Hold off (15 November 2026).</strong> A fourth Mark II build (alpha5) boot-looped. The likely cause is the length of a
-compressed block in the update file (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-STREAM-LENGTH-2026-11-15.md">note</a>). Pre-alpha 1 was made
-before that check existed and its block lengths have not been checked. Do not flash it; wait for a rebuilt pre-alpha.</p>
+<p><strong>Pre-alpha 1 is withdrawn; pre-alpha 2 has no checksum yet (16 November 2026).</strong> Pre-alpha 1 used the Mark II
+alpha2 build, and Mark II alpha2 through alpha6 boot-looped. The builder now uses the current Mark II source,
+<strong>v0.1.0-alpha12</strong>, the build the owner reports working on a Mark II. It packs the program with the same
+stream-length rule as that build (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-STREAM-LENGTH-2026-11-15.md">note</a>). Nobody has built
+pre-alpha 2 from OM's files yet, so there is no reference checksum. Do not flash it: report your <code>build.json</code>
+(step 6) first.</p>
 </blockquote>
 <p>This page is for <strong>owners of the original OM-5 (2022, firmware 1.2)</strong> who are comfortable with a terminal, accept the
 risk to their camera, and want to help: by trying the first steps below and reporting what happens, good or bad, or
@@ -101,9 +104,9 @@ most of it building the assembler once.</p>
 <p><code>bash
    git clone https://github.com/xulfr/caduceus-om5.git</code></p>
 <p><code>bash
-   cd caduceus-om5
-   git switch --detach 02c3cb2a64687e3aa74b0639550c82a95cfd66d7</code></p>
-<p>This revision pins the Mark II alpha2 donor used by the published pre-alpha 1 checksum.</p>
+   cd caduceus-om5</code></p>
+<p>The default branch builds from the current Mark II source (v0.1.0-alpha12). Pre-alpha 1 (alpha2 donor,
+   withdrawn) remains reproducible at revision <code>02c3cb2a64687e3aa74b0639550c82a95cfd66d7</code>. Do not flash it.</p>
 <p><code>bash
    python3 -m pip install pillow</code></p>
 <ol>
@@ -130,13 +133,14 @@ most of it building the assembler once.</p>
 <li>Build. The output folder must not exist yet:</li>
 </ol>
 <p><code>bash
-   python3 patches/ports/om-5-i-from-ii/build.py --stock OLY_E_144_1200_0000_0000.BIN --donor-stock OLY_E_148_1100_0000_0000.BIN --out generated/om5-prealpha1 --write-untested-package</code></p>
+   python3 patches/ports/om-5-i-from-ii/build.py --stock OLY_E_144_1200_0000_0000.BIN --donor-stock OLY_E_148_1100_0000_0000.BIN --out generated/om5-prealpha2 --write-untested-package</code></p>
 <ol>
-<li><strong>Check the result.</strong> <code>generated/om5-prealpha1/build.json</code> must show</li>
+<li><strong>Check the result.</strong> Pre-alpha 2 has no published checksum yet. Report the <code>package_sha256</code>,
+   <code>donor_build.package_sha256</code> and <code>jpegtran_version</code> from <code>generated/om5-prealpha2/build.json</code>. The donor hash
+   should be alpha12's, <code>cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa</code>; if it is not, stop.
+   Do not flash until a checksum has been published here and yours matches it (a different <code>jpegtran</code> version is
+   the likely cause of a mismatch).</li>
 </ol>
-<p><code>"package_sha256": "70788992f032dad53bfa4e145b2147e376d3f25a62e2b1ce2929973fec26d1b4"</code></p>
-<p>If it shows anything else, stop and report it (a different <code>jpegtran</code> version is the likely cause). Do not flash
-   a file with another checksum.</p>
 <p>You get:</p>
 <div class="tablewrap"><table>
 <thead>
@@ -147,11 +151,11 @@ most of it building the assembler once.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>generated/om5-prealpha1/install/DCOLYMP/E1449999.BIN</code></td>
+<td><code>generated/om5-prealpha2/install/DCOLYMP/E1449999.BIN</code></td>
 <td>the pre-alpha</td>
 </tr>
 <tr>
-<td><code>generated/om5-prealpha1/restore-stock/DCOLYMP/E1449999.BIN</code></td>
+<td><code>generated/om5-prealpha2/restore-stock/DCOLYMP/E1449999.BIN</code></td>
 <td>OM's own firmware 1.2, to go back. <strong>Keep it.</strong></td>
 </tr>
 </tbody>

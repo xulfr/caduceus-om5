@@ -15,7 +15,7 @@ import subprocess
 import tempfile
 
 from oly_container import parse, reconstruct, replace_payload, sha256
-from oly_compress import expand_image, repack_image
+from oly_compress import expand_image, repack_image, length_fault, stream_lengths
 from oly_patch import build as build_donor, KNOWN_BOOT_FAILURES, require
 from om5_donor_resources import relocate_common, pack_pictures
 from om5_transplant_audit import BASE, KINDS, read_image, extent, overlaps, LIBRARY_OFFSET, LIBRARY_SIZE
@@ -85,6 +85,13 @@ def adapt_main(donor, recipient):
     return bytes(out), edits
 
 
+def donor_main_packing(spec):
+    """repack_image() arguments for component 0x100, taken from the donor patch.json as oly_patch.build uses them."""
+    comp = spec['components']['0x100']
+    split = comp.get('repack') == 'split'
+    return {'split': split, 'literal_limit': 0 if split else None, 'stream_length': comp.get('stream_length')}
+
+
 def build(recipient_path, donor_path, out, toolchain=None, jpegtran=None, untested=False, patch_dir=None):
     patch_dir = Path(patch_dir).resolve() if patch_dir else PATCH
     out = Path(out).resolve()
@@ -116,13 +123,18 @@ def build(recipient_path, donor_path, out, toolchain=None, jpegtran=None, untest
         feature_osd = (donor_out/'decoded/0101.bin').read_bytes()
         main, edits = adapt_main(feature_main, recipient_main)
         spec = json.loads((patch_dir/'patch.json').read_text())
+        main_packing = donor_main_packing(spec)
         # Rebased runtime ranges cannot overwrite any feature patch.
         for row in spec['ranges']:
             if row['component'] == '0x100' and 'address' in row:
                 a, size = int(row['address'], 16)-BASE, row['bytes']
                 require(main[a:a+size] == feature_main[a:a+size], f'Feature range changed: {row["name"]}')
-        stored_main = repack_image(d[0x100].payload, main, split=True, literal_limit=0)
+        # Pack the adapted program exactly as the donor patch packs its own (alpha6+: stock-page stream lengths).
+        stored_main = repack_image(d[0x100].payload, main, **main_packing)
         require(expand_image(stored_main) == main, 'Main compression round trip failed')
+        if main_packing['stream_length']:
+            for at, packed in stream_lengths(stored_main):
+                require(not length_fault(packed), f'Main stream at {at:#x}: {length_fault(packed)}')
         require(len(feature_osd) <= len(r[0x101].payload), 'OSD exceeds recipient slot')
         osd = feature_osd + b'\xff'*(len(r[0x101].payload)-len(feature_osd))
         common, common_report = relocate_common(d[0x106].payload, d[0x106].address,
@@ -152,7 +164,7 @@ def build(recipient_path, donor_path, out, toolchain=None, jpegtran=None, untest
         'camera_tested': False, 'hardware_compatibility_established': False,
         'camera_access': False, 'package_sha256': sha256(image), 'package_bytes': len(image),
         'restore_sha256': sha256(restore), 'donor_build': donor_report,
-        'jpegtran_version': jpeg_version, 'main_edits': edits,
+        'jpegtran_version': jpeg_version, 'main_edits': edits, 'main_packing': main_packing,
         'shared_static_evidence': {'gpio_register_addresses': 236, 'gpio_table_sha256': sha256(gpio_r),
                                   'matching_recipient_parameter_descriptors': 180,
                                   'note': 'Register locations/descriptors only; pin roles and physical behaviour are untested.'},

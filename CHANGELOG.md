@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — original OM-5 builder on the alpha12 donor (2026-11-16)
+
+- The original OM-5 builder now documents and defaults to the current Mark II source, v0.1.0-alpha12
+  (donor package `cddd7a1f…cd3fa`). Pre-alpha 1 (alpha2 donor) is withdrawn.
+- The builder packs the transplanted main program with the donor patch's own repack settings. These include the
+  `stock-page` stream-length rule. Each main stream is checked for length faults, and `build.json` records `main_packing`.
+- Pre-alpha 2 has not been built from OM's files, and it has no published checksum. Never run on any camera.
+
 ## Camera result — 2026-11-15
 
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
