@@ -86,6 +86,9 @@ MS_B = 0x61e43b90;
 MS_C = 0x61e43b98;
 scr_obj = 0x61e588f4;      /* the direct-setting screen object; +4 = its panel updater (vtable entry 0) */
 ui_timer = 0x60f10fd2;     /* restart GUI timer d0 for d1 ms (cancel 0x60d534c8, start 0x60d53421); call ...,[d2,d3],12 */
+desc_find = 0x602e1edb;    /* setting id d0 -> a0 descriptor or 0 (RAM hash 0x620dc288); call ...,[],0 */
+desc_buckets = 0x620dc288; /* 128 bucket heads, RAM (.bss) */
+cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218 */
 ui_invalidate = 0x60d49294; /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")

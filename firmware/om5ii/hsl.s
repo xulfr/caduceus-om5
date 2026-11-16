@@ -1745,3 +1745,54 @@ ui_info_activity:
  call ui_activity,[d2,d3],12
 ui_info_out:
  ret [d2,d3,a2,a3],24
+
+/* ---- Live ND32 / ND64 in CP Button Settings (section 10, armed) ----
+ * The page (menu list 0x16f, data edit cp_button_items) lists the enable
+ * settings 2217 / 2218 beside ND2..ND16. E148 keeps their cells (they read 1)
+ * but has no descriptor for them, so OM's writer (0x602d0f23 -> 0x602e1a33)
+ * finds none and drops a change. The descriptors are stock-format copies of
+ * 2216's (data edit cp_nd_descriptors, 0/1 list 0x6050da8c). OM hashes its
+ * 1589 static descriptors into 128 RAM buckets at boot (0x602e1e84); a chain
+ * node is { descriptor, next }. Link ours once per power-on, after arming,
+ * with nodes in P (P+988..1003, past the film bank). Only RAM changes; a
+ * lookup before this finds nothing, as stock. a2 = P.
+ * call cp_nd_link,[d2,d3,a2,a3],24 */
+CP_NODES = 988
+.global cp_nd_link
+cp_nd_link:
+ mov cp_nd_desc,a3
+ clr d3
+cp_nd_one:
+ movhu (a3),d0
+ call desc_find,[],0             /* d0 id -> a0 descriptor, 0 when none */
+ cmp 0,a0
+ bne cp_nd_next                  /* already linked (or OM has one) */
+ mov a2,a1
+ add CP_NODES,a1
+ mov d3,d0
+ asl 3,d0
+ add d0,a1                       /* a1 = node */
+ mov a3,(a1)
+ clr d0
+ mov d0,(4,a1)
+ movhu (a3),d0
+ and 127,d0
+ asl2 d0
+ mov desc_buckets,a0
+ add d0,a0                       /* a0 = the bucket's head word */
+cp_nd_walk:
+ mov (a0),d0
+ cmp 0,d0
+ beq cp_nd_put
+ mov d0,a0
+ add 4,a0                        /* the node's next word */
+ bra cp_nd_walk
+cp_nd_put:
+ mov a1,(a0)
+cp_nd_next:
+ add 20,a3
+ inc d3
+ cmp 2,d3
+ bcs cp_nd_one
+ ret [d2,d3,a2,a3],24
+

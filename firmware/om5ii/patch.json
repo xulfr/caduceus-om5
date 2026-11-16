@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "895bfb626e09bfb5627a0f4e07b30e66ae048a268dca39bf4a1630c9c7858d48",
+      "stored_after_sha256": "27061d9018cb0fb41a586d1788b3abe9a69e596fa0c8fe8850dab1030dfe0481",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "8e1c7c0b83f20ad994de8cb0fd267afbc157e0d3d16b8531d7d7b68f3fa9d25b",
+      "after_sha256": "a4117aa7a6404dd43ca7703a4e97a0ee4c996d8ae546cad6fe4e29d79788c986",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -180,7 +180,7 @@
       "address": "0x60ca7b00",
       "bytes": 935,
       "before_sha256": "18ca05df6338e6059ba25dd249031020b9d3b5250c600444c428278cf8ab0464",
-      "after_sha256": "5cab45655115a16fcf10a6086c131f9600ef753ba2acdad25eb79e6bff6f10f2"
+      "after_sha256": "c79eb6f9977c021947128e8b670daa99d6080ea0b9d060d9e3b9583e53a52634"
     },
     {
       "component": "0x100",
@@ -188,7 +188,7 @@
       "address": "0x612a4b98",
       "bytes": 1036,
       "before_sha256": "20b02dd746827d07ac378a227ded43a4a3da4c216e1ab4b6c53a9681d8866ddb",
-      "after_sha256": "3a9c7773a6ea7c312ac5a64332f594b17983794e3b49e6e523f096dc29d108f8"
+      "after_sha256": "8037b41e6a6c5773a101aebaa1194b22a7aa689e3fe0e2e3eb4092a633c70d6b"
     },
     {
       "component": "0x100",
@@ -780,7 +780,7 @@
       "address": "0x613f2ffc",
       "bytes": 4,
       "before_sha256": "ad95131bc0b799c0b1af477fb14fcf26a6a9f76079e48bf090acb7e8367bfd0e",
-      "after_sha256": "2777606fd2a0cb25841a2dac0285b2c5be5bf1005bea88507beeb0f5f5ab8f94"
+      "after_sha256": "16993df4261f8593025154d84e27873d2edcc44b2f6eb1a2ed2f7c82ee7840ed"
     },
     {
       "component": "0x100",
@@ -794,9 +794,9 @@
       "component": "0x100",
       "name": "ext10",
       "address": "0x6169c820",
-      "bytes": 1334,
-      "before_sha256": "d263e80f5aabebd663c772f3ff94214cc313de032b70a8b767fc41a398842cac",
-      "after_sha256": "9e1e602c956ec0074d96740afd8537abbad3d448a1f9a6bf9575e5539a16eec3"
+      "bytes": 1414,
+      "before_sha256": "9ed7ee54ae1134abd6ae567544a58a1f80ac7a0b8bd4f748726f142d9f7042aa",
+      "after_sha256": "2b1841dbaf9ffdcd8d3dfecefbebbe8135cd0efd13c96d367ea197a93a5ccc81"
     },
     {
       "component": "0x100",
@@ -853,6 +853,30 @@
       "bytes": 4,
       "before_sha256": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
       "after_sha256": "341fea5192d5160e65293870f5b1a4099e3efb0caf43096a1156e1dbef22915c"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_button_items",
+      "address": "0x604f24d8",
+      "bytes": 24,
+      "before_sha256": "34d9fbdf07f38309e0047a1d699d6340fa6dc167c26c70f7b3df1ad6a93ef449",
+      "after_sha256": "3274928f9a584ec2fbeb5f6fdea826bba9d70bedc890924e3e7044503dd4f489"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_nd_descriptors",
+      "address": "0x604f24f0",
+      "bytes": 40,
+      "before_sha256": "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb",
+      "after_sha256": "159c7611253ddb60a082b03799a69d7d336949ae4fad5e6b95709f88502eb20f"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_button_page",
+      "address": "0x611943a8",
+      "bytes": 8,
+      "before_sha256": "00bbf97996c4a1e6115d46853e8ec760146dac873ede9b4414a8180522ef3d44",
+      "after_sha256": "e991df7914ade20ed2485843f4d69cbec3b17e5a010d9810f15c8e80d9d8f4e4"
     }
   ],
   "data_edits": [
@@ -1245,12 +1269,30 @@
       "name": "shooting_nd64_bitmap",
       "address": "0x610eab28",
       "after": "5d200000"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_button_items",
+      "address": "0x604f24d8",
+      "after": "a308a408a508a608a708a808a908aa08b008b108b208b308"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_nd_descriptors",
+      "address": "0x604f24f0",
+      "after": "a90880008cda5060000000000200010000010000aa0880008cda5060000000000200010000010000"
+    },
+    {
+      "component": "0x100",
+      "name": "cp_button_page",
+      "address": "0x611943a8",
+      "after": "d8244f600c000000"
     }
   ],
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "7b9730c592a2a1e03d0c836f2104a39d4260249636839fd2c220248414022ca6",
+    "sha256": "32a0c5f124a4f80cdab8489d075828d7e15309f59d5d0e451174aa6908a0a5bd",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },
