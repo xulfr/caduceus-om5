@@ -13,6 +13,7 @@
 - [Branch handover with WIP UI candidates 2 and 3 (16 November 2026)](archive/HANDOVER-ui-candidates-2026-11-16.md)
 - [Preserved Claude instructions](archive/CLAUDE.md)
 - [OM-5 II alpha8 camera report](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md)
+- [OM-5 II alpha9 camera report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)
 
 The archive contains historical findings, not necessarily
 the current state of the repository.
