@@ -6,7 +6,7 @@
 /* Runtime state is NOT kept in the loaded image. Stock E148 makes no absolute
  * store into it, and the 8 November camera failure began at the first such
  * stores this patch made (research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md).
- * State lives in a 1024-byte heap block "P" (stock malloc, class-1 pool,
+ * State lives in a 1040-byte heap block "P" (stock malloc, class-1 pool,
  * uncached alias), allocated once on the first shutter half-press after boot.
  * Its handle is the padding halfword after the HLS event manager's task id
  * (.bss, zero at power-on). Until then every hook behaves as stock.
@@ -19,6 +19,7 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
+ST_SIZE = 1040                  /* the heap block P; 1024 before the Shading descriptors' nodes */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -1584,7 +1585,7 @@ arm_gate:
  movhu (12,sp),d0
  cmp d1,d0
  bne arm_out
- mov 1024,d0
+ mov ST_SIZE,d0
  call malloc,[],4
  cmp 0,a0
  beq arm_out
@@ -1599,7 +1600,7 @@ arm_gate:
  cmp 1,d0
  bne arm_out
  mov a0,a2
- add 1024,a2
+ add ST_SIZE,a2
  clr d0
 arm_clear:
  mov d0,(a0)
@@ -1607,7 +1608,7 @@ arm_clear:
  cmp a2,a0
  bne arm_clear
  mov ST_MAGIC_VALUE,d0
- mov d0,(ST_MAGIC-1024,a2)
+ mov d0,(ST_MAGIC-ST_SIZE,a2)
  /* Publish through the cache of this CPU and straight to RAM, so every
   * reader (st_ptr) sees it at once and a later write-back agrees. */
  movhu d2,(st_handle)
@@ -1757,10 +1758,12 @@ ui_info_out:
  * 2216's (data edit cp_nd_descriptors, 0/1 list 0x6050da8c). OM hashes its
  * 1589 static descriptors into 128 RAM buckets at boot (0x602e1e84); a chain
  * node is { descriptor, next }. Link ours once per power-on, after arming,
- * with nodes in P (P+988..1003, past the film bank). Only RAM changes; a
- * lookup before this finds nothing, as stock. a2 = P.
+ * with nodes in P (P+988..1027, past the film bank). Only RAM changes; a
+ * lookup before this finds nothing, as stock. a2 = P. Color Profile Shading
+ * 912..914 has no descriptor either; it gets copies of 1017's (same list).
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988
+CP_NODES = 988                  /* 5 nodes: P+988..1027 (P is ST_SIZE bytes) */
+CP_NDESC = 5                    /* 2217, 2218, 912, 913, 914 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
  mov cp_nd_desc,a3
@@ -1795,7 +1798,7 @@ cp_nd_put:
 cp_nd_next:
  add 20,a3
  inc d3
- cmp 2,d3
+ cmp CP_NDESC,d3
  bcs cp_nd_one
  ret [d2,d3,a2,a3],24
 

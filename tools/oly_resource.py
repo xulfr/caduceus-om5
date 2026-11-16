@@ -131,7 +131,8 @@ def _append_artwork(result, origin, image_table, table_load, table, artwork):
     icons = append_icons(atlas, load, artwork['sprites'], source_rows)
     if load + len(atlas) > ((load + raw + 65535) & ~65535):
         raise ValueError('Artwork crosses the final stock bitmap memory page')
-    encoded = _recipe(atlas, sequences, artwork['lz4_recipe'])
+    encoded = (_recipe(atlas, sequences, artwork['lz4_recipe']) if 'lz4_recipe' in artwork
+               else _repack(decoded, bytes(atlas), sequences, split=True))   # recipe tool only
     size = len(encoded)
     if length_fault(size):
         raise ValueError(f'Bitmap record: {length_fault(size)}')

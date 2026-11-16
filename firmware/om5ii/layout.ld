@@ -89,7 +89,7 @@ scr_obj = 0x61e588f4;      /* the direct-setting screen object; +4 = its panel u
 ui_timer = 0x60f10fd2;     /* restart GUI timer d0 for d1 ms (cancel 0x60d534c8, start 0x60d53421); call ...,[d2,d3],12 */
 desc_find = 0x602e1edb;    /* setting id d0 -> a0 descriptor or 0 (RAM hash 0x620dc288); call ...,[],0 */
 desc_buckets = 0x620dc288; /* 128 bucket heads, RAM (.bss) */
-cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218 */
+cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218, 912..914 */
 pen_color = 0x60d51e2c;   /* a0 dc, d0 colour; call ...,[d2,d3,a2,a3],16 */
 pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
 move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */

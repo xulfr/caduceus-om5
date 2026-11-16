@@ -9,6 +9,7 @@ export default function(g) {
   const half = (a, v) => { const b = Buffer.alloc(2); b.writeUInt16LE(v); M.dbgWrite(a, b); };
   const handle = 0x6218c2fe, tid = 0x6218c2fc, ready = 0xa26e2694;
   const malloc = 0x60023818, getTid = 0x600317b4;
+  const SIZE = 1040;   // hsl.s ST_SIZE (1024 before the Shading descriptors' nodes)
   const saved = [read(handle, 2), read(tid, 2), read(ready, 4)];
   const trig = 0x602f0cc2, resume = 0x602f0b9a, armGate = 0x613f2d93;
   const hooks = new Map([malloc, getTid, trig, resume, armGate].map(pc => [pc, lab.hooks.get(pc)]));
@@ -19,7 +20,7 @@ export default function(g) {
     half(handle, 0); half(tid, 1);
     lab.hook_rt(getTid, (h, r) => { taskCalls++; half(r.a0, taskId); h.finish(r, { d0: taskResult }); }, 'audit-get-tid');
     lab.hook_rt(malloc, (h, r) => {
-      allocations++; assert.equal(r.d0, 1024); h.finish(r, { a0: allocation });
+      allocations++; assert.equal(r.d0, SIZE); h.finish(r, { a0: allocation });
     }, 'audit-allocation');
     // Run the native hook and inject a half-press in the stock trigger frame.
     lab.hook_rt(trig, (h, r) => { word(r.sp + 36 + 16, 0x02000100); h.finish(r); }, 'audit-trigger');
@@ -54,10 +55,10 @@ export default function(g) {
     M.dbgWrite(owned, Buffer.alloc(1040, 0x5a));
     gate();
     assert.equal(read(handle, 2).readUInt16LE(), owned - 0xa1e27d80 + 1);
-    const fresh = Buffer.alloc(1024); fresh.writeUInt32LE(0x55444143, 60);
-    assert.deepEqual(read(owned, 1024), fresh, 'initialise the complete state (zeros and the magic) before publishing');
+    const fresh = Buffer.alloc(SIZE); fresh.writeUInt32LE(0x55444143, 60);
+    assert.deepEqual(read(owned, SIZE), fresh, 'initialise the complete state (zeros and the magic) before publishing');
     assert.equal(read(0xa218c2fe, 2).readUInt16LE(), owned - 0xa1e27d80 + 1, 'handle is in RAM as well');
-    assert.deepEqual(read(owned + 1024, 16), Buffer.alloc(16, 0x5a), 'state clear stops at its boundary');
+    assert.deepEqual(read(owned + SIZE, 16), Buffer.alloc(16, 0x5a), 'state clear stops at its boundary');
     // A handle counts only when in range, 4-aligned and pointing at a block with the magic.
     const spots = [0xa1e27d80, 0xa1e326c0, 0xa1e27d84].map(a => [a + 60, read(a + 60, 4)]);
     for (const [value, pointer, magic] of [[0, 0, 1], [1, 0xa1e27d80, 1], [1, 0, 0], [43329, 0xa1e326c0, 1], [43329, 0, 0], [2, 0, 1], [5, 0xa1e27d84, 1], [43330, 0, 1], [65535, 0, 1]]) {
