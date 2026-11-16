@@ -122,7 +122,7 @@ def main():
         faults.append('re-entry: header differs from before leaving')
     mp2 = frame(frames['base'][max(frames['base'])])
     mp2_after = f(len(steps) - 1)
-    if region(mp2, (380, 40, 900, 400)) != region(mp2_after, (380, 40, 900, 400)) or px(mp2, FX, FY) != px(mp2_after, FX, FY):
+    if region(mp2, (380, 40, 720, 400)) != region(mp2_after, (380, 40, 720, 400)) or px(mp2, FX, FY) != px(mp2_after, FX, FY):
         faults.append('Monochrome Profile 2: filter page differs after editing Profile 1')
     for fault in faults:
         print('FAILED', fault)

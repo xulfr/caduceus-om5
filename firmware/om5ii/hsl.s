@@ -59,6 +59,8 @@ ST_MAGIC_VALUE = 0x55444143
  .long paint_tone
 .section .filter_pointer,"a"
  .long paint_filter
+.section .cp_any_hook,"ax"
+ call cp_any_nd,[],4
 .section .pages_hook,"ax"
  jmp pages_hook
  nop
@@ -2431,3 +2433,34 @@ ftab_slot:
 .balign 2
 text_level:
  .short 'L','e','v','e','l',0
+
+.section .ext7,"ax"
+/* CP button "any item ticked" (0x60d2230f, called by 0x60d222d3 when the
+ * current item 2228 holds no item) asks 0x60d223d5(k) (is CP item k of
+ * table 0x60f7f57c ticked) for k 0..5 and 13..16, each group followed by its
+ * function check 0x60d044be (k 2..5: 109, Live ND). It skips k 6 and 7, Live
+ * ND32 / ND64 (2217 / 2218, also mask 109), which cp_nd.py puts on the CP
+ * Button page, so with only those ticked the button found nothing. This
+ * replaces the k 5 test (mov 5,d0; call 0x60d223d5 at 0x60d22357, 7 bytes):
+ * k 5, then, once armed (their descriptors are linked by cp_nd_link), k 6
+ * and 7. d0 = 1 when one is ticked; the stock code then runs the same 109
+ * check. Unarmed: k 5 only, as stock. call cp_any_nd,[],4 */
+cp_any_nd:
+ mov 5,d0
+ call cp_ticked,[],4
+ cmp 1,d0
+ beq cp_any_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq cp_any_none
+ mov 6,d0
+ call cp_ticked,[],4
+ cmp 1,d0
+ beq cp_any_out
+ mov 7,d0
+ call cp_ticked,[],4
+cp_any_out:
+ ret [],4
+cp_any_none:
+ clr d0
+ ret [],4

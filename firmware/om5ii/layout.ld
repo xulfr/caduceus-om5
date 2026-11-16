@@ -12,6 +12,7 @@ SECTIONS {
  .paint_pointer 0x610c1540 : { *(.paint_pointer) }
  .tone_pointer 0x610d6600 : { *(.tone_pointer) }
  .filter_pointer 0x610d9bc0 : { *(.filter_pointer) }
+ .cp_any_hook 0x60d22357 : { *(.cp_any_hook) }
  .pages_hook 0x60dad5f5 : { *(.pages_hook) }
  .ext2 0x605af4b0 : { *(.ext2) }
  .ext6 0x60ca7b00 : { *(.ext6) }
@@ -95,8 +96,10 @@ pen_color = 0x60d51e2c;   /* a0 dc, d0 colour; call ...,[d2,d3,a2,a3],16 */
 pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
 move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */
 line_to = 0x60d51774;     /* a0 dc, d0 x, d1 y; call ...,[d2,d3,a2,a3],32 */
+cp_ticked = 0x60d223d5;   /* d0 = CP item k (table 0x60f7f57c) -> d0 1 if ticked; call ...,[],4 */
 ui_invalidate = 0x60d49294; /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
+ASSERT(SIZEOF(.cp_any_hook) == 7, "cp_any_hook replaces 7 bytes")
 ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")

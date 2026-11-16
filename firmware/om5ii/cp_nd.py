@@ -26,8 +26,10 @@ ND64). Its stock allowed values are 1..6, 14..17 (list 0x6050da8e), and the CP c
 values (GUI 0x60e27d22 iterates them through the data model, count +24 / value +28), so ND32 and ND64 never appear
 when the CP button is held, even when ticked (alpha9 camera report). The selector 0x60d1d7da, the item mapping
 0x60d2211a / 0x60d22182 and the GUI case 0x60e27f92 already handle items 6 and 7. Same method as nd64.py's 1710
-edit. Not changed: the "any item ticked" test 0x60d2230f still skips items 6..12 (ND32 / ND64 alone, with every
-other CP item unticked, is still treated as nothing ticked). 2026-11-17.
+edit. The "any item ticked" test 0x60d2230f skipped items 6 and 7 (ND32 / ND64 alone, with every other CP
+item unticked, was treated as nothing ticked); hsl.s cp_any_nd adds them once armed (items 8..12 are not on the
+CP Button page and stay skipped). Static analysis: OM-Emu has no CP button for E148, and calling 0x60d2230f
+from the lab task faults in its setting read. 2026-11-17.
  6. mono_filter_word 0x610d9738: the Monochrome colour filter page's word image (layout record of view
     0x610d9b20, the only reference is its widget list at 0x610d9988) 0x107e "Vivid" -> 0xffff (no image).
     The word beside the level "+n" is "Level" on the OM-3 (E147 1.1, OM-Emu); hsl.s paint_filter draws it.
