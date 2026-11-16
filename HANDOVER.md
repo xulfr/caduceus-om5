@@ -45,7 +45,7 @@ already frees.
   stores equal stock (6/6, none beyond).
 - Gating: inert and applied passed; stale profile number passed; unarmed PC scan passed (now ignores
   assembler `.L*` labels and allows the INFO gate `container_info`).
-- `tests/run_emulator.py`: 19 look/menu cases, see `tests/wip-ui2-results.json`.
+- `tests/run_emulator.py`: all 19 look/menu cases passed with no image stores beyond stock (`tests/wip-ui2-results.json`).
 - `tests/run_ui_activity.py`: 10/10 (8 controls stay open, idle closes, axis 1→2→0 with 3 restarts and 3
   invalidations; the axis case fails on `ae96e94` with 0/0).
 - Six Live ND label cases passed. Host suite with `OM5_STOCK`: 18 tests OK, 1 skipped (E144 inputs).
