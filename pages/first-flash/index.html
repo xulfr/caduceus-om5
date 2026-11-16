@@ -2,17 +2,85 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Camera test checklist · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="camera-test-checklist">Camera test checklist</h1>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="camera-test-checklist">Camera test checklist</h1>
+</div>
+<section class="card">
+<h2 id="alpha12-camera-checks">Alpha12 camera checks</h2>
+<p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA10-CAMERA-2026-11-17.md">alpha10 camera report</a> records a restart on the Color Filter page.
+The owner confirmed that alpha11 resolved the restart and CP icon defects and reports that alpha12 fixes the remaining filter graphic issue. <a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">Alpha12 camera findings</a>.
+For the alpha12 check, verify the installer gives package SHA-256
+<code>cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa</code>. After the startup checks (steps 0–3 below),
+do step 19 first. If the camera restarts or freezes, stop the checklist, record what happened and follow
+<a href="../safety/#going-back-to-oms-firmware">stock recovery</a>.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Do</th>
+<th>Expect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>19</td>
+<td>Open Monochrome Profile 1 › Color Filter. Turn both dials. Cycle the filter dial through all values, change the level, then leave and re-enter. Check Profile 2 separately. Take a red-filter and a blue-filter JPEG of the same scene.</td>
+<td>The page opens and stays open. The header names each filter through the wrap. The two filters render colours differently in the JPEGs. The other dial changes <code>+n</code>. Both values persist after re-entry, and Profile 2 keeps its own values. The ring marks the selected swatch. The centre follows the selected colour and is grey for None. The stock “Vivid” word stays visible.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Tick ND32 and ND64 in CP Button Settings. Hold CP and turn the dial past ND16. Select each, then untick them and repeat.</td>
+<td>ND32 and ND64 each show their own icon when offered. Selection gives the matching shooting label and exposure. Unticked items disappear.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>After a half-press, untick every CP item except ND32. Hold CP, then repeat with only ND64 ticked.</td>
+<td>Each item can be offered, shows its icon and can be selected when it is the only item ticked.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Color Profile 1 › Shading. Turn the dials in both directions and re-enter the screen.</td>
+<td>Green knob and a setting that steps and persists.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Check Monochrome Profile 1's Film Grain row and strip, and the Color Filter sidebar row.</td>
+<td>Off / Low / Std / High artwork, with visible grain in pictures, and a Filter sidebar icon.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>In Color Profile 1 set Daylight with an A/B shift. In Color Profile 2 set Shade. Revisit both profiles and Natural.</td>
+<td>Each profile restores its own WB and shift. Natural keeps its own WB.</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="card">
+<h2 id="baseline-startup-and-regression-checks">Baseline startup and regression checks</h2>
 <p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">alpha8 camera report</a> records the successful boot and known UI defects. If the camera fails to start or freezes, follow <a href="../safety/#going-back-to-oms-firmware">stock recovery</a> and report what happened.</p>
 <p><strong>Before step 1, set Picture Mode to Natural in OM's firmware</strong> for the shooting mode the camera
 will start in (and in Movie mode if you use it). Earlier test builds may have left a Color Profile stored there.
 Alpha8 activates profiles at the first shutter half-press after switching on and repairs stale profile
 numbers then.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -77,8 +145,53 @@ numbers then.</p>
 <td>The rest.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+<h3 id="alpha9-additions">Alpha9 additions</h3>
+<p>The owner confirmed that alpha9 (package <code>2e9777ce…fbc50</code>) boots. After the alpha12 checks and baseline checks, repeat:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Do</th>
+<th>Expect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9</td>
+<td>Picture Mode carousel, sidebar and super control panel on Color 1–3 and Monochrome 1–3.</td>
+<td>Numbered icons (1/2/3, M1/M2/M3), no overlap when scrolling the sidebar.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Change any setting of Color Profile 1, confirm, return to the shooting screen. Repeat for one Monochrome Profile, and after loading a look.</td>
+<td>The profile's icon stays on the shooting screen (alpha8 and earlier candidates lost it).</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Tone Curve row: change Shadows, Midtones and Highlights through several values.</td>
+<td>An icon in every state, matching the curve's direction.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Colour wheel and tone curve pages.</td>
+<td>The wheel and curve draw, and redraw after leaving and re-entering. Note any colour or flicker problem.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Keep using the wheel, Tone Curve and trash look cycling for over 10 s; then leave the screen idle.</td>
+<td>The screen stays open while used and closes about 8 s after the last action.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Gear menu › CP Button Settings; hold the CP button; Live ND menu.</td>
+<td>ND32 and ND64 listed, switchable and kept after a power cycle; <code>ND32-LV</code> / <code>ND64-LV</code> labels and their exposure.</td>
+</tr>
+</tbody>
+</table></div>
 <p>Steps 1 to 3 are the dangerous ones. If step 1 fails, the build is wrong in a way the emulator cannot see, and
-nobody else should flash it.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FIRST_FLASH.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+nobody else should flash it.</p>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/FIRST_FLASH.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>

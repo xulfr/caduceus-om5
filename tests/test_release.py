@@ -45,6 +45,62 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('lz4_recipe', rel['resource'])
         self.assertFalse(rel['camera_tested'])
 
+    def test_alpha9_boot_confirmed(self):
+        # Owner report 16 Nov 2026: boots. Still camera_tested false (selected functions only, as alpha8).
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha9/patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertEqual(rel['camera_status'], 'boot-confirmed')
+        self.assertTrue((ROOT / rel['camera_report']).is_file())
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        self.assertIn('lz4_recipe', rel['resource'])
+        ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}
+        self.assertLessEqual({'0x3d5e', '0x3d5f', '0x3d60', '0x3d66', '0x3d67', '0x3d68'}, ids)
+        self.assertEqual(rel['package']['sha256'], '2e9777ce08163fa6e4a97930683cd8eb0ce73197dfd5ac4a64d8928af98fbc50')
+
+    def test_alpha10_is_untested(self):
+        # The historical alpha10 manifest is pinned to the package in the owner report.
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha10/patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertNotIn('camera_status', rel)
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        aliases = dict(map(tuple, rel['resource']['aliases']))
+        self.assertEqual([aliases[f'{i:#x}'] for i in range(0x38e7, 0x38ef)],
+                         ['0x2a2a', '0x2a2a', '0x2a3b', '0x2a3b', '0x2a3c', '0x2a3c', '0x2a3d', '0x2a3d'])
+        ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}
+        self.assertIn('0x38cb', ids)
+        self.assertEqual(rel['package']['sha256'], '056aefb3c3f40b7cf41728cd9f466ba161a52d887db6ecebd2f0377bb0a38454')
+
+    def test_alpha11_filter_rollback_and_cp_artwork(self):
+        rel = json.loads((ROOT / 'releases/v0.1.0-alpha11/patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertEqual(rel['main']['stream_length'], 'stock-page')
+        self.assertEqual(rel['package']['sha256'],
+                         '5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a')
+        groups = [set(sprite['ids']) for sprite in rel['resource']['artwork']['sprites']]
+        self.assertIn({'0x2062', '0x2358'}, groups)
+        self.assertIn({'0x205d', '0x2c84'}, groups)
+        restored = [(0x610d9738, 4), (0x610d979e, 16), (0x610d97be, 16), (0x610d9bc0, 4)]
+        for edit in rel['main']['edits']:
+            start = int(edit['address'], 16)
+            end = start + len(bytes.fromhex(edit['bytes']))
+            self.assertFalse(any(start < address + size and end > address for address, size in restored), edit)
+
+    def test_newest_release_is_alpha12(self):
+        self.assertEqual(patch.newest(), 'v0.1.0-alpha12')
+        releases = ROOT / 'releases'
+        alpha11 = releases / 'v0.1.0-alpha11'
+        alpha12 = releases / 'v0.1.0-alpha12'
+        self.assertEqual((alpha12 / 'LOOKS.BIN').read_bytes(), (alpha11 / 'LOOKS.BIN').read_bytes())
+        prev = json.loads((alpha11 / 'patch.json').read_text())
+        rel = json.loads((alpha12 / 'patch.json').read_text())
+        self.assertFalse(rel['camera_tested'])
+        self.assertEqual(rel['resource'], prev['resource'])
+        edits = {int(edit['address'], 16): len(bytes.fromhex(edit['bytes'])) for edit in rel['main']['edits']}
+        self.assertTrue(any(start <= 0x610d9bc0 < start + size for start, size in edits.items()))
+        for address, width in ((0x610d9738, 4), (0x610d979e, 16), (0x610d97be, 16)):
+            self.assertFalse(any(start < address + width and start + size > address
+                                 for start, size in edits.items()))
+
     @unittest.skipUnless(os.environ.get('OM5_STOCK'), 'set OM5_STOCK for full firmware reproduction')
     def test_release_reproduction(self):
         stock = Path(os.environ['OM5_STOCK']).read_bytes()

@@ -107,3 +107,34 @@ injects stale 903 and 989. The probe checks that arming restores Natural and cle
 The first pair checks that a Color Profile selected before any half-press does not run the project's refresh and
 that the arming half-press applies it. The static rules are camera lessons an emulator does not show: no `0xfb`
 opcode, aligned data tables, safe compressed stream lengths. Emulator and host only.
+
+## UI activity and HSL axis repaint (WIP UI candidate 2)
+
+```sh
+python tests/run_ui_activity.py --emu generated/om-emu --build generated/strict --out generated/ui-activity
+```
+
+Opens the Picture Mode direct screen on Color Profile 1 with a test LOOKS.BIN, then repeats one control seven
+times 2.5 s apart (beyond the screen's 8000 ms timer 500): trash, INFO and dials on the wheel, INFO and both
+dials on Tone Curve, trash and a dial on the mode strip. Each must keep state `0x0418`; an idle screen must
+close. The axis case presses trash three times on the wheel and requires axis 1, 2, 0 with one timer restart
+and one colour-page invalidation (`0x60d49294` on a page widget) per press. OM-Emu repaints the whole plane, so
+frames cannot show the camera's missing repaint; the invalidation count is the check. `tools/dev/sess.mjs`
+accepts `main+N` / `sub-N` to turn the dials.
+
+`tests/audit_build.py` accepts a changed resource block only when everything outside record 0 is identical and
+the decoded record differs only at pointer words of aliases declared in patch.json; it reports the image IDs.
+`tools/oly_resource_recipe.py PATCH --stock STOCK TARGET=SOURCE` adds such an alias and records its LZ4 recipe;
+re-record hashes with `tools/oly_patch_record.py` afterwards. `firmware/om5ii/cp_nd.py --spec STOCK` rewrites the
+CP Button Settings data edits. The unarmed PC scan ignores assembler-local `.L*` labels (relaxed branches inside
+a function).
+
+## Tone Curve row icons
+
+```sh
+python tests/run_tone_icons.py --emu generated/om-emu --build generated/strict --out generated/tone-icons
+```
+
+Steps Shadows, Highlights and Midtones through all 27 sign combinations on Color Profile 1 and reads the
+selected Tone Curve row: never blank, 27 different icons, and with Midtones at 0 the glyph bends the way the
+values say. `tools/dev/imgwatch.mjs` (PRE, `IMG_LO` / `IMG_HI`) prints each image-table read. Emulator only.

@@ -14,7 +14,7 @@ Based on:
   official-firmware download request in patch.py, and the update container format as its decoder states it.
 - Caduceus for OM-3 (androidfanman/caduceus-om3, Apache-2.0, Copyright 2026 androidfanman): the LOOKS record layout
   that the OM5F file reuses, the film looks in looklab/films.json (adapted: see that file's note), the preview
-  numbers in LookLab (fitted to the OM-3 by that project), and the layout of this project's site and guides.
+  numbers in LookLab (fitted to the OM-3 by that project), and the layout and styles of this project's site and guides (index.html, pages/site/doc.css).
 - The OM-5 Mark II colour-profile, Hue / Lightness, white balance, Monochrome Profile and Live ND work written for
   xulfr/oly_fw_analysis (a fork of fishcu/oly_fw_analysis) by xulfr; the E144 donor builder, resource packing and transplant audit also originate in that work.
   fishcu's PEN-F research showed the way.

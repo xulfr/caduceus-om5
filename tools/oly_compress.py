@@ -122,6 +122,7 @@ def _repack(original, target, rows, split=False):
             else:
                 pending.extend(target[start:start + match_len])
             at += match_len
+    pending.extend(target[at:])   # bytes past the original stream (appended artwork); empty otherwise
     packed.extend(_encode(pending))
     decoded, _ = _sequences(packed, len(target))
     if decoded != target:

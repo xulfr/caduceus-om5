@@ -1,6 +1,6 @@
 # Questions
 
-**Is it safe?** Alpha8 booted on the owner’s OM-5 Mark II and has [known UI defects](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). Alpha5 and alpha6 boot-looped on the owner's camera, as three earlier builds did. The installer refuses alpha1–alpha7. [Safety](SAFETY.md).
+**Is it safe?** Alpha10 booted and restarted on the Monochrome Color Filter page. The installer defaults to alpha12. The owner reports that the Monochrome Color Filter graphic works in that build. [Alpha12 camera findings](../releases/v0.1.0-alpha12/README.md). Alpha8 booted on the owner’s OM-5 Mark II and has [known UI defects](../research/OM5II-ALPHA8-CAMERA-2026-11-15.md). Alpha5 and alpha6 boot-looped on the owner's camera, as three earlier builds did. The installer refuses alpha1–alpha7. [Safety](SAFETY.md).
 
 **Which cameras?** The OM-5 Mark II on firmware 1.1 only. The patcher refuses any other file. The original OM-5
 has a separate [pre-alpha for testers](OM5_PREALPHA.md), never run on any camera.

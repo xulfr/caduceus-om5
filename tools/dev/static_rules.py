@@ -20,7 +20,7 @@ TABLES = {'hue_lut': 2, 'light_lut': 2, 'rs_cp_table': 2, 'rs_mono_table': 2, 'r
           'fl_cells': 2, 'fl_ids': 2, 'text_style': 4, 'text_saturation': 2, 'text_hue': 2, 'text_lightness': 2,
           'text_switch': 2, 'ext_halfpress': 4}
 DATA = re.compile(r'<(fl_lo|fl_wbm|fl_path|fl_mode|wb_modes|wb_mono_map|sector_of_record|hue_lut|light_lut|rs_\w+|'
-                  r'fl_cells|fl_ids|text_\w+|ext_halfpress|refresh_cases|\.data.*)>')
+                  r'fl_cells|fl_ids|text_\w+|gtab_\w+|ext_halfpress|refresh_cases|\.data.*)>')
 
 
 def main():

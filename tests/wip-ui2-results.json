@@ -1,0 +1,233 @@
+{
+  "candidate": "WIP UI candidate 2",
+  "package_sha256": "32a0c5f124a4f80cdab8489d075828d7e15309f59d5d0e451174aa6908a0a5bd",
+  "camera_tested": false,
+  "emulator": "xulfr/om-emu fix/e148-ipi-stride bdb33470705b3be28db52cbe080c31d74db727d8",
+  "look_menu": [
+    {
+      "case": "four-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "next-film",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "slot-two",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "wrap",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "ten-films",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "oversized-bank",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "bad-crc",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "bad-range",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "name-markup",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "name-control",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "persisted-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "other-rows",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "row-return",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "row-return-title",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "title-redraw",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "scp-name",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "empty-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "no-card",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    },
+    {
+      "case": "unarmed-delete",
+      "status": "passed",
+      "image_stores_beyond_stock": 0
+    }
+  ],
+  "ui_activity": {
+    "wheel-delete": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "wheel-info": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "wheel-dial": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "tone-info": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "tone-main-dial": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "tone-sub-dial": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "strip-film-step": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "strip-dial": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418",
+        "0x418"
+      ],
+      "ok": true
+    },
+    "idle": {
+      "states": [
+        "0x418",
+        "0x418",
+        "0x108",
+        "0x108",
+        "0x108",
+        "0x108",
+        "0x108"
+      ],
+      "ok": true
+    },
+    "axis": {
+      "axes": [
+        1,
+        2,
+        0
+      ],
+      "ok": true
+    }
+  },
+  "other": {
+    "startup_probe": "passed",
+    "startup_image_stores_beyond_stock": 0,
+    "gating_inert": "passed",
+    "gating_applied": "passed",
+    "stale_number": "passed",
+    "unarmed_pcs": "passed",
+    "live_nd_labels": "6/6 passed",
+    "static_rules": "passed",
+    "host_suite": "18 OK, 1 skipped (E144 inputs)",
+    "build_audit": "tests/wip-ui2-build-audit.json"
+  }
+}

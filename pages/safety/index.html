@@ -2,14 +2,32 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Safety · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/" aria-current="page">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="safety">Safety</h1>
-<p><strong>Alpha8 boots on the owner’s OM-5 Mark II and remains experimental.</strong></p>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/" aria-current="page">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="safety">Safety</h1>
+<p><strong>Alpha12 is the current experimental build.</strong> The owner reports that the Monochrome Color Filter graphic works. The installer still asks for the experimental-build acknowledgement. <a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">Alpha12 camera findings</a>.</p>
+</div>
+<nav class="toc" aria-label="On this page"><a href="#what-is-known">What is known</a><a href="#what-can-go-wrong">What can go wrong</a><a href="#before-you-flash">Before you flash</a><a href="#going-back-to-oms-firmware">Going back to OM's firmware</a></nav>
+<section class="card">
 <h2 id="what-is-known">What is known</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th></th>
@@ -23,7 +41,7 @@
 </tr>
 <tr>
 <td>Real OM-5 Mark II</td>
-<td><strong>Alpha5 and alpha6 boot-looped</strong> on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. <strong>Alpha8 booted on the owner’s camera.</strong> Color Profiles, SD-card looks and Live ND32/64 were exercised. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">Camera report</a>.</td>
+<td><strong>Alpha5 and alpha6 boot-looped</strong> on 15 November 2026. The owner restored OM's 1.1 from the card. The installer refuses alpha1–alpha7. <strong>Alpha8 and alpha9 booted on the owner’s camera</strong> (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA9-CAMERA-2026-11-16.md">alpha9 report</a>). Alpha11 fixed the CP icons and filter-page restart (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA11-CAMERA-2026-11-16.md">owner report</a>). Alpha10 booted and restarted on the Monochrome Color Filter page. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA10-CAMERA-2026-11-17.md">Alpha10 report</a>. Color Profiles, SD-card looks and Live ND32/64 were exercised. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">Camera report</a>.</td>
 </tr>
 <tr>
 <td>Earlier builds on a real OM-5 Mark II</td>
@@ -34,13 +52,15 @@
 <td>After each failure OM's firmware was put back from the card (hold <strong>OK</strong>, switch on). The first attempt after the first failure showed a steady red light and did not work; the second did.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The third failure was traced to the patch storing its working values inside the firmware's own memory, which OM's
 program never does (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md">the analysis</a>). This build keeps them in a
 block of ordinary memory instead and touches nothing until the first half-press of the shutter button. The first
 two failures were builds with a different loading scheme that is no longer used; their exact cause was never found.</p>
 <p>The emulator did not predict the earlier failures. It has no real loader, no second processor, no image
 processor. Passing it means "no fault that the emulator can show".</p>
+</section>
+<section class="card">
 <h2 id="what-can-go-wrong">What can go wrong</h2>
 <ul>
 <li><strong>The camera does not start, or starts and then freezes.</strong> Then put OM's firmware back (below). So far that has
@@ -52,6 +72,8 @@ processor. Passing it means "no fault that the emulator can show".</p>
   camera. Shoot RAW + JPEG for anything that matters.</li>
 </ul>
 <p>No responsibility is accepted for any damage or loss.</p>
+</section>
+<section class="card">
 <h2 id="before-you-flash">Before you flash</h2>
 <ol>
 <li>Fully charged battery. Do not interrupt the update.</li>
@@ -60,6 +82,8 @@ processor. Passing it means "no fault that the emulator can show".</p>
 <li>Note your camera's settings (or save them with OM Workspace): going back resets nothing, but a full reset may be
    part of recovery.</li>
 </ol>
+</section>
+<section class="card">
 <h2 id="going-back-to-oms-firmware">Going back to OM's firmware</h2>
 <ol>
 <li>Copy the <code>DCOLYMP</code> folder from <code>card/restore</code> to the top of an SD card (so the card has <code>DCOLYMP/E1489999.BIN</code>).</li>
@@ -71,6 +95,8 @@ processor. Passing it means "no fault that the emulator can show".</p>
    second card. That is what recovered the first failure.</li>
 </ol>
 <p>Before going back from a working install, set a normal picture mode (Natural) in every custom mode C1–C4, so no
-saved mode points at a Color Profile that OM's firmware hides.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/SAFETY.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+saved mode points at a Color Profile that OM's firmware hides.</p>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/SAFETY.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>

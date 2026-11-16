@@ -5,6 +5,73 @@
 **v0.1.0-alpha5 and alpha6 boot-looped on the owner's OM-5 Mark II on 15 November 2026.**
 [Camera report](research/OM5II-FIFTH-BOOT-FAILURE-2026-11-15.md).
 
+## v0.1.0-alpha12 (owner camera checks complete)
+
+- Restores the Monochrome Color Filter swatches, selection outline and centre colour.
+  The hook draws the ring over the stock page. The panel requests a repaint when the filter page is active.
+  Alpha12 keeps the stock labels and widget positions.
+- Package SHA-256 `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. [Validation results](tests/alpha12-results.json).
+- The owner reports that the remaining filter graphic issue is fixed. Alpha12 is the current
+  experimental build. [Release notes and camera findings](releases/v0.1.0-alpha12/README.md).
+
+## v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)
+
+The owner confirmed boot, both CP icons and an operable Monochrome Color Filter page.
+The centre graphic was absent. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md).
+
+- The Monochrome Color Filter page returns to alpha9's rendering. Restored the stock `0x107e` image,
+  both widget rectangles and the stock painter. Removed the paint hook, ring, “Level” text and
+  child 3 invalidation. The native filter header and both dials remain available. The picker graphic
+  is postponed pending camera validation.
+- The out-of-range `0xffff` image lookup is the leading hypothesis for the alpha10 restart.
+  The physical cause remains unproved. See the [filter and CP investigation](research/OM5II-MONO-FILTER-CP-2026-11-17.md#alpha11-follow-up).
+- The CP carousel's ND32 and ND64 slots now reference existing ND32 and ND64 artwork.
+  Static verification covers the image IDs and resource pointers. The owner confirmed both icons on the camera.
+- Package SHA-256 `5384eafef3cb06de4761dba50a09112135fa2cdfacb6716d9e4d0423f5b7072a`. [Validation results](tests/alpha11-results.json).
+
+## v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)
+
+The owner reported that alpha10 booted. Opening Monochrome Color Filter restarted the camera once, and
+ND32 / ND64 worked from the CP carousel with empty icons. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
+
+Fixes from the [alpha9 camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md):
+
+- **Color Profile Shading works.** Its slider was grey and ignored the dials: OM's firmware has no setting
+  description for the Color Profiles' Shading, so it dropped every change. Caduceus now supplies one.
+- **ND32 and ND64 appear when holding the CP button** (when ticked in CP Button Settings). The CP carousel only
+  offered the items in its list of allowed values, which stopped at ND16.
+- **Monochrome Film Grain shows Off / Low / Std / High** in the sidebar and the strip, and the **Color Filter row
+  shows "Filter"** instead of an empty cell.
+- **Monochrome colour filter picker.** The Color Filter page (Monochrome Profile 1–3, second sidebar row) now
+  draws the filter: eight colour blocks in the order the front dial steps them (None, Yellow, Orange, Red,
+  Magenta, Blue, Cyan, Green, Yellow-Green, as on the OM-3), the selected one outlined and repeated in the centre
+  (grey for None). The rear dial's value is labelled "Level" instead of a stray "Vivid". The dials already
+  changed and kept the filter and level in the emulator; alpha9's notes said otherwise because only the rear
+  dial was tried.
+- **CP button with only ND32 / ND64 ticked.** The CP button's "is any item ticked" test skipped ND32 and ND64,
+  so with only those ticked it found nothing to offer. It now counts them (after the first half-press).
+  Static analysis only: the emulator has no CP button for this camera.
+- Known: colour grain for Color Profiles is deferred with the other effects; per-profile white balance is behind
+  the scenes, not a Picture Mode row (README).
+- Emulator checks: see [results](tests/alpha10-results.json). The build audit can now also compare against alpha8.
+
+## v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)
+
+The owner reported that alpha9 boots and the colour wheel draws correctly on the camera. Package `2e9777ce…fbc50`. [Camera report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md).
+
+- Color Profiles 1–3 and Monochrome Profiles 1–3 show their own numbered icon in the carousel, sidebar, super
+  control panel and shooting screen (alpha8 showed C2 or M for all three).
+- The edited-profile icon on the shooting screen no longer disappears after a profile is changed
+  (images `0x3d66..0x3d68` and `0x3d5e..0x3d60`).
+- The Tone Curve row shows an icon for every Shadows / Midtones / Highlights state (27 states).
+- The colour wheel and tone curve are drawn on the Picture Mode screen (block graphics, not OM-3's artwork).
+- The shooting screen draws ND32 and ND64; CP Button Settings lists Live ND32 and ND64 and they can be switched.
+- Activity on the Picture Mode screen keeps it open, and the trash button repaints the HSL axis.
+- Known: ND64's digits look squashed and ND32 has a gap; Monochrome Color Filter and Film Grain rows still show
+  placeholders; the palette and drawing budget are unverified on a camera.
+- All 19 look/menu regressions, the startup, arming, unarmed-PC and stale-number probes, the UI, graphics, icon
+  and Live ND checks, the static rules and the build audit passed in OM-Emu. [Results](tests/alpha9-results.json).
+
 ## v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)
 
 - The owner confirmed boot, SD-card look cycling and names, Color Profile controls, and Live ND32/64

@@ -136,6 +136,7 @@ fl_entry:
  cmp 0,a0
  beq fl_e_out
  mov a0,a2
+ call cp_nd_link,[d2,d3,a2,a3],24 /* hsl.s: ND32/ND64 CP Button Settings descriptors */
  movbu (FL_STATE,a2),d0
  cmp 0,d0
  bne fl_e_out

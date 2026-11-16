@@ -1,0 +1,137 @@
+{
+ "build": "v0.1.0-alpha12",
+ "package_sha256": "cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa",
+ "camera_tested": false,
+ "camera_status": "The owner reports completing the alpha12 camera checks and fixing the remaining filter graphic defect. The installer acknowledgement remains enabled.",
+ "camera_report": "releases/v0.1.0-alpha12/README.md",
+ "emulator": "OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8 (fix/e148-ipi-stride), Node 26.13.0",
+ "look_menu_cases": [
+  {
+   "case": "four-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "next-film",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "slot-two",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "wrap",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "ten-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "oversized-bank",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-crc",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-range",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-markup",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-control",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "persisted-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "other-rows",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return-title",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "title-redraw",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "scp-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "empty-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "no-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "unarmed-delete",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  }
+ ],
+ "probes": {
+  "startup": "Passed all 1023 incomplete masks, allocation retry, state and handle bounds. Startup image stores matched stock.",
+  "gating": "Inert before arming and applied at arming.",
+  "unarmed_pcs": "Passed. Only gates and stock replays ran.",
+  "stale_profile_numbers": "Passed.",
+  "static_rules": "Passed. Opcode, alignment and compressed stream length checks.",
+  "build_audit": "Passed against stock and alpha11. Resources match alpha11. Stock filter word and rectangle bytes preserved."
+ },
+ "ui": {
+  "ui_activity": "10/10 passed.",
+  "page_graphics": "10/10 passed.",
+  "tone_icons": "27/27 states passed.",
+  "profile_icons": "Six edited profiles passed.",
+  "profile_rows": "Passed. Color Profile Shading, Film Grain and Color Filter sidebar artwork.",
+  "mono_filter": "Passed all nine choices and wrap. Stored 1007, header, swatches, selection outline, centre, level, re-entry and Profile 2 isolation checked. Native label crops match alpha11 on entry and Red.",
+  "filter_invalidation": "Three sub-dial steps each produced one page invalidation and one timer restart in the UI activity trace.",
+  "live_nd_labels": "6/6 passed."
+ },
+ "host": {
+  "result": "22 run, 21 passed, 1 skipped. All 12 release manifests reproduce with OM5_STOCK.",
+  "windows_launcher": "With hash-pinned E148 1.1 stock, reproduced the firmware hash and created OM5MOD/LOOKS.BIN in a fresh output folder.",
+  "wrapper": "scripts/check.py full --case four-films passed. The full 19 look/menu cases ran separately."
+ },
+ "not_run": [
+  "Rendered CP-button carousel in OM-Emu. No carousel input path available in the fixture.",
+  "E144 installed-output check. No E144 build path supplied."
+ ],
+ "negative_results": [
+  "The first full wrapper run passed host, strict build and emulator, then the stock comparison hit a missing predecessor path in audit reporting. The reporting path was corrected and rechecked.",
+  "A wrapper retry stopped at the strict-build output-directory guard. The earlier scratch output was moved before the clean retry."
+ ],
+ "local_logs": "generated/alpha12-final/checks/ and generated/check-logs/"
+}

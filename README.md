@@ -13,10 +13,15 @@
 </p>
 
 > [!CAUTION]
-> ### Alpha8 boots on the owner’s camera. It remains experimental.
+> ### Alpha12 is the current experimental build
+> Alpha10 booted and restarted the camera when the owner opened the Monochrome Color Filter page.
+> ND32 and ND64 worked from the CP carousel with empty icons. [Alpha10 camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
+> The installer defaults to **v0.1.0-alpha12**. The owner reports that it resolves the remaining
+> Monochrome Color Filter display issue. [Alpha12 release notes](releases/v0.1.0-alpha12/README.md).
 > v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
 > versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
-> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64. OM's own firmware was restored
+> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64, and alpha9 boot with the colour wheel
+> drawn ([alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). OM's own firmware was restored
 > from the card after each failure. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
 > The [camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records what works and the remaining UI defects.
@@ -25,7 +30,11 @@
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha12 | **Owner reports the filter graphic works.** [Alpha12 release notes](releases/v0.1.0-alpha12/README.md). |
+| | v0.1.0-alpha11 | **Booted on one camera.** Both alpha10 defects resolved. The native filter controls work. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md). |
+| | v0.1.0-alpha10, 17 Nov 2026 | **Booted on one camera.** Opening Monochrome Color Filter restarted the camera. ND32/64 icons were blank in the CP carousel. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md). |
+| | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). |
+| | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
 | **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
 "Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
@@ -42,11 +51,15 @@ the earlier camera failures. Only a report from a real camera can change the sta
 | Hue, Saturation, Lightness for 12 colours | Yes | No |
 | Tone curve (Shadows, Midtones, Highlights) | Yes | Yes |
 | Sharpness, Contrast, Shading | Yes | Yes |
-| Own white balance, remembered per profile | Yes | No |
-| Colour filter, toning, grain | No | Yes |
+| Own white balance, remembered per profile (the camera's usual WB setting, see below) | Yes | No |
+| Colour filter, toning, grain | No | Yes (filter graphic restored in alpha12) |
 | Name shown on the Picture Mode screen and super control panel | The look's name | OM's name |
 
 Live **ND32 and ND64** are added after ND16 in the camera's Live ND setting.
+
+**White balance per profile** is not a row in the Picture Mode screen. Set white balance as usual (WB button or
+super control panel) while a Color Profile is selected: the mode, the Kelvin value and the A/B, G/M shift are kept
+for that profile and come back when you select it again. Not yet checked on a camera.
 
 **How to use looks**
 
@@ -72,7 +85,7 @@ hidden from the menus. Caduceus brings them back and adds:
   appears on the super control panel. The chosen look is stored in the camera, so the card is only needed to change it.
 - **A full colour editor on the camera.** For 12 colours: Saturation, and new **Hue** and **Lightness** controls. Plus a
   tone curve (Shadows, Midtones, Highlights), Sharpness, Contrast, Shading and a white balance for each slot.
-- **Monochrome Profile 1–3**, with filter, toning, grain and tone.
+- **Monochrome Profile 1–3**, with colour filter, toning, grain and tone.
 - **Live ND32 and ND64**, after the camera's ND2–ND16.
 
 It changes JPEG photos and the live view, as any picture mode does. RAW files are not affected.
@@ -84,9 +97,8 @@ In short:
 
 1. Check the camera is an **OM-5 Mark II** on firmware **1.1** (Menu › Setup › Firmware), and charge the battery.
 2. On this page, **Code › Download ZIP**, then unzip it. You need [Python 3](https://www.python.org/downloads/).
-3. Double-click `Make SD card files (Mac).command` or `Make SD card files (Windows).bat`. It asks you to type
-   `UNTESTED` to confirm you understand, downloads OM's official firmware from OM's own server, adds Caduceus, and
-   checks the result. You get a folder `card`.
+3. In the unzipped folder, run `python3 patch.py --release v0.1.0-alpha12`. Type `UNTESTED` when prompted.
+   The installer downloads OM's official firmware, applies Caduceus, verifies the package and creates `card`.
 4. Copy `DCOLYMP` and `OM5MOD` from `card` to the top of the SD card. **Keep `card/restore`**: it is OM's own
    firmware, to go back.
 5. Camera off, **hold OK**, switch on, and wait until the light blinks.
@@ -112,7 +124,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | Alpha8 boot and selected features confirmed |
+| Tested on a camera | yes | The owner reports the alpha12 filter graphic works. Earlier alpha11 checks confirmed boot and both alpha10 fixes. |
 
 ## How it works, briefly
 

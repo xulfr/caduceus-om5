@@ -2,33 +2,53 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Install · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/" aria-current="page">Install</a><a href="../using/">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="install">Install</h1>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/" aria-current="page">Install</a>
+  <a class="tab" href="../using/">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="install">Install</h1>
 <blockquote>
-<p><strong>Alpha8 booted on one OM-5 Mark II and remains experimental.</strong> Read <a href="../safety/">Safety</a> first, and follow
-<a href="../first-flash/">the first-flash plan</a> rather than this page if you are the first to try it.</p>
+<p><strong>Alpha12 is the current experimental build.</strong> The owner reports that the filter graphic works.
+Read <a href="../safety/">Safety</a> and follow <a href="../first-flash/">the first-flash checklist</a> after installation.</p>
 </blockquote>
 <p>About 15 minutes.</p>
+</div>
+<nav class="toc" aria-label="On this page"><a href="#you-need">You need</a><a href="#1-make-the-card-files">1. Make the card files</a><a href="#2-copy-to-the-sd-card">2. Copy to the SD card</a><a href="#3-update-the-camera">3. Update the camera</a><a href="#4-first-use">4. First use</a><a href="#going-back-to-oms-firmware">Going back to OM's firmware</a><a href="#if-something-goes-wrong">If something goes wrong</a></nav>
+<section class="card">
 <h2 id="you-need">You need</h2>
 <ul>
 <li>An <strong>OM-5 Mark II</strong> on firmware <strong>1.1</strong> (Menu › Setup › Firmware). Not the OM-5, not another version.</li>
 <li>A fully charged battery, an SD card, a card reader, a computer with <a href="https://www.python.org/downloads/">Python 3</a>.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="1-make-the-card-files">1. Make the card files</h2>
 <ol>
 <li>Download this project: on GitHub, <strong>Code › Download ZIP</strong>, and unzip it.</li>
-<li>Double-click <strong><code>Make SD card files (Mac).command</code></strong> or <strong><code>Make SD card files (Windows).bat</code></strong>.
-   (Mac, first time: right-click › Open. Or in a terminal: <code>python3 patch.py</code>.)</li>
+<li>Open a terminal in the unzipped folder and run <code>python3 patch.py --release v0.1.0-alpha12</code>.
+   The double-click scripts use the newest release.</li>
 <li>It displays an experimental firmware warning and asks you to type <code>UNTESTED</code>. Then it downloads OM's official firmware 1.1
    from OM's server (90 MB), checks it, adds Caduceus and checks the result against this release's checksum.
    If OM's server has moved on to a newer firmware, get <code>OLY_E_148_1100_0000_0000.BIN</code> another way, put it next to
    <code>patch.py</code> and run again.</li>
 </ol>
 <p>You get a folder <code>card</code>:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th></th>
@@ -49,13 +69,17 @@
 <td>OM's own firmware, to go back. <strong>Keep it.</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Running the installer again keeps any existing <code>card/OM5MOD/LOOKS.BIN</code>, so your custom looks are not replaced.
 It prepares the restore file before publishing the update file. If file preparation fails, fix the reported
 problem and run it again before copying anything to the card.</p>
+</section>
+<section class="card">
 <h2 id="2-copy-to-the-sd-card">2. Copy to the SD card</h2>
 <p>Copy the folders <code>DCOLYMP</code> and <code>OM5MOD</code> from <code>card</code> to the top of the SD card (not inside <code>DCIM</code>).
 Use the card in <strong>slot 1</strong>.</p>
+</section>
+<section class="card">
 <h2 id="3-update-the-camera">3. Update the camera</h2>
 <ol>
 <li>Camera <strong>off</strong>.</li>
@@ -65,17 +89,25 @@ Use the card in <strong>slot 1</strong>.</p>
 <li>Delete the <code>DCOLYMP</code> folder from the card afterwards (so it cannot be flashed again by accident). Keep <code>OM5MOD</code>.</li>
 </ol>
 <p>The camera's firmware version still reads 1.1.</p>
+</section>
+<section class="card">
 <h2 id="4-first-use">4. First use</h2>
 <p>Half-press the shutter button once after switching on. Then <strong>OK › Picture Mode</strong>: after Color Creator you find
 Color Profile 1–3 and Monochrome Profile 1–3. <a href="../using/">Using it</a>.</p>
+</section>
+<section class="card">
 <h2 id="going-back-to-oms-firmware">Going back to OM's firmware</h2>
 <p><a href="../safety/#going-back-to-oms-firmware">Safety › Going back</a>.</p>
+</section>
+<section class="card">
 <h2 id="if-something-goes-wrong">If something goes wrong</h2>
 <ul>
 <li><strong>Fast blinking at once, no steady light:</strong> the file was refused. It must be <code>DCOLYMP/E1489999.BIN</code> at the top of
   the card, made by the launcher (it checks its own result).</li>
 <li><strong>The camera starts normally and nothing changed:</strong> OK was not held from before switching on.</li>
 <li><strong>It does not start, or freezes:</strong> go back to OM's firmware, then please <a href="https://github.com/xulfr/caduceus-om5/issues">report it</a>.</li>
-</ul></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/INSTALL.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</ul>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/INSTALL.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>

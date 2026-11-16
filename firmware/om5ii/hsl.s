@@ -6,19 +6,21 @@
 /* Runtime state is NOT kept in the loaded image. Stock E148 makes no absolute
  * store into it, and the 8 November camera failure began at the first such
  * stores this patch made (research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md).
- * State lives in a 1024-byte heap block "P" (stock malloc, class-1 pool,
+ * State lives in a 1040-byte heap block "P" (stock malloc, class-1 pool,
  * uncached alias), allocated once on the first shutter half-press after boot.
  * Its handle is the padding halfword after the HLS event manager's task id
  * (.bss, zero at power-on). Until then every hook behaves as stock.
  *   P+0 axis (0 saturation, 1 hue, 2 lightness)   P+4 colour editor object
  *   P+8 reset-in-progress flag                    P+12 WB commit busy flag
- *   P+16..55 axis label text (UTF-16)             P+64.. reserved (Caduceus) */
+ *   P+16..55 axis label text (UTF-16)             P+56 unused (was: repaint flag)
+ *   P+64.. reserved (Caduceus) */
 ST_AXIS = 0
 ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised (P+56 spare) */
+ST_SIZE = 1040                  /* the heap block P; 1024 before the Shading descriptors' nodes */
+ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
@@ -53,6 +55,12 @@ ST_MAGIC_VALUE = 0x55444143
  jmp parent_hook
 .section .paint_pointer,"a"
  .long paint_axis
+.section .tone_pointer,"a"
+ .long paint_tone
+.section .filter_pointer,"a"
+ .long paint_filter
+.section .cp_any_hook,"ax"
+ call cp_any_nd,[],4
 .section .pages_hook,"ax"
  jmp pages_hook
  nop
@@ -104,6 +112,10 @@ hsl_delete_action:
  cmp 0,a0
  beq delete_done
  call fl_delete,[d2,d3,a2,a3],44
+ cmp 0,d0
+ beq delete_done
+ /* A film step is user activity: restart the screen's timeout (films.s) */
+ call ui_film_activity,[d2,d3,a2,a3],24
 delete_done:
  mov (20,sp),d0
  add 24,sp
@@ -121,6 +133,8 @@ delete_stock:
  * to its focused child but drops 0x9016. Consume 0x9016 only when that child
  * is the 13-child colour editor whose cursor is a colour-selection setting. */
 hsl_container:
+ cmp 0x9014,d0
+ beq container_info
  cmp 0x9016,d0
  bne container_stock
  add -4,sp
@@ -138,9 +152,11 @@ hsl_container:
  sub 2197,d0
  cmp 8,d0
  bcc container_restore
+ mov (sp),a1                     /* the container */
  add 4,sp
  movm [d2,d3,a2,a3],(sp)
  add -8,sp
+ mov a1,(4,sp)
  mov a0,a2
  call st_ptr,[],8
  cmp 0,a0
@@ -160,6 +176,11 @@ container_axis:
  mov (a0),a1
  mov (a1),a1
  calls (a1)
+ /* The axis title and wheel are painted by the colour page's view, which
+  * pages_hook invalidates when the panel lays out after this press. Count
+  * the press as activity, as stock does for a command its child consumed. */
+ mov (4,sp),a0
+ call ui_activity,[d2,d3],12
 container_unarmed:
  mov 1,d0
  ret [d2,d3,a2,a3],24
@@ -169,6 +190,27 @@ container_restore:
  mov 0x9016,d0
 container_stock:
  jmp stock_container
+/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
+ * the tone curve's point). Stock runs it but restarts the screen's timeout
+ * only for other commands. Run stock, then count a consumed INFO as activity
+ * on the custom pages (section 10, armed only). Same frame use as
+ * hsl_delete_action: (0,sp) stays free for the nested calls. */
+container_info:
+ add -12,sp
+ mov a0,(4,sp)
+ calls stock_container
+ mov d0,(8,sp)
+ cmp 1,d0
+ bne info_done
+ call st_ptr,[],8
+ cmp 0,a0
+ beq info_done
+ mov (4,sp),a0
+ call ui_info_activity,[d2,d3,a2,a3],24
+info_done:
+ mov (8,sp),d0
+ add 12,sp
+ rets
 
 /* The native value label (stock "Vivid +n", 0x60e4ad08..0x60e4ae5e) reads the
  * selected sector's stored profile cell (IDs 928-975) through the settings
@@ -358,6 +400,8 @@ paint_axis:
  mov (32,sp),a0
  call stock_font_release,[],4
 paint_restore:
+ mov a3,a0
+ call gfx_wheel,[d2,d3,a2,a3],48
  mov (48,sp),d0
  movhu d0,(52,a3)
  mov (52,sp),d0
@@ -600,6 +644,7 @@ pages_armed:
  movbu (247,a0),d0
  mov 2,d1
  call show_page,[d2,d3,a2,a3],24
+ call pg_axis,[d2,d3,a2,a3],24
  jmp direct_ret
 pages_off:
  clr d0
@@ -615,6 +660,40 @@ pages_off:
  mov 2,d1
  call show_page,[d2,d3,a2,a3],24
  jmp direct_ret
+
+/* The colour page's view paints the axis title and the wheel, the tone page's
+ * the curve, and OM invalidates neither when a value, the selected colour or
+ * the axis changes (only the label that changed). Each panel layout that
+ * shows one of them (flag +245 colour, +247 tone, +246 Monochrome colour
+ * filter) invalidates that page (child 4 / 2 / 3) with OM's widget invalidate (d0 = 1, a1 = 0: the
+ * widget's whole area, as a label does in 0x60d8df09..0x60d8df13). The layout
+ * runs once per consumed command. d2 = data struct, a3 = controller.
+ * call pg_axis,[d2,d3,a2,a3],24 */
+pg_axis:
+ mov d2,a0
+ movbu (245,a0),d0
+ mov 4,d1
+ cmp 1,d0
+ beq pg_inval
+ movbu (247,a0),d0
+ mov 2,d1
+ cmp 1,d0
+ beq pg_inval
+ movbu (246,a0),d0               /* Monochrome colour filter page */
+ mov 3,d1
+ cmp 1,d0
+ bne pg_axis_out
+pg_inval:
+ mov a3,a0
+ mov d1,d0
+ call child_get,[],0
+ cmp 0,a0
+ beq pg_axis_out
+ mov 0,a1
+ mov 1,d0
+ call ui_invalidate,[],4
+pg_axis_out:
+ ret [d2,d3,a2,a3],24
 
 /* d0 = flag byte, d1 = child index, a3 = controller */
 show_page:
@@ -1514,7 +1593,7 @@ arm_gate:
  movhu (12,sp),d0
  cmp d1,d0
  bne arm_out
- mov 1024,d0
+ mov ST_SIZE,d0
  call malloc,[],4
  cmp 0,a0
  beq arm_out
@@ -1529,7 +1608,7 @@ arm_gate:
  cmp 1,d0
  bne arm_out
  mov a0,a2
- add 1024,a2
+ add ST_SIZE,a2
  clr d0
 arm_clear:
  mov d0,(a0)
@@ -1537,7 +1616,7 @@ arm_clear:
  cmp a2,a0
  bne arm_clear
  mov ST_MAGIC_VALUE,d0
- mov d0,(ST_MAGIC-1024,a2)
+ mov d0,(ST_MAGIC-ST_SIZE,a2)
  /* Publish through the cache of this CPU and straight to RAM, so every
   * reader (st_ptr) sees it at once and a later write-back agrees. */
  movhu d2,(st_handle)
@@ -1625,3 +1704,714 @@ arm_refresh_next:
 .global ext_halfpress
 ext_halfpress:
  .long fl_entry
+
+.section .ext10,"ax"
+/* ---- inactivity: custom controls are user activity (section 10, armed) ----
+ * The direct-setting screen closes when its timer 500 runs out. Its container
+ * restarts it (8000 ms) when a child consumes a command and the container's
+ * +92 is 1 (stock 0x60e3ca89..0x60e3ca9b and 0x60e3c7ce..0x60e3c7de). The
+ * axis switch, a film step and INFO on the custom pages are consumed outside
+ * those paths; restart it the same way. Nothing else changes the timer.
+ * a0 = container. call ui_activity,[d2,d3],12 */
+.global ui_activity
+ui_activity:
+ cmp 0,a0
+ beq ui_act_out
+ mov (92,a0),d0
+ cmp 1,d0
+ bne ui_act_out
+ mov 500,d0
+ mov 8000,d1
+ call ui_timer,[d2,d3],12
+ui_act_out:
+ ret [d2,d3],12
+
+/* After fl_delete stepped a film: the screen's container is (scr_obj)+0.
+ * call ui_film_activity,[d2,d3,a2,a3],24 */
+ui_film_activity:
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq ui_film_out
+ mov (a0),a0
+ call ui_activity,[d2,d3],12
+ui_film_out:
+ ret [d2,d3,a2,a3],24
+
+/* INFO consumed by container a0: only the direct-setting screen's own
+ * container, with a Color or Monochrome Profile selected (the modes whose
+ * pages pages_hook shows). call ui_info_activity,[d2,d3,a2,a3],24 */
+ui_info_activity:
+ mov a0,a2
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq ui_info_out
+ mov (a0),a0
+ cmp a2,a0
+ bne ui_info_out
+ mov 111,d0
+ call stock_get,[],4
+ sub 54,d0
+ cmp 6,d0
+ bcc ui_info_out
+ mov a2,a0
+ call ui_activity,[d2,d3],12
+ui_info_out:
+ ret [d2,d3,a2,a3],24
+
+/* ---- Live ND32 / ND64 in CP Button Settings (section 10, armed) ----
+ * The page (menu list 0x16f, data edit cp_button_items) lists the enable
+ * settings 2217 / 2218 beside ND2..ND16. E148 keeps their cells (they read 1)
+ * but has no descriptor for them, so OM's writer (0x602d0f23 -> 0x602e1a33)
+ * finds none and drops a change. The descriptors are stock-format copies of
+ * 2216's (data edit cp_nd_descriptors, 0/1 list 0x6050da8c). OM hashes its
+ * 1589 static descriptors into 128 RAM buckets at boot (0x602e1e84); a chain
+ * node is { descriptor, next }. Link ours once per power-on, after arming,
+ * with nodes in P (P+988..1027, past the film bank). Only RAM changes; a
+ * lookup before this finds nothing, as stock. a2 = P. Color Profile Shading
+ * 912..914 has no descriptor either; it gets copies of 1017's (same list).
+ * call cp_nd_link,[d2,d3,a2,a3],24 */
+CP_NODES = 988                  /* 5 nodes: P+988..1027 (P is ST_SIZE bytes) */
+CP_NDESC = 5                    /* 2217, 2218, 912, 913, 914 (cp_nd.py) */
+.global cp_nd_link
+cp_nd_link:
+ mov cp_nd_desc,a3
+ clr d3
+cp_nd_one:
+ movhu (a3),d0
+ call desc_find,[],0             /* d0 id -> a0 descriptor, 0 when none */
+ cmp 0,a0
+ bne cp_nd_next                  /* already linked (or OM has one) */
+ mov a2,a1
+ add CP_NODES,a1
+ mov d3,d0
+ asl 3,d0
+ add d0,a1                       /* a1 = node */
+ mov a3,(a1)
+ clr d0
+ mov d0,(4,a1)
+ movhu (a3),d0
+ and 127,d0
+ asl2 d0
+ mov desc_buckets,a0
+ add d0,a0                       /* a0 = the bucket's head word */
+cp_nd_walk:
+ mov (a0),d0
+ cmp 0,d0
+ beq cp_nd_put
+ mov d0,a0
+ add 4,a0                        /* the node's next word */
+ bra cp_nd_walk
+cp_nd_put:
+ mov a1,(a0)
+cp_nd_next:
+ add 20,a3
+ inc d3
+ cmp CP_NDESC,d3
+ bcs cp_nd_one
+ ret [d2,d3,a2,a3],24
+
+
+
+.section .ext5,"ax"
+/* ---- Colour wheel and tone curve graphics (section 5, armed only) ----
+ * OM-3 draws both through its GPU layer: the page controller sends
+ * guiUtility::chgBackGround DRAW_PROFILE (E147 0x612981c8, background id
+ * 0xffec -> VARIOUS_DRAW_PROFILE, type 11). E148 has neither that function
+ * nor the type (its table 0x6125fdf0 ends at SS_MENU, and its C3D library has
+ * no profile drawing), so the restored pages have no graphic to ask for.
+ * They are drawn here instead, on the OSD plane, with OM's own pen. A paint
+ * context's colour is an index into the screen's 128-entry palette:
+ *   pen_color 0x60d51e2c, pen_size 0x60d51eed, move_to 0x60d519e7,
+ *   line_to 0x60d51774 (context +36 colour, +40/+42 size, +48 style, +32 point).
+ * Every mark is an axis-aligned block: the OSD driver queues one command per
+ * block but one per pixel of a slanted line, and its command buffer
+ * (0x60cc647f) holds about a thousand per repaint; anything past that is
+ * dropped. The context's pen is saved and put back. a2 = context throughout. */
+GX = 290                        /* wheel centre */
+GY = 222
+G_ZERO = 84                     /* radius of value 0; 8 px per step, -7..7 */
+C_WHITE = 13
+C_GREY = 12
+TX = 194                        /* tone box: 192 x 192, 48 columns of 4 px */
+TY = 104
+
+/* a0 = context: the colour editor's 12 values on the active axis, one spoke
+ * each (ui_read; child k of the editor at +128, colour-wheel order from
+ * Yellow at the top, clockwise). A spoke is a dotted scale -5..+5, a bar of
+ * blocks from 0 to the value and a larger block at the value. Frame:
+ * (4..23,sp) the pen, (24,sp) the value, (28,sp) the step being drawn.
+ * call gfx_wheel,[d2,d3,a2,a3],48 */
+gfx_wheel:
+ mov a0,a2
+ /* the screen's container (scr_obj -> +0) focuses the colour editor on this
+  * row: the same object and checks as hsl_container */
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq gw_out
+ mov (a0),a0
+ cmp 0,a0
+ beq gw_out
+ mov (76,a0),a3
+ cmp 0,a3
+ beq gw_out
+ movhu (120,a3),d0
+ cmp 13,d0
+ bne gw_out
+ mov sp,a1
+ add 4,a1
+ call gfx_save,[],4
+ clr d2
+gw_loop:
+ mov d2,d0
+ asl2 d0
+ mov a3,a0
+ add d0,a0
+ mov (128,a0),a0
+ cmp 0,a0
+ beq gw_done
+ movhu (80,a0),d0
+ mov d0,d1
+ sub 928,d1
+ cmp 48,d1
+ bcc gw_done
+ call ui_read,[d2,d3,a2,a3],24
+ cmp -7,d0
+ bge gw_lo
+ mov -7,d0
+gw_lo:
+ cmp 7,d0
+ ble gw_hi
+ mov 7,d0
+gw_hi:
+ mov d0,(24,sp)
+ /* scale: a dot per step, a larger one at 0 */
+ mov C_GREY,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov -5,d3
+gw_scale:
+ mov 2,d1
+ cmp 0,d3
+ bne gw_tick
+ mov 4,d1
+gw_tick:
+ mov d3,d0
+ call gfx_dot,[d2,d3,a2,a3],28
+ inc d3
+ cmp 6,d3
+ blt gw_scale
+ /* the selected colour (editor +122: 1..12, 0 = all) gets a white edge */
+ movhu (122,a3),d0
+ cmp 0,d0
+ beq gw_edge
+ add -1,d0
+ cmp d2,d0
+ bne gw_fill
+gw_edge:
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov (24,sp),d0
+ mov 15,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+gw_fill:
+ mov gtab_col,a0
+ add d2,a0
+ movbu (a0),d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ clr d3
+gw_bar:
+ mov (24,sp),d0
+ cmp d0,d3
+ beq gw_head
+ mov d3,d0
+ mov 5,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+ mov (24,sp),d0
+ cmp 0,d0
+ blt gw_down
+ inc d3
+ bra gw_bar
+gw_down:
+ add -1,d3
+ bra gw_bar
+gw_head:
+ mov 11,d1
+ call gfx_dot,[d2,d3,a2,a3],28
+ inc d2
+ cmp 12,d2
+ bcs gw_loop
+gw_done:
+ mov sp,a1
+ add 4,a1
+ call gfx_restore,[],4
+gw_out:
+ ret [d2,d3,a2,a3],48
+
+/* d0 = step (-7..7), d1 = size, d2 = sector 0..11 (clockwise from the top):
+ * a square centred on the spoke. sin(30 i) * 64; cos i = sin(i + 3).
+ * call gfx_dot,[d2,d3,a2,a3],28 */
+gfx_dot:
+ mov d1,d3
+ asl 3,d0
+ add G_ZERO,d0
+ mov d0,a3                       /* radius */
+ mov gtab_sin,a0
+ add d2,a0
+ movbu (a0),d0
+ extb d0
+ mov a3,d1
+ mul d1,d0
+ asr 6,d0
+ add GX,d0
+ movbu (3,a0),d1
+ extb d1
+ mov a3,d2
+ mul d2,d1
+ asr 6,d1
+ not d1
+ inc d1
+ add GY,d1
+ mov d3,d2
+ lsr 1,d2
+ sub d2,d0
+ sub d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+
+/* d0 = x, d1 = y, d2 = width, d3 = height: one filled block: a level line
+ * with a pen as tall as the block, or a plumb line with a pen as wide. call gfx_bar,[d2,d3,a2,a3],28 */
+gfx_bar:
+ mov d0,(4,sp)
+ mov d1,(8,sp)
+ cmp d3,d2
+ bcs gb_tall
+ mov 1,d0
+ mov d3,d1
+ mov a2,a0
+ call pen_size,[d2,d3],8
+ mov d3,d1
+ lsr 1,d1
+ mov (8,sp),d0
+ add d0,d1
+ mov d1,(8,sp)                   /* the pen is centred on the line */
+ mov (4,sp),d0
+ mov a2,a0
+ call move_to,[],4
+ mov (4,sp),d0
+ add d2,d0
+ add -1,d0
+ mov (8,sp),d1
+ bra gb_line
+gb_tall:                         /* taller than wide: a plumb line, pen as wide */
+ mov d2,d0
+ mov 1,d1
+ mov a2,a0
+ call pen_size,[d2,d3],8
+ mov d2,d0
+ lsr 1,d0
+ mov (4,sp),d1
+ add d1,d0
+ mov d0,(4,sp)
+ mov (8,sp),d1
+ mov a2,a0
+ call move_to,[],4
+ mov (4,sp),d0
+ mov (8,sp),d1
+ add d3,d1
+ add -1,d1
+gb_line:
+ mov a2,a0
+ call line_to,[d2,d3,a2,a3],32
+ ret [d2,d3,a2,a3],28
+
+/* Keep the context's pen in the caller's frame: a1 = 20 bytes.
+ * call gfx_save,[],4 */
+gfx_save:
+ mov (32,a2),d0
+ mov d0,(a1)
+ mov (36,a2),d0
+ mov d0,(4,a1)
+ mov (40,a2),d0
+ mov d0,(8,a1)
+ mov (48,a2),d0
+ mov d0,(12,a1)
+ mov (640,a2),d0
+ mov d0,(16,a1)
+ clr d0
+ movhu d0,(48,a2)                /* solid lines */
+ ret [],4
+/* a1 = the copy. call gfx_restore,[],4 */
+gfx_restore:
+ mov (a1),d0
+ mov d0,(32,a2)
+ mov (4,a1),d0
+ mov d0,(36,a2)
+ mov (8,a1),d0
+ mov d0,(40,a2)
+ mov (12,a1),d0
+ mov d0,(48,a2)
+ mov (16,a1),d0
+ mov d0,(640,a2)
+ ret [],4
+
+/* sin(30 i) * 64, i = 0..14 */
+gtab_sin:
+ .byte 0,32,55,64,55,32,0,-32,-55,-64,-55,-32,0,32,55
+/* palette indices: Yellow, Orange, Orange-red, Red, Magenta, Violet, Blue,
+ * Blue-cyan, Cyan, Green-cyan, Green, Yellow-green */
+gtab_col:
+ .byte 123,92,16,122,89,88,87,105,107,86,22,116
+
+.section .ext6,"ax"
+/* The tone page's view paint (vtable 0x610d6560, entry 0x610d6600, stock
+ * 0x60d47232): the stock painter, then the curve (section 10, armed only).
+ * Same event checks as paint_axis; in section 6 because a view may be asked
+ * to paint before arming. Entered through the vtable: a0 = view, a1 = paint event. */
+paint_tone:
+ movm [d2,d3,a2,a3],(sp)
+ add -12,sp
+ mov a1,(8,sp)
+ call stock_paint,[a2,a3],16
+ mov (8,sp),a1
+ mov d0,(8,sp)
+ cmp 0,a1
+ beq pt_out
+ movhu (4,a1),d0
+ cmp 2,d0
+ bne pt_out
+ mov (8,a1),a2
+ cmp 0,a2
+ beq pt_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pt_out
+ mov a2,a0
+ call gfx_tone,[d2,d3,a2,a3],64
+pt_out:
+ mov (8,sp),d0
+ add 12,sp
+ ret [d2,d3,a2,a3],16
+
+/* Monochrome Color Filter view 0x610d9b20. Preserve the stock painter and
+ * draw only the filter swatches for an armed paint event. */
+paint_filter:
+ movm [d2,d3,a2,a3],(sp)
+ add -12,sp
+ mov a1,(8,sp)
+ call stock_paint,[a2,a3],16
+ mov (8,sp),a1
+ mov d0,(8,sp)
+ cmp 0,a1
+ beq pf_out
+ movhu (4,a1),d0
+ cmp 2,d0
+ bne pf_out
+ mov (8,a1),a2
+ cmp 0,a2
+ beq pf_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pf_out
+ mov a2,a0
+ call gfx_filter,[d2,d3,a2,a3],44
+pf_out:
+ mov (8,sp),d0
+ add 12,sp
+ ret [d2,d3,a2,a3],16
+
+.section .ext10,"ax"
+/* a0 = context. Shadows / Midtones / Highlights of the selected profile
+ * (976+3p.. Color, 1021+3p.. Monochrome; stored Highlights, Midtones,
+ * Shadows) bend the diagonal with one bump each, centred on columns 12, 24
+ * and 36 of 48. Frame: (4,sp) loop, (8..19,sp) the three values,
+ * (20..39,sp) the pen, (40,sp) the curve at this column.
+ * call gfx_tone,[d2,d3,a2,a3],64 */
+gfx_tone:
+ mov a0,a2
+ mov sp,a1
+ add 20,a1
+ call gfx_save,[],4
+ mov 111,d0
+ call stock_get,[],4
+ sub 54,d0
+ cmp 6,d0
+ bcc gt_done
+ mov d0,d2
+ add d0,d0
+ add d0,d2
+ add 976,d2
+ cmp 976+9,d2
+ bcs gt_ids
+ add 36,d2
+gt_ids:
+ mov 2,d3
+gt_read:
+ mov d2,d0
+ call stock_get,[],4
+ cmp -7,d0
+ bge gt_lo
+ mov -7,d0
+gt_lo:
+ cmp 7,d0
+ ble gt_hi
+ mov 7,d0
+gt_hi:
+ mov d3,d1
+ asl2 d1
+ mov sp,a0
+ add d1,a0
+ mov d0,(8,a0)
+ inc d2
+ add -1,d3
+ bge gt_read
+ /* the box with a grid at the quarters */
+ mov C_GREY,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ clr d0
+gt_grid:
+ mov d0,(4,sp)
+ add TX,d0
+ mov TY,d1
+ mov 1,d2
+ mov 193,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d1
+ add TY,d1
+ mov TX,d0
+ mov 193,d2
+ mov 1,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ add 48,d0
+ cmp 193,d0
+ bcs gt_grid
+ /* the unbent diagonal, dotted */
+ clr d0
+gt_diag:
+ mov d0,(4,sp)
+ mov TY+191,d1
+ sub d0,d1
+ add TX,d0
+ mov 2,d2
+ mov d2,d3
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ add 12,d0
+ cmp 192,d0
+ bcs gt_diag
+ /* the curve: each column spans its two ends */
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov sp,a3
+ add 8,a3
+ clr d0
+ mov d0,(4,sp)
+ call gfx_curve,[d2,d3],16
+ mov d0,(40,sp)
+gt_col:
+ mov (4,sp),d0
+ inc d0
+ call gfx_curve,[d2,d3],16
+ mov (40,sp),d1                  /* d1 = this end, d0 = the next */
+ mov d0,(40,sp)
+ mov d0,d3
+ sub d1,d3
+ bge gt_up
+ not d3
+ inc d3
+ mov d1,d0
+gt_up:
+ add 3,d3                        /* height; d0 = the higher end */
+ mov TY+190,d1
+ sub d0,d1
+ mov (4,sp),d0
+ asl2 d0
+ add TX,d0
+ mov 4,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ mov (4,sp),d0
+ inc d0
+ mov d0,(4,sp)
+ cmp 48,d0
+ bcs gt_col
+gt_done:
+ mov sp,a1
+ add 20,a1
+ call gfx_restore,[],4
+ ret [d2,d3,a2,a3],64
+
+/* d0 = column 0..48, a3 = the three values -> d0 = height of the curve there
+ * (0..192): 4 per column plus value * bump / 8. Frame: (4,sp) index.
+ * call gfx_curve,[d2,d3],16 */
+gfx_curve:
+ mov d0,d2
+ clr d3
+ mov d0,d1
+ mov a3,a1
+gc_loop:
+ cmp 25,d1
+ bcc gc_skip
+ mov gtab_bump,a0
+ add d1,a0
+ movbu (a0),d0
+ mov d1,(4,sp)
+ mov (a1),d1
+ mul d1,d0
+ add d0,d3
+ mov (4,sp),d1
+gc_skip:
+ add 4,a1
+ add -12,d1
+ mov a3,a0
+ add 12,a0
+ cmp a0,a1
+ bne gc_loop
+ asr 3,d3
+ mov d2,d0
+ asl2 d0
+ add d3,d0
+ ret [d2,d3],16
+
+/* 16 (1 - cos(15 i)), i = 0..24 */
+gtab_bump:
+ .byte 0,1,2,5,8,12,16,20,24,27,30,31,32,31,30,27,24,20,16,12,8,5,2,1,0
+
+.section .ext7,"ax"
+/* CP button "any item ticked" (0x60d2230f, called by 0x60d222d3 when the
+ * current item 2228 holds no item) asks 0x60d223d5(k) (is CP item k of
+ * table 0x60f7f57c ticked) for k 0..5 and 13..16, each group followed by its
+ * function check 0x60d044be (k 2..5: 109, Live ND). It skips k 6 and 7, Live
+ * ND32 / ND64 (2217 / 2218, also mask 109), which cp_nd.py puts on the CP
+ * Button page, so with only those ticked the button found nothing. This
+ * replaces the k 5 test (mov 5,d0; call 0x60d223d5 at 0x60d22357, 7 bytes):
+ * k 5, then, once armed (their descriptors are linked by cp_nd_link), k 6
+ * and 7. d0 = 1 when one is ticked; the stock code then runs the same 109
+ * check. Unarmed: k 5 only, as stock. call cp_any_nd,[],4 */
+cp_any_nd:
+ mov 5,d0
+ call cp_ticked,[],4
+ cmp 1,d0
+ beq cp_any_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq cp_any_none
+ mov 6,d0
+ call cp_ticked,[],4
+ cmp 1,d0
+ beq cp_any_out
+ mov 7,d0
+ call cp_ticked,[],4
+cp_any_out:
+ ret [],4
+cp_any_none:
+ clr d0
+ ret [],4
+
+.section .ext5,"ax"
+/* a0 = context. Monochrome Profile p (111 = 57..59) only: filter 1007+p
+ * (values: 0 None, 1 Yellow, 2 Orange, 3 Red, 4 Green, 5 Yellow-green,
+ * 6 Magenta, 7 Blue, 8 Cyan; names 0x611b46c8). Eight 26 px swatches in the
+ * dial's order round a centre block, Yellow at the top, clockwise: Yellow,
+ * Orange, Red, Magenta, Blue, Cyan, Green, Yellow-green. The selected swatch
+ * has a white edge and the centre block takes its colour (grey for None).
+ * Frame: pen at sp+4..23, selected slot at sp+24 (8 = None).
+ * call gfx_filter,[d2,d3,a2,a3],44 */
+FX = 556                        /* ring centre and radius */
+FY = 236
+gfx_filter:
+ mov a0,a2
+ mov 111,d0
+ call stock_get,[],4
+ sub 57,d0
+ cmp 3,d0
+ bcc gf_out
+ add 1007,d0
+ call stock_get,[],4
+ cmp 9,d0
+ bcc gf_out
+ mov ftab_slot,a0
+ add d0,a0
+ movbu (a0),d0
+ mov d0,(24,sp)
+ mov sp,a1
+ add 4,a1
+ call gfx_save,[],4
+ clr d2
+gf_loop:
+ mov (24,sp),d0
+ cmp d2,d0
+ bne gf_swatch
+ mov C_WHITE,d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 34,d1
+ call gf_block,[d2,d3,a2,a3],28
+gf_swatch:
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 26,d1
+ call gf_block,[d2,d3,a2,a3],28
+ inc d2
+ cmp 8,d2
+ bcs gf_loop
+ mov (24,sp),d2
+ mov C_GREY,d0
+ cmp 8,d2
+ bcc gf_centre
+ mov ftab_col,a0
+ add d2,a0
+ movbu (a0),d0
+gf_centre:
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 8,d2
+ mov 46,d1
+ call gf_block,[d2,d3,a2,a3],28
+ mov sp,a1
+ add 4,a1
+ call gfx_restore,[],4
+gf_out:
+ ret [d2,d3,a2,a3],44
+
+
+.section .ext10,"ax"
+/* d2 = slot 0..7 round the ring, 8 = centre; d1 = size: a square block.
+ * call gf_block,[d2,d3,a2,a3],28 */
+gf_block:
+ mov d1,d3
+ mov ftab_dx,a0
+ add d2,a0
+ movbu (a0),d0
+ extb d0
+ add FX,d0
+ movbu (9,a0),d1
+ extb d1
+ add FY,d1
+ mov d3,d2
+ lsr 1,d2
+ sub d2,d0
+ sub d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+
+/* slot offsets (45 degree steps, radius 80; then the centre) */
+ftab_dx:
+ .byte 0,57,80,57,0,-57,-80,-57,0
+ftab_dy:
+ .byte -80,-57,0,57,80,57,0,-57,0
+/* swatch colours (gfx_wheel's palette indices): Yellow, Orange, Red,
+ * Magenta, Blue, Cyan, Green, Yellow-green */
+ftab_col:
+ .byte 123,92,122,89,105,107,22,116
+/* filter value 0..8 -> slot */
+ftab_slot:
+ .byte 8,0,1,2,6,7,3,4,5

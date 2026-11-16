@@ -2,7 +2,7 @@
 // Drive OM-Emu's headless player on an arbitrary (stock or patched) expanded E148 main and resource block:
 // the firmware's own GUI, key by key, with optional watchpoints over the loaded image.
 //   OM_EMU_MODEL=E148 node tools/om5ii_ui_session.mjs OM_EMU_DIR MAIN.bin RES.bin OUT_DIR 'key key ...' [options]
-// keys: ok menu up down left right info delete s1 s2 play ... (OM-Emu key ids); wait:MS idles;
+// keys: ok menu up down left right info delete s1 s2 play ... (OM-Emu key ids); main+N / sub-N turn a dial; wait:MS idles;
 // T+ / T- switch a PRE module's tracing (tools/dev/calls.mjs, trace.mjs) on and off between keys.
 // --ready     publish all ten section-completion bits (0xa26e2694) after the start; OM-Emu does not run E148's loader
 // --watch     log every store into the loaded main image (both aliases) and every access to the state handle word
@@ -87,6 +87,7 @@ try {
   for (const tok of script.split(/\s+/).filter(Boolean)) {
     if (tok === 'T+' || tok === 'T-') { (globalThis.__trace ??= {}).on = tok === 'T+'; console.log('TRACE ' + tok); continue; }
     if (tok.startsWith('wait:')) { s.idle_slice(lab.lab_time() + Number(tok.slice(5)) * 1e6); }
+    else if (/^(main|sub)[+-]\d+$/.test(tok)) { const m = tok.match(/^(main|sub)([+-]\d+)$/); s.dial_input(m[1], Number(m[2])); s.camapp.pump(); s.idle_slice(lab.lab_time() + 1200e6); }
     else press(tok);
     { const line = `${tok}: ${st()} ${shot(tok.replace(':', '_'))}${peek()}${peekP()}`; log.push(line); console.log(line); } n++; report(tok);
   }

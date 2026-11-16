@@ -1,0 +1,48 @@
+{
+  "camera_tested": false,
+  "package_sha256": "cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa",
+  "previous_expanded_sha256": "c60a8b89455b7819341f10580241e95fb2bbccf5008af29ade573a79121e01b9",
+  "expanded_sha256": "69c26c9f10915dcc98f46b3672e7474c27fa4449adc6e79833ada11e7e791768",
+  "changed_ranges": {
+    "tone_pointer": {
+      "bytes": 1,
+      "section": 7
+    },
+    "filter_pointer": {
+      "bytes": 3,
+      "section": 7
+    },
+    "ext6": {
+      "bytes": 531,
+      "section": 6
+    },
+    "ext7": {
+      "bytes": 2,
+      "section": 7
+    },
+    "ext5": {
+      "bytes": 161,
+      "section": 5
+    },
+    "extvec": {
+      "bytes": 1,
+      "section": 8
+    },
+    "ext10": {
+      "bytes": 1158,
+      "section": 10
+    }
+  },
+  "all_edits_declared": true,
+  "previous_bytes_back_to_stock": 0,
+  "native_loader_bounds_unchanged": true,
+  "resources_unchanged": true,
+  "resource_alias_words_changed": [],
+  "nd_selector_cases": 768,
+  "section_tail_space": {
+    "ext6": 210,
+    "ext7": 52,
+    "ext10": 190
+  },
+  "previous_build": "v0.1.0-alpha11"
+}

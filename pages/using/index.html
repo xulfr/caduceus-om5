@@ -2,11 +2,26 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Using it · Caduceus for OM-5</title>
-<link rel="stylesheet" href="../site/site.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/doc.css"></head><body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top"><a class="brand" href="../../">Caduceus for OM-5</a><nav aria-label="Main"><a href="../../">Tour</a><a href="../install/">Install</a><a href="../using/" aria-current="page">Using it</a><a href="../../looklab/">LookLab</a><a href="../faq/">FAQ</a><a href="../safety/">Safety</a><a href="https://github.com/xulfr/caduceus-om5">GitHub</a></nav></header>
-<div class="banner"><strong>Experimental firmware.</strong> Alpha8 booted on one OM-5 Mark II. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
-<main class="doc" id="content"><h1 id="using-it">Using it</h1>
+<nav class="topnav" aria-label="Main"><div class="in">
+  <a class="brand" href="../../">Caduceus for OM-5</a>
+  <a class="tab" href="../../">Tour</a>
+  <a class="tab" href="../install/">Install</a>
+  <a class="tab" href="../using/" aria-current="page">Using it</a>
+  <a class="tab" href="../../looklab/">LookLab</a>
+  <a class="tab" href="../faq/">FAQ</a>
+  <a class="tab" href="../safety/">Safety</a>
+  <a class="tab" href="../roadmap/">Roadmap</a>
+  <a class="tab" href="../changelog/">Changelog</a>
+  <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
+</div></nav>
+<div class="banner"><strong>Experimental firmware.</strong> Alpha12 is the current experimental build. The owner reports that the filter graphic works. Earlier builds caused boot loops. <a href="../safety/">Read the safety notes.</a></div>
+<main class="wrap" id="content">
+<div class="lead">
+<h1 id="using-it">Using it</h1>
 <blockquote>
 <p>The <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-ALPHA8-CAMERA-2026-11-15.md">alpha8 camera report</a> records confirmed functions and known UI defects.</p>
 </blockquote>
@@ -14,8 +29,11 @@
 firmware (the Color Profiles are in the list, but their extra controls are asleep and no look file is read).
 A profile that was selected when the camera was switched off is applied at that half-press; a photo taken
 before any half-press (by remote control, for example) uses the camera's stock values.</p>
+</div>
+<nav class="toc" aria-label="On this page"><a href="#the-slots">The slots</a><a href="#looks">Looks</a><a href="#live-nd">Live ND</a></nav>
+<section class="card">
 <h2 id="the-slots">The slots</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th></th>
@@ -60,14 +78,15 @@ before any half-press (by remote control, for example) uses the camera's stock v
 <td>OM's name</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>OK › Picture Mode.</strong> After Color Creator:</p>
 <ul>
 <li><strong>Color Profile 1, 2, 3</strong>: your three look slots.</li>
-<li><strong>Monochrome Profile 1, 2, 3</strong>: OM's monochrome profiles (filter, toning, grain, tone), as on the OM-3 and PEN-F.</li>
+<li><strong>Monochrome Profile 1, 2, 3</strong>: OM's monochrome profiles (filter, toning, grain, tone), as on the OM-3 and PEN-F.
+  The Color Filter page cannot change the filter yet (no filter picker, <a href="../roadmap/">roadmap</a>).</li>
 </ul>
 <p>Each Color Profile has its own rows (press down from the list):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Row</th>
@@ -92,10 +111,14 @@ before any half-press (by remote control, for example) uses the camera's stock v
 <td>−2..+2</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Each Color Profile also remembers its own <strong>white balance</strong>: the mode, the Kelvin value and the A/B, G/M shift you
-set while it is selected come back when you select it again. All other picture modes share one white balance.</p>
+set while it is selected come back when you select it again. All other picture modes share one white balance. This
+is not a row in the Picture Mode screen: set white balance as usual (WB button or super control panel). Not yet
+checked on a camera.</p>
 <p><strong>Hold OK</strong> on a row resets it, as on OM's own picture modes.</p>
+</section>
+<section class="card">
 <h2 id="looks">Looks</h2>
 <ol>
 <li>Make <code>LOOKS.BIN</code> in <a href="https://xulfr.github.io/caduceus-om5/looklab/">LookLab</a> (or use the starter file) and put
@@ -125,8 +148,12 @@ values on the camera. The card is needed again only to choose another look.</p>
 <li>The look file is read once per switch-on. After changing the file, switch off and on.</li>
 <li>A full reset, or resetting the custom mode, clears the slots and the names.</li>
 </ul>
+</section>
+<section class="card">
 <h2 id="live-nd">Live ND</h2>
 <p>In the camera's Live ND setting, ND32 and ND64 are added after ND16. Whether the camera completes 32- and
-64-frame exposures has not been seen on a camera.</p></main>
-<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="../roadmap/">Roadmap</a> · <a href="../changelog/">Changelog</a> · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/USING.md">Page source</a><br>Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+64-frame exposures has not been seen on a camera.</p>
+</section>
+<footer>By xulfr and the Caduceus contributors · Apache-2.0 · <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/USING.md">Page source</a> · Built on <a href="https://github.com/fishcu/oly_fw_analysis">fishcu’s firmware research</a>, <a href="https://github.com/cakelesscoder/caduceus-ep7">Caduceus for E-P7</a> by cakelesscoder and <a href="https://github.com/androidfanman/caduceus-om3">Caduceus for OM-3</a> by androidfanman · <a href="../../#credits">Credits</a></footer>
+</main>
 </body></html>
