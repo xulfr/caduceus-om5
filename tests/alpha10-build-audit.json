@@ -1,0 +1,49 @@
+{
+  "camera_tested": false,
+  "package_sha256": "1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27",
+  "previous_expanded_sha256": "b99ed9258015349760afeec02a3e0a592db10cc3930436b07a27ba5ae115652f",
+  "expanded_sha256": "73d86b43570b1110837c3292b24b03697ac8fb5822a84471b9f5670cdc0c3cf2",
+  "changed_ranges": {
+    "ext8": {
+      "bytes": 3,
+      "section": 8
+    },
+    "ext10": {
+      "bytes": 1,
+      "section": 10
+    },
+    "cp_nd_descriptors": {
+      "bytes": 31,
+      "section": 2
+    },
+    "cp_item_values": {
+      "bytes": 12,
+      "section": 2
+    },
+    "cp_item_desc": {
+      "bytes": 4,
+      "section": 2
+    }
+  },
+  "all_edits_declared": true,
+  "previous_bytes_back_to_stock": 0,
+  "native_loader_bounds_unchanged": true,
+  "resources_unchanged": false,
+  "resource_alias_words_changed": [
+    "0x38cb",
+    "0x38e7",
+    "0x38e8",
+    "0x38e9",
+    "0x38ea",
+    "0x38eb",
+    "0x38ec",
+    "0x38ed",
+    "0x38ee"
+  ],
+  "nd_selector_cases": 768,
+  "section_tail_space": {
+    "ext6": 283,
+    "ext7": 104,
+    "ext10": 268
+  }
+}

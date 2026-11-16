@@ -1,0 +1,131 @@
+{
+ "build": "v0.1.0-alpha10",
+ "package_sha256": "1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27",
+ "camera_tested": false,
+ "camera_status": "none: emulator only; alpha9 booted on the owner's camera (research/OM5II-ALPHA9-CAMERA-2026-11-16.md)",
+ "emulator": "OM-Emu bdb33470705b3be28db52cbe080c31d74db727d8 (fix/e148-ipi-stride), Node 22.23.4",
+ "date": "2026-11-17",
+ "look_menu_cases": [
+  {
+   "case": "four-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "next-film",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "slot-two",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "wrap",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "ten-films",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "oversized-bank",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-crc",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "bad-range",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-markup",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "name-control",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "persisted-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "other-rows",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "row-return-title",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "title-redraw",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "scp-name",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "empty-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "no-card",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  },
+  {
+   "case": "unarmed-delete",
+   "status": "passed",
+   "image_stores_beyond_stock": 0
+  }
+ ],
+ "probes": {
+  "startup": "STARTUP ASSERTIONS passed (state block now 1040 bytes; the probe's guard band was moved with it, see below).",
+  "startup_image_stores": "Matched stock.",
+  "profile_before_arming": "GATING inert passed (armed false).",
+  "profile_at_arming": "GATING applied passed (armed true).",
+  "unarmed_pcs": "Only gates and stock replays ran.",
+  "stale_profile_numbers": "Natural restored and 903 / 989 cleared at arming.",
+  "static_rules": "No 0xfb opcode, 14 tables aligned, stream lengths safe.",
+  "build_audit_vs_alpha9": "Passed (alpha10-build-audit.json): changed ext8 (block size), ext10 (link count), cp_nd_descriptors, cp_item_values, cp_item_desc; record-0 words 0x38cb, 0x38e7..0x38ee; record 37 appended Filter sprite; resource block equals an independent rebuild from stock and patch.json.",
+  "build_audit_vs_alpha8": "Passed (first time possible: record 37 changes are now checked by rebuild). Resource words changed vs alpha8: 80."
+ },
+ "ui": {
+  "ui_activity": "10/10 passed.",
+  "page_graphics": "10/10 passed.",
+  "tone_icons": "27 states, 27 different icons.",
+  "profile_icons": "6 edited profiles, 6 different shooting-screen icons.",
+  "profile_rows": "Color Profile Shading knob lime and moves with main+1; Film Grain strip 4 non-blank, different states; Color Filter row icon drawn. Fails on alpha9 as intended.",
+  "live_nd_labels": "Steps 4, 5, 6 with LV off and on: 6/6 passed.",
+  "cp_button_carousel": "Not run: OM-Emu has no CP button for E148. The 2228 allowed-value fix is static analysis only."
+ },
+ "negative_results": [
+  "First startup run failed 'state clear stops at its boundary': the probe pre-filled a hard-coded 1040 bytes (1024 + 16 guard), so with the 1040-byte block the guard band was never filled. Fixed the probe to fill SIZE + 16; rerun passed. No firmware change."
+ ],
+ "host": {
+  "result": "Full suite with OM5_STOCK before the release files existed: 2 expected failures (alpha10 release tests). After adding releases/v0.1.0-alpha10: test_release, test_installer, test_site passed (alpha1..alpha10 reproduce)."
+ }
+}

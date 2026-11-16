@@ -52,7 +52,7 @@ export default function(g) {
     assert.ok(owned >= 0xa1e27d80 && owned <= 0xa1e27d80 + 43328, 'real class-1 allocation');
     allocation = owned;
     lab.hook_rt(malloc, (h, r) => h.finish(r, { a0: allocation }), 'audit-allocation-success');
-    M.dbgWrite(owned, Buffer.alloc(1040, 0x5a));
+    M.dbgWrite(owned, Buffer.alloc(SIZE + 16, 0x5a));   // the block and a 16-byte guard band
     gate();
     assert.equal(read(handle, 2).readUInt16LE(), owned - 0xa1e27d80 + 1);
     const fresh = Buffer.alloc(SIZE); fresh.writeUInt32LE(0x55444143, 60);
