@@ -44,7 +44,7 @@ Fixes from the alpha9 report (`49a85cf`):
   overflow record 0 (span 764,928; now 764,852 packed). `audit_build.py` rebuilds the resource block from stock and
   patch.json and then accepts record-37 changes, so audits against alpha8 work.
 
-Checks on alpha10 (tests/alpha10-results.json): all 19 look/menu cases, startup (after fixing the probe's guard
+Checks on the earlier candidate `1530ca05…` (re-cut status above): all 19 look/menu cases, startup (after fixing the probe's guard
 band for the 1040-byte block), gating, unarmed PCs, stale numbers, UI activity, page graphics, tone icons, profile
 icons, `run_profile_rows.py` (new), Live ND labels, static rules, audits vs alpha9 and alpha8, release reproduction.
 
