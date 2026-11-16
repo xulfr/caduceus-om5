@@ -1,15 +1,47 @@
 {
   "camera_tested": false,
-  "package_sha256": "1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27",
+  "package_sha256": "056aefb3c3f40b7cf41728cd9f466ba161a52d887db6ecebd2f0377bb0a38454",
   "previous_expanded_sha256": "b99ed9258015349760afeec02a3e0a592db10cc3930436b07a27ba5ae115652f",
-  "expanded_sha256": "73d86b43570b1110837c3292b24b03697ac8fb5822a84471b9f5670cdc0c3cf2",
+  "expanded_sha256": "ed5222daa860d79da0e80bd2adc08c7b133b596ce52a571f446dc05a7d7f6c4d",
   "changed_ranges": {
+    "tone_pointer": {
+      "bytes": 1,
+      "section": 7
+    },
+    "filter_pointer": {
+      "bytes": 3,
+      "section": 7
+    },
+    "cp_any_hook": {
+      "bytes": 4,
+      "section": 7
+    },
+    "ext6": {
+      "bytes": 531,
+      "section": 6
+    },
+    "ext7": {
+      "bytes": 108,
+      "section": 7
+    },
     "ext8": {
       "bytes": 3,
       "section": 8
     },
-    "ext10": {
+    "ext5": {
+      "bytes": 262,
+      "section": 5
+    },
+    "extvec": {
+      "bytes": 2,
+      "section": 8
+    },
+    "hook_str": {
       "bytes": 1,
+      "section": 7
+    },
+    "ext10": {
+      "bytes": 1172,
       "section": 10
     },
     "cp_nd_descriptors": {
@@ -23,6 +55,18 @@
     "cp_item_desc": {
       "bytes": 4,
       "section": 2
+    },
+    "mono_filter_word": {
+      "bytes": 2,
+      "section": 7
+    },
+    "mono_filter_icon": {
+      "bytes": 2,
+      "section": 7
+    },
+    "mono_filter_value": {
+      "bytes": 2,
+      "section": 7
     }
   },
   "all_edits_declared": true,
@@ -42,8 +86,8 @@
   ],
   "nd_selector_cases": 768,
   "section_tail_space": {
-    "ext6": 283,
-    "ext7": 104,
-    "ext10": 268
+    "ext6": 210,
+    "ext7": 52,
+    "ext10": 178
   }
 }

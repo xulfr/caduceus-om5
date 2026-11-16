@@ -68,7 +68,7 @@ class ReleaseTests(unittest.TestCase):
                          ['0x2a2a', '0x2a2a', '0x2a3b', '0x2a3b', '0x2a3c', '0x2a3c', '0x2a3d', '0x2a3d'])
         ids = {i for s in rel['resource']['artwork']['sprites'] for i in s['ids']}
         self.assertIn('0x38cb', ids)
-        self.assertEqual(rel['package']['sha256'], '1530ca052df5c33ca6e9b2ee16a4e6f47efb847faf2ad59d2fb6398c2fda3a27')
+        self.assertEqual(rel['package']['sha256'], '056aefb3c3f40b7cf41728cd9f466ba161a52d887db6ecebd2f0377bb0a38454')
 
     def test_newest_release_is_alpha10(self):
         self.assertEqual(patch.newest(), 'v0.1.0-alpha10')
