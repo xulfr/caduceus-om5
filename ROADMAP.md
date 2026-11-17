@@ -1,7 +1,7 @@
 # Roadmap
 
-Alpha8 and alpha9 booted on a physical OM-5 Mark II. [Alpha8 report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md),
-[alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). Alpha10 booted and restarted on the filter page. [Alpha10 report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
+Alpha12 is the current build and runs on the owner's OM-5 Mark II ([camera findings](releases/v0.1.0-alpha12/README.md)).
+Alpha8 through alpha11 also booted there. Their reports are listed in [docs/INDEX.md](docs/INDEX.md).
 The owner performs any physical test; development sessions prepare and check files only.
 
 ## First priority: OM-5 Mark II (E148, firmware 1.1)
@@ -40,7 +40,7 @@ using this project's donor patch. Fitting and checksum validation do not show th
 the E148 program can drive E144 hardware. This is not the Mark II patch applied to E144 stock.
 Since 2026-11-14 it is offered as a **pre-alpha for testers** ([docs/OM5_PREALPHA.md](docs/OM5_PREALPHA.md)): built
 by the tester with the developer builder, never run on a camera, with a step 0 that checks the card update with
-OM's own firmware first. It stays out of the one-step patcher. No recommendation to install it until camera
+OM's own firmware first. Since 2026-11-16 the builder uses the alpha12 donor with its stream-length rule; pre-alpha 2 still needs a first reference build. It stays out of the one-step patcher. No recommendation to install it until camera
 reports exist.
 Emulator and static work reached so far (2026-11-14): look regressions and a menu tour pass in OM-Emu's
 Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are the controller (010e) protocol,

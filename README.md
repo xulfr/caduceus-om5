@@ -14,30 +14,25 @@
 
 > [!CAUTION]
 > ### Alpha12 is the current experimental build
-> Alpha10 booted and restarted the camera when the owner opened the Monochrome Color Filter page.
-> ND32 and ND64 worked from the CP carousel with empty icons. [Alpha10 camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md).
-> The installer defaults to **v0.1.0-alpha12**. The owner reports that it resolves the remaining
-> Monochrome Color Filter display issue. [Alpha12 release notes](releases/v0.1.0-alpha12/README.md).
-> v0.1.0-alpha5 left the owner's OM-5 Mark II stuck restarting at power-on (15 November 2026), as three earlier
-> versions did (November 2026). Alpha6 did the same on 15 November. The installer refuses alpha1–alpha7.
-> The owner confirmed alpha8 boot, Color Profiles and Live ND32/64, and alpha9 boot with the colour wheel
-> drawn ([alpha9 report](research/OM5II-ALPHA9-CAMERA-2026-11-16.md)). OM's own firmware was restored
-> from the card after each failure. Future recovery remains uncertain.
+> The installer defaults to **v0.1.0-alpha12**. It runs on the owner's OM-5 Mark II, and the owner reports that it
+> fixes the last known defect, the Monochrome Color Filter graphic. That is one camera, and the owner gave no
+> step-by-step record. [Alpha12 release notes](releases/v0.1.0-alpha12/README.md).
+> Five earlier development builds failed on that camera (4–15 November 2026). Each time, OM's own firmware was put
+> back from the card. The installer refuses alpha1–alpha7. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
-> The [camera report](research/OM5II-ALPHA8-CAMERA-2026-11-15.md) records what works and the remaining UI defects.
 
 ## Status
 
 | Camera | Build | State |
 |---|---|---|
-| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha12 | **Owner reports the filter graphic works.** [Alpha12 release notes](releases/v0.1.0-alpha12/README.md). |
+| **OM-5 Mark II** (2024), firmware 1.1 | v0.1.0-alpha12, 16 Nov 2026 | **Runs on one camera.** The owner reports all defects from alpha11 are fixed, including the filter graphic. [Alpha12 release notes](releases/v0.1.0-alpha12/README.md). |
 | | v0.1.0-alpha11 | **Booted on one camera.** Both alpha10 defects resolved. The native filter controls work. [Camera report](research/OM5II-ALPHA11-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha10, 17 Nov 2026 | **Booted on one camera.** Opening Monochrome Color Filter restarted the camera. ND32/64 icons were blank in the CP carousel. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md). |
 | | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
-| **Original OM-5** (2022), firmware 1.2 | pre-alpha 1, 14 Nov 2026 | **Never run on any camera**; recovery after a failure is unknown. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
+| **Original OM-5** (2022), firmware 1.2 | pre-alpha 2 (alpha12 donor), no checksum yet | **Never run on any camera**; recovery after a failure is unknown. Not ready to flash. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
 
-"Emulator only" means: the camera's own software was run on a computer and behaved correctly there. The emulator
+Every build is also checked in an emulator, which runs the camera's own software on a computer. The emulator
 cannot imitate everything (the image sensor, the second processor, the start-up loader), and it did not predict
 the earlier camera failures. Only a report from a real camera can change the state above.
 
@@ -124,7 +119,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | Tone curve, Contrast, Sharpness, Shading, WB shift | yes | yes |
 | Blacks / Whites, split toning, grain, Glow, Halation | yes | no (no room yet: [roadmap](ROADMAP.md)) |
 | Film recipe in EXIF | yes | no |
-| Tested on a camera | yes | The owner reports the alpha12 filter graphic works. Earlier alpha11 checks confirmed boot and both alpha10 fixes. |
+| Tested on a camera | yes | One camera, the owner's (alpha12) |
 
 ## How it works, briefly
 
@@ -156,7 +151,7 @@ The OM-5 Mark II's firmware has much less free space than the OM-3's, so this bu
 | `tools/` | `oly_patch.py` (strict build from source), `oly_patch_record.py` (re-record hashes after a source change), `mkrelease.py`, `mksite.py` (site pages), `fetch_stock.py` (OM's firmware files) |
 | `tools/dev/` | Emulator sessions and tracing (`sess.mjs`, `calls.mjs`, `calltree.py`) and cross-build comparison (`xbuild.mjs`, `sram_compare.py`) |
 | `tests/` | Unit, release-reproduction and emulator regression tests ([how to run](tests/README.md)) |
-| `research/` | Failure analyses and findings. [HANDOVER.md](HANDOVER.md) and [CLAUDE.md](CLAUDE.md): current state and project rules |
+| `research/` | Failure analyses and findings. [HANDOVER.md](HANDOVER.md) and [AGENTS.md](AGENTS.md): current state and project rules |
 
 Build from source. Needs Python 3.10+ and GNU binutils for `mn10300-elf`:
 
@@ -176,7 +171,7 @@ OM5_STOCK=OLY_E_148_1100_0000_0000.BIN python3 -m unittest discover -s tests -v
 
 Record physical-camera results with the exact package hash and tested features. The experimental installer
 keeps its `UNTESTED` confirmation.
-Details in [CLAUDE.md](CLAUDE.md).
+Details in [AGENTS.md](AGENTS.md).
 
 ## Words used here
 

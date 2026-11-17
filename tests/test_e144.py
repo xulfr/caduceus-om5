@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from om5i_donor_patch import PATCH, build, adapt_main
+from om5i_donor_patch import PATCH, build, adapt_main, donor_main_packing
 from oly_container import parse, reconstruct, replace_payload, sha256
 from oly_compress import repack_image
 
@@ -53,7 +53,7 @@ class RecipientTests(unittest.TestCase):
         for b in blocks:
             data = (folder / 'decoded' / f'{b.kind:04x}.bin').read_bytes()
             if b.kind == 0x100:
-                data = repack_image(donor[b.kind].payload, data, split=True, literal_limit=0)
+                data = repack_image(donor[b.kind].payload, data, **donor_main_packing(spec))
             self.assertEqual(len(data), len(b.payload))
             self.assertEqual(sha256(data), report['components'][hex(b.kind)]['sha256'])
             if b.kind == 0x10e:

@@ -40,6 +40,8 @@ The consumer `patch.py` and launchers continue to support only E148.
   decoded pixels are compared before and after. No pictures are removed or downsampled.
 - All five E144 outer headers, component addresses and sizes, and the complete E144 controller
   component (010e) are preserved. The E148 startup library stays with its matching application.
+- The main program is repacked with the donor patch's `repack` and `stream_length` settings (alpha12:
+  `split`, `stock-page`), and every main stream passes the length-fault check.
 - Container checksum and compression round trips, exact stock restore, and no overlapping slots.
 
 The shared GPIO table and 180 matching parameter descriptors are static evidence only. Sensor/ISP,

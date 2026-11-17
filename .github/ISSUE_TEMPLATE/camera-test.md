@@ -7,7 +7,7 @@ labels: camera-test
 
 **Camera:** OM-5 Mark II / original OM-5 (and serial range if you like)
 **Firmware before:** (Menu › Setup › Firmware)
-**Build:** release name or "OM-5 pre-alpha 1"
+**Build:** release name or "OM-5 pre-alpha 2" with its package SHA-256
 **SHA-256 of the file you flashed:** (from the patcher's output or build.json)
 
 **How far did you get?** (the step number from FIRST_FLASH.md or the OM-5 pre-alpha page)
