@@ -1,13 +1,14 @@
 # Original OM-5: pre-alpha for testers
 
-> **Pre-alpha. This has never run on an original OM-5.** It is built from Mark II **v0.1.0-alpha12**, which starts
-> and works on the owner's OM-5 Mark II ([camera findings](../releases/v0.1.0-alpha12/README.md)). Five earlier
-> Mark II builds failed to start or crashed, and OM's firmware went back from the card each time. None of that
-> carries over to the original OM-5. Nobody knows whether an original OM-5 can be brought back from the card if
-> this fails. Read all of this page, and [Safety](SAFETY.md), before you start.
+> **There is no working version for the original OM-5.** On 17 November 2026 a tester flashed **pre-alpha 1** onto
+> an original OM-5. It did not start: black screen, no backlight, silent. They put OM's firmware 1.2 back from the
+> card, and the camera works again ([report](../research/OM5I-PREALPHA1-CAMERA-2026-11-17.md)). That is one camera and one kind of failure. It does not
+> promise that recovery will always work. Read all of this page, and [Safety](SAFETY.md), before you start.
 >
-> **Status (17 November 2026): pre-alpha 2, not ready to flash.** Pre-alpha 1, built from Mark II alpha2, is
-> withdrawn. Mark II builds from that period failed on the camera. Pre-alpha 2 uses alpha12 and packs the program
+> **Status (17 November 2026): pre-alpha 2, not ready to flash.** Pre-alpha 1 is withdrawn. Its Mark II base
+> (alpha2) shares start-up code with Mark II builds that failed, so the report cannot say whether the transplant
+> itself is at fault. Pre-alpha 2 is built from Mark II **v0.1.0-alpha12**, which starts on the owner's OM-5 Mark II
+> ([camera findings](../releases/v0.1.0-alpha12/README.md)). That is a Mark II result only. Pre-alpha 2 uses alpha12 and packs the program
 > with that build's stream-length rule ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Nobody has built
 > it from OM's files yet, so this page publishes no reference checksum. You can build it and report your
 > `build.json` (section 1, step 6), but **do not flash it** until a checksum is published here and yours matches it.
@@ -36,14 +37,14 @@ it is a different build from the Mark II's.
 | Emulator, Mark II model (same chip family) | Pre-alpha 1 (alpha2 base) started there, passed all 13 look checks, and drew 23 screens identically to its Mark II build. Pre-alpha 2 has not been run there yet. That model does not use the original OM-5's resource layout or controller, so a result there says little about an OM-5. |
 | The Mark II base | Alpha12 starts on an OM-5 Mark II. The owner confirmed its looks, the Live ND32/ND64 icons and the Monochrome Color Filter page there. That is a Mark II result only. |
 | Comparing the two OM programs | About 86 % of functions match. Differences found: renumbered identifiers, one moved variable in on-chip memory, a different controller firmware. [Details](../research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md). |
-| Real original OM-5 | **Nothing**, for either pre-alpha. You would be the first. |
+| Real original OM-5 | **Pre-alpha 1 failed to start** (one tester, 17 Nov 2026), and OM's 1.2 went back from the card ([report](../research/OM5I-PREALPHA1-CAMERA-2026-11-17.md)). **Pre-alpha 2: nothing.** You would be the first. |
 
 ## What can go wrong
 
-- **It does not start**, or starts and then freezes or loops. This is quite likely.
+- **It does not start**, or starts and then freezes or loops. This is quite likely: pre-alpha 1 did not start.
 - **It cannot be put back from the card.** On the Mark II, OM's firmware went back from the card after each
-  failure. Whether the original OM-5's card update still works while this build is installed is unknown. If it
-  does not, the camera needs OM service, which may charge or decline.
+  failure. On the original OM-5 it worked once, after pre-alpha 1's black screen. A different failure could still
+  stop the card update from working. Then the camera needs OM service, which may charge or decline.
 - **Something works wrongly without you noticing**: exposure, stabilisation, battery charging or reading, saving
   settings. Do not rely on the camera for anything that matters while this is installed.
 - **Warranty.** Unofficial firmware may affect it.
