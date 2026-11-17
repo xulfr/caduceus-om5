@@ -33,6 +33,10 @@
 - Not yet built from OM's files. Pre-alpha 2 needs a first reference `build.json` before a checksum can be
   published. Any repack span or length fault from the E144 edits will show up there. [Tester page](docs/OM5_PREALPHA.md).
 
+- **Pre-alpha 1 failed on a tester's original OM-5** (17 Nov 2026): black screen, silent. OM's 1.2 was restored
+  from the card. The alpha2 donor's startup defect and the transplant itself are both possible causes.
+  [Report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
+
 ## Next camera checks
 
 1. Capture per-step filter and CP results with the installed package SHA-256.

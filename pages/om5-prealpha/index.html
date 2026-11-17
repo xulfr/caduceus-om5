@@ -18,18 +18,19 @@
   <a class="tab" href="../changelog/">Changelog</a>
   <a class="tab" href="https://github.com/xulfr/caduceus-om5">GitHub ↗</a>
 </div></nav>
-<div class="banner"><strong>Pre-alpha for the original OM-5: never run on any camera.</strong> Recovery from a failure is unknown. For testers who accept that risk. <a href="../safety/">Read the safety notes.</a></div>
+<div class="banner"><strong>Pre-alpha for the original OM-5: no working version.</strong> Pre-alpha 1 failed to start on one camera; pre-alpha 2 is untried. Recovery is not guaranteed. For testers who accept that risk. <a href="../safety/">Read the safety notes.</a></div>
 <main class="wrap" id="content">
 <div class="lead">
 <h1 id="original-om-5-pre-alpha-for-testers">Original OM-5: pre-alpha for testers</h1>
 <blockquote>
-<p><strong>Pre-alpha. This has never run on an original OM-5.</strong> It is built from Mark II <strong>v0.1.0-alpha12</strong>, which starts
-and works on the owner's OM-5 Mark II (<a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">camera findings</a>). Five earlier
-Mark II builds failed to start or crashed, and OM's firmware went back from the card each time. None of that
-carries over to the original OM-5. Nobody knows whether an original OM-5 can be brought back from the card if
-this fails. Read all of this page, and <a href="../safety/">Safety</a>, before you start.</p>
-<p><strong>Status (17 November 2026): pre-alpha 2, not ready to flash.</strong> Pre-alpha 1, built from Mark II alpha2, is
-withdrawn. Mark II builds from that period failed on the camera. Pre-alpha 2 uses alpha12 and packs the program
+<p><strong>There is no working version for the original OM-5.</strong> On 17 November 2026 a tester flashed <strong>pre-alpha 1</strong> onto
+an original OM-5. It did not start: black screen, no backlight, silent. They put OM's firmware 1.2 back from the
+card, and the camera works again (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5I-PREALPHA1-CAMERA-2026-11-17.md">report</a>). That is one camera and one kind of failure. It does not
+promise that recovery will always work. Read all of this page, and <a href="../safety/">Safety</a>, before you start.</p>
+<p><strong>Status (17 November 2026): pre-alpha 2, not ready to flash.</strong> Pre-alpha 1 is withdrawn. Its Mark II base
+(alpha2) shares start-up code with Mark II builds that failed, so the report cannot say whether the transplant
+itself is at fault. Pre-alpha 2 is built from Mark II <strong>v0.1.0-alpha12</strong>, which starts on the owner's OM-5 Mark II
+(<a href="https://github.com/xulfr/caduceus-om5/blob/main/releases/v0.1.0-alpha12/README.md">camera findings</a>). That is a Mark II result only. Pre-alpha 2 uses alpha12 and packs the program
 with that build's stream-length rule (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-STREAM-LENGTH-2026-11-15.md">note</a>). Nobody has built
 it from OM's files yet, so this page publishes no reference checksum. You can build it and report your
 <code>build.json</code> (section 1, step 6), but <strong>do not flash it</strong> until a checksum is published here and yours matches it.</p>
@@ -81,7 +82,7 @@ it is a different build from the Mark II's.</p>
 </tr>
 <tr>
 <td>Real original OM-5</td>
-<td><strong>Nothing</strong>, for either pre-alpha. You would be the first.</td>
+<td><strong>Pre-alpha 1 failed to start</strong> (one tester, 17 Nov 2026), and OM's 1.2 went back from the card (<a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5I-PREALPHA1-CAMERA-2026-11-17.md">report</a>). <strong>Pre-alpha 2: nothing.</strong> You would be the first.</td>
 </tr>
 </tbody>
 </table></div>
@@ -89,10 +90,10 @@ it is a different build from the Mark II's.</p>
 <section class="card">
 <h2 id="what-can-go-wrong">What can go wrong</h2>
 <ul>
-<li><strong>It does not start</strong>, or starts and then freezes or loops. This is quite likely.</li>
+<li><strong>It does not start</strong>, or starts and then freezes or loops. This is quite likely: pre-alpha 1 did not start.</li>
 <li><strong>It cannot be put back from the card.</strong> On the Mark II, OM's firmware went back from the card after each
-  failure. Whether the original OM-5's card update still works while this build is installed is unknown. If it
-  does not, the camera needs OM service, which may charge or decline.</li>
+  failure. On the original OM-5 it worked once, after pre-alpha 1's black screen. A different failure could still
+  stop the card update from working. Then the camera needs OM service, which may charge or decline.</li>
 <li><strong>Something works wrongly without you noticing</strong>: exposure, stabilisation, battery charging or reading, saving
   settings. Do not rely on the camera for anything that matters while this is installed.</li>
 <li><strong>Warranty.</strong> Unofficial firmware may affect it.</li>

@@ -30,7 +30,7 @@
 | | v0.1.0-alpha10, 17 Nov 2026 | **Booted on one camera.** Opening Monochrome Color Filter restarted the camera. ND32/64 icons were blank in the CP carousel. [Camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md). |
 | | v0.1.0-alpha9, 16 Nov 2026 | **Booted on one camera** (owner report). Colour wheel drawn; [defects found](research/OM5II-ALPHA9-CAMERA-2026-11-16.md). |
 | | v0.1.0-alpha8, 15 Nov 2026 | **Boot confirmed on one camera.** Color Profiles, SD-card looks and Live ND32/64 work with [known UI defects](research/OM5II-ALPHA8-CAMERA-2026-11-15.md). |
-| **Original OM-5** (2022), firmware 1.2 | pre-alpha 2 (alpha12 donor), no checksum yet | **Never run on any camera**; recovery after a failure is unknown. Not ready to flash. For testers who can build it: [tester page](docs/OM5_PREALPHA.md). |
+| **Original OM-5** (2022), firmware 1.2 | none working | **No working version.** Pre-alpha 1 (alpha2 donor) failed to start on a tester's camera on 17 Nov 2026. OM's 1.2 was restored from the card ([report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md)). Pre-alpha 2 (alpha12 donor) has never been built from OM's files or run on a camera. Do not flash either. [Tester page](docs/OM5_PREALPHA.md). |
 
 Every build is also checked in an emulator, which runs the camera's own software on a computer. The emulator
 cannot imitate everything (the image sensor, the second processor, the start-up loader), and it did not predict
@@ -103,7 +103,8 @@ In short:
 The original OM-5 runs an older program that has no hidden profiles to bring back. The pre-alpha therefore puts
 the whole OM-5 Mark II program, with Caduceus, into the original OM-5's update file. If it works, the camera would
 behave like a Mark II running Caduceus. Whether the Mark II program can drive the original OM-5's hardware is
-unknown. The [tester page](docs/OM5_PREALPHA.md) explains the risks, how to build it, a safe order of first steps
+unknown. There is no working version: the one camera report so far, for pre-alpha 1, is a black screen at start-up
+([report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md)). The [tester page](docs/OM5_PREALPHA.md) explains the risks, how to build it, a safe order of first steps
 (starting with OM's own firmware), and how to report. It is not in the one-step installer.
 
 ## How it compares with Caduceus for OM-3

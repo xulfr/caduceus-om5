@@ -1,5 +1,11 @@
 # Changelog
 
+## Camera result — original OM-5, 2026-11-17
+
+**OM-5 pre-alpha 1 (`70788992…d1b4`) failed to start on a tester's original OM-5.** The screen stayed black and
+the camera was silent. OM's firmware 1.2 was restored from the card. No working original OM-5 version exists.
+[Camera report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
+
 ## Unreleased — original OM-5 builder on the alpha12 donor (2026-11-16)
 
 - The original OM-5 builder now documents and defaults to the current Mark II source, v0.1.0-alpha12
