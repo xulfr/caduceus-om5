@@ -1,15 +1,16 @@
 # Original OM-5: pre-alpha for testers
 
-> **Pre-alpha. This has never run on any camera.** The Mark II build it is made from has not run on a Mark II
-> either, and three earlier Mark II builds left the camera in a boot loop. Nobody knows whether an original OM-5 can
-> be brought back from the card if this fails. Read all of this page, and [Safety](SAFETY.md), before you start.
+> **Pre-alpha. This has never run on an original OM-5.** It is built from Mark II **v0.1.0-alpha12**, which starts
+> and works on the owner's OM-5 Mark II ([camera findings](../releases/v0.1.0-alpha12/README.md)). Five earlier
+> Mark II builds failed to start or crashed, and OM's firmware went back from the card each time. None of that
+> carries over to the original OM-5. Nobody knows whether an original OM-5 can be brought back from the card if
+> this fails. Read all of this page, and [Safety](SAFETY.md), before you start.
 >
-> **Pre-alpha 1 is withdrawn; pre-alpha 2 has no checksum yet (16 November 2026).** Pre-alpha 1 used the Mark II
-> alpha2 build, and Mark II alpha2 through alpha6 boot-looped. The builder now uses the current Mark II source,
-> **v0.1.0-alpha12**, the build the owner reports working on a Mark II. It packs the program with the same
-> stream-length rule as that build ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Nobody has built
-> pre-alpha 2 from OM's files yet, so there is no reference checksum. Do not flash it: report your `build.json`
-> (step 6) first.
+> **Status (17 November 2026): pre-alpha 2, not ready to flash.** Pre-alpha 1, built from Mark II alpha2, is
+> withdrawn. Mark II builds from that period failed on the camera. Pre-alpha 2 uses alpha12 and packs the program
+> with that build's stream-length rule ([note](../research/OM5II-STREAM-LENGTH-2026-11-15.md)). Nobody has built
+> it from OM's files yet, so this page publishes no reference checksum. You can build it and report your
+> `build.json` (section 1, step 6), but **do not flash it** until a checksum is published here and yours matches it.
 
 This page is for **owners of the original OM-5 (2022, firmware 1.2)** who are comfortable with a terminal, accept the
 risk to their camera, and want to help: by trying the first steps below and reporting what happens, good or bad, or
@@ -32,9 +33,10 @@ it is a different build from the Mark II's.
 |---|---|
 | Builder checks | Both OM firmware files are checked against OM's published checksums. Every Caduceus code range, all 557 OM-5 resource records and all 116 pictures are preserved; the pictures are recompressed losslessly to fit, pixel-checked. The OM-5's own firmware is written alongside, byte for byte, to go back. |
 | Emulator, OM-5 model | Runs OM's own OM-5 firmware, but cannot run Mark II code at all: no result. |
-| Emulator, Mark II model (same chip family) | Starts, all 13 look checks pass, 23 screens identical to the Mark II build. It does not use the original OM-5's resource layout or controller, so this says little about an OM-5. |
+| Emulator, Mark II model (same chip family) | Pre-alpha 1 (alpha2 base) started there, passed all 13 look checks, and drew 23 screens identically to its Mark II build. Pre-alpha 2 has not been run there yet. That model does not use the original OM-5's resource layout or controller, so a result there says little about an OM-5. |
+| The Mark II base | Alpha12 starts on an OM-5 Mark II. The owner confirmed its looks, the Live ND32/ND64 icons and the Monochrome Color Filter page there. That is a Mark II result only. |
 | Comparing the two OM programs | About 86 % of functions match. Differences found: renumbered identifiers, one moved variable in on-chip memory, a different controller firmware. [Details](../research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md). |
-| Real original OM-5 | **Nothing.** You would be the first. |
+| Real original OM-5 | **Nothing**, for either pre-alpha. You would be the first. |
 
 ## What can go wrong
 
@@ -63,8 +65,9 @@ most of it building the assembler once.
    cd caduceus-om5
    ```
 
-   The default branch builds from the current Mark II source (v0.1.0-alpha12). Pre-alpha 1 (alpha2 donor,
-   withdrawn) remains reproducible at revision `02c3cb2a64687e3aa74b0639550c82a95cfd66d7`. Do not flash it.
+   Stay on the default branch, `main`, which builds pre-alpha 2 from the Mark II alpha12 source. (Pre-alpha 1 is
+   withdrawn. It can still be rebuilt at revision `02c3cb2a64687e3aa74b0639550c82a95cfd66d7`, for comparison only.
+   Do not flash it.)
 
    ```bash
    python3 -m pip install pillow
@@ -99,11 +102,19 @@ most of it building the assembler once.
    python3 patches/ports/om-5-i-from-ii/build.py --stock OLY_E_144_1200_0000_0000.BIN --donor-stock OLY_E_148_1100_0000_0000.BIN --out generated/om5-prealpha2 --write-untested-package
    ```
 
-6. **Check the result.** Pre-alpha 2 has no published checksum yet. Report the `package_sha256`,
-   `donor_build.package_sha256` and `jpegtran_version` from `generated/om5-prealpha2/build.json`. The donor hash
-   should be alpha12's, `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`; if it is not, stop.
-   Do not flash until a checksum has been published here and yours matches it (a different `jpegtran` version is
-   the likely cause of a mismatch).
+   If it stops with an error instead, that is a useful result too. Report the full message. An error that mentions
+   a "stream" or a "span" comes from the new packing checks.
+
+6. **Check the result.** Look in `generated/om5-prealpha2/build.json`:
+
+   - `donor_build.package_sha256` must be alpha12's,
+     `cddd7a1f1320e7680bec9e8430e25c69857c2f4bf764e571d6bfffb775acd3fa`. If it is not, stop and report it.
+   - `main_packing` should show `"stream_length": "stock-page"`.
+   - Report `package_sha256` and `jpegtran_version` in an [issue](#report). The first matching reports from
+     different people will set the published checksum here.
+
+   **Do not flash** until this page publishes a pre-alpha 2 checksum and yours matches it exactly. If yours differs,
+   a different `jpegtran` version is the likely cause.
 
 You get:
 
@@ -125,7 +136,7 @@ hold **OK**, switch on, let go when the orange light is steady, do not touch any
 | 0 | Put the **restore** `DCOLYMP` folder on a card and update with it. This is OM's own firmware 1.2, so nothing changes. | That the card update works on your camera, before anything risky. If it does not, stop here. |
 | 1 | Prepare a second card with the restore `DCOLYMP` folder and keep it at hand. Then update with the **install** file. Switch on, touch nothing for a minute. | Whether it starts at all: the biggest unknown. |
 | 2 | If it started: note **Menu › Setup › Firmware**, open the menus and the super control panel, take a photo, play it back. | Whether the basics work. |
-| 3 | Half-press once, then **Picture Mode**: look for Color Profile 1–3; try the colour wheel and the trash button there. | Whether Caduceus works. |
+| 3 | Half-press once, then **Picture Mode**: look for Color Profile 1–3 and Monochrome Profile 1–3. Try the colour wheel, the trash button and the Monochrome Color Filter page there. In the super control panel, look for ND32 and ND64 after ND16 in Live ND. | Whether Caduceus works, compared with the same checks on the Mark II. |
 | 4 | With [LookLab](../looklab/)'s `LOOKS.BIN` in `OM5MOD`: looks, as in [Using it](USING.md#looks). Switch off and on several times. | Looks, saving, restart. |
 | 5 | Check what you can of stabilisation, charging over USB, battery level, autofocus, and video. | The hardware unknowns. |
 
