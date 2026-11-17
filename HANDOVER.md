@@ -13,7 +13,7 @@
   [Alpha10 camera report](research/OM5II-ALPHA10-CAMERA-2026-11-17.md) and
   [static analysis](research/OM5II-MONO-FILTER-CP-2026-11-17.md#alpha11-follow-up).
 
-## Alpha12 on `claude/pensive-hamilton-pg8dpr`
+## Alpha12 (merged to `main`)
 
 - Restores the swatches, selection outline and centre colour via the armed filter
   paint hook at `0x610d9bc0`. Reuses the existing pen functions and invalidates

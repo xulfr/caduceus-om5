@@ -7,6 +7,8 @@
 - The builder packs the transplanted main program with the donor patch's own repack settings. These include the
   `stock-page` stream-length rule. Each main stream is checked for length faults, and `build.json` records `main_packing`.
 - Pre-alpha 2 has not been built from OM's files, and it has no published checksum. Never run on any camera.
+- Refreshed the original OM-5 tester page for pre-alpha 2. The README, Safety, Roadmap, first-flash checklist and
+  handover now lead with alpha12's camera result instead of the older build reports.
 
 ## Camera result — 2026-11-15
 
