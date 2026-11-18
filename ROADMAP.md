@@ -27,7 +27,8 @@ The owner performs any physical test; development sessions prepare and check fil
 - Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).
-  Then the other effects (Glow, Halation).
+  Then the other effects (Glow, Halation). Implemented on the v0.2.0-dev branch (emulator only,
+  [note](research/OM5II-CP-GRAIN-2026-11-18.md)); see [the v0.2.0 plan](docs/V0.2.0-PLAN.md).
 - Open: ND64 / ND32 digit artwork on the shooting screen.
 - Physical validation remains open: restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the

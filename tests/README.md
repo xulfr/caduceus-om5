@@ -51,6 +51,15 @@ from patch-origin writes; it does not prove that all hardware paths are safe.
 All results are **emulator only**. No loader, second CPU, ISP, physical persistence or exposure validation
 is implied. Do not change `camera_tested` after a passing run.
 
+### Color Profile grain (v0.2.0-dev)
+
+Six GUI cases set and switch the Color Profile Film Grain row. They then read cells 907/911/915 and the effective
+setting 998 through OM's getters (`tests/cp_grain_assert.mjs`). On the alpha12 build `cp1-low` fails, as it should.
+
+```sh
+python tests/run_cp_grain.py --emu generated/om-emu --build generated/strict --out generated/cp-grain
+```
+
 ### Live ND shooting labels
 
 Run the shooting UI with the display-side reads for settings 1709–1711 supplied by the fixture.

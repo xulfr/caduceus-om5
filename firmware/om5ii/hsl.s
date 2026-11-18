@@ -19,7 +19,7 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_SIZE = 1040                  /* the heap block P; 1024 before the Shading descriptors' nodes */
+ST_SIZE = 1064                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -981,7 +981,7 @@ light_lut:
  *   struct +4 sharpness = 904+p  (ID 7)
  *   struct +8 = 0 (ID 59), +20 = 1 (ID 105), +24 = 0 (ID 1806)
  *   effective 916..927 = 928+12p .. 939+12p  (store 1 -> store 2)
- *   effective 1016 = shading 912+p, 1011 = 0, 998 = 0
+ *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 907+4p (v0.2.0)
  *   effective 383 / 691 / 382 = 976+3p / 977+3p / 978+3p (store 2):
  *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
@@ -1322,7 +1322,7 @@ pm_num_keep:
  * 0x602e082f writes struct +0 -> 8, +4 -> 7, +8 -> 59, +12 -> 130,
  * +16 -> 131, +20 -> 105, +24 -> 1806):
  *   CP p:   +0 contrast 908+p, +4 sharpness 904+p, +8 0, +20 1, +24 0,
- *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 0,
+ *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 907+4p,
  *           tone 976+3p.. (store 2) -> 383/691/382
  *   MONO p: +0 994+p, +4 990+p, +8 0, +12 filter 1007+p, +16 toning 1003+p,
  *           +20 1, +24 0, 916..927 = 0, 1011 = level 1012+p,
@@ -1461,6 +1461,11 @@ rt_tab_loop:
  cmp 2,d0
  bcs rt_tab_value
  call rt_p,[],4
+ btst 0x4000,d0
+ beq rt_tab_p
+ and 0x3fff,d0
+ asl2 d1
+rt_tab_p:
  add d1,d0
  mov d0,a0
  call rt_get1,[],4
@@ -1563,10 +1568,15 @@ rt_put2:
  ret [],4
 .align 2
 /* {dst, src}: dst 0x80nn = refresh struct +nn, else an ID; src 0/1 = that
- * value, else src + p (store 1). Then 0, then the 916..927 source (0 = zeros). */
+ * value, src | 0x4000 = (src & 0x3fff) + 4p, else src + p (store 1). Then 0,
+ * then the 916..927 source (0 = zeros).
+ * Color Profile grain (v0.2.0) is stored in the value (part 0) cells of
+ * Color Profile 4's Sharpness, Contrast and Shading, 907 / 911 / 915: E148
+ * has no Color Profile 4 (111 = 64), the IDs have no stock descriptor, and
+ * part 1 of the same IDs (the WB records) is a separate cell. */
 rs_cp_table:
  .hword 0x8000,908, 0x8004,904, 0x8008,0, 0x8014,1, 0x8018,0
- .hword 1016,912, 1011,0, 998,0, 0, 928
+ .hword 1016,912, 1011,0, 998,0x4000|907, 0, 928
 rs_mono_table:
  .hword 0x8000,994, 0x8004,990, 0x8008,0, 0x800c,1007, 0x8010,1003
  .hword 0x8014,1, 0x8018,0, 1011,1012, 1016,1017, 998,999, 0, 0
@@ -1769,9 +1779,10 @@ ui_info_out:
  * with nodes in P (P+988..1027, past the film bank). Only RAM changes; a
  * lookup before this finds nothing, as stock. a2 = P. Color Profile Shading
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
+ * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988                  /* 5 nodes: P+988..1027 (P is ST_SIZE bytes) */
-CP_NDESC = 5                    /* 2217, 2218, 912, 913, 914 (cp_nd.py) */
+CP_NODES = 988                  /* 8 nodes: P+988..1051 (P is ST_SIZE bytes) */
+CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
  mov cp_nd_desc,a3

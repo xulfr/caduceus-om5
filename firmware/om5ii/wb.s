@@ -272,9 +272,15 @@ wb_profile_color:
  add -904,d0
  cmp 12,d0
  bcc wb_profile_sectors
+ /* 904+4k+p: Sharpness, Contrast, Shading (k 0..2) of profile p. p = 3 is
+  * Color Profile 4's cell, which E148 lacks; v0.2.0 keeps Color Profile
+  * grain there: 907 / 911 / 915 = profile k (cp_nd.py, hsl.s). */
+ mov d0,d1
  and 3,d0
  cmp 3,d0
- beq wb_profile_none
+ bne wb_profile_have
+ lsr 2,d1
+ mov d1,d0
  bra wb_profile_have
 wb_profile_sectors:
  mov d2,d0

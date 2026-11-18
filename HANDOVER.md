@@ -42,7 +42,11 @@
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md). Planning only; nothing built.
 - Parallel Codex task on its own branch `codex/space-map-tooling`: tool-generated map of loaded
   section ranges and free space, plus a seeded headless Ghidra (MN103) project. No firmware behaviour changes.
-- Claude next: colour grain for Color Profiles (setting 998) and E148 heap-allocator / native effect research.
+- **Film Grain for Color Profiles implemented (emulator only).** 6/6 `tests/run_cp_grain.py` cases; the static audit
+  against alpha12 is clean. Dev package `39160075…d3c3` (not a release). [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
+  Open: grain in colour JPEGs on the camera; whether any stock path writes 907/911/915 (Ghidra xrefs).
+- `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
+  branch is therefore not alpha12; use `main` for E144 work.
 
 ## Next camera checks
 
