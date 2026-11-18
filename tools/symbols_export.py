@@ -27,7 +27,12 @@ def json_symbols(value, source, path='patch'):
         name = str(value.get('name', path))
         for key, item in value.items():
             child = name if key == 'address' else name + '.' + key
-            if isinstance(item, str) and ADDRESS.fullmatch(item):
+            if key == 'sections' and isinstance(item, dict):
+                for section, address in item.items():
+                    if isinstance(address, str) and ADDRESS.fullmatch(address):
+                        yield dict(name=section, address=int(address, 16),
+                                   kind='patch-section', source_file=source)
+            elif isinstance(item, str) and ADDRESS.fullmatch(item):
                 yield dict(name=child, address=int(item, 16), kind='patch-address', source_file=source)
             else:
                 yield from json_symbols(item, source, child)

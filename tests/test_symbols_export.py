@@ -35,6 +35,14 @@ class SymbolsTests(unittest.TestCase):
         rows = list(se.json_symbols(doc, 'patch.json'))
         self.assertEqual(len(rows), 4)
         self.assertIn('hook', [r['name'] for r in rows])
+        self.assertIn('wb_hook', [r['name'] for r in rows])
+
+    def test_section_definitions_from_patch_and_linker_merge(self):
+        rows = list(se.ld_symbols('.ext2 0x605af4b0 : { *(.ext2) }', 'layout.ld'))
+        rows += list(se.json_symbols({'assembly': [{'sections': {'ext2': '0x605af4b0'}}]}, 'patch.json'))
+        result = se.collect(rows)
+        self.assertEqual(len(result['symbols']), 1)
+        self.assertEqual(result['symbols'][0]['source_files'], ['layout.ld', 'patch.json'])
 
 
 if __name__ == '__main__':

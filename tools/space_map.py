@@ -128,9 +128,14 @@ def build_map(image, regions, manifest, base=BASE, payload_file_offset=32,
                    overlays=contained)
         if built is not None:
             row['changed_bytes'] = sum(a != b for a, b in zip(image[lo-base:hi-base], built[lo-base:hi-base]))
-            row['changes_outside_manifest'] = sum(
-                image[at-base] != built[at-base] and not any(a <= at < b for a, b in used_intervals)
-                for at in range(lo, hi))
+            declared_changes = 0
+            cursor = lo
+            for a, b in sorted(intersection(lo, hi, used_intervals)):
+                a = max(a, cursor)
+                if b > a:
+                    declared_changes += sum(x != y for x, y in zip(image[a-base:b-base], built[a-base:b-base]))
+                cursor = max(cursor, b)
+            row['changes_outside_manifest'] = row['changed_bytes'] - declared_changes
         sections.append(row)
     # Extension capacity stops at the next overlay or native loaded end. Free bytes
     # count only pointer-unreferenced filler, never all bytes in that capacity.
@@ -188,6 +193,8 @@ def main(argv=None):
         report['manifest_sha256'] = hashlib.sha256(args.manifest.read_bytes()).hexdigest()
         streams = {p: (packed, raw) for p, packed, raw in oly_compress.spans(block.payload)}
         for r in report['sections']:
+            if block.offset + r['source'] - block.address != r['file_offset']:
+                raise ValueError('descriptor flash source disagrees with main file mapping')
             if r['compressed']:
                 packed, raw = streams[r['expanded_offset']]
                 r.update(stored_stream_bytes=32+packed, expanded_stream_bytes=raw)

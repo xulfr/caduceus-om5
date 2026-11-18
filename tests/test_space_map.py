@@ -76,6 +76,27 @@ class SpaceMapTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'SHA-256'):
                 sm.read_stock(path)
 
+    def test_compressed_span_does_not_authorize_its_extra_tail(self):
+        # A 96-byte synthetic stream occupies a reserved span, but the native
+        # loader selects only its first 32 bytes. Its remaining FF is NOT free.
+        import oly_compress
+        raw = b'\x55' * 16 + b'\xff' * 80
+        packed = oly_compress._encode(raw)
+        # Literal-only encoding needs a larger reservation than this tiny raw
+        # span; use a normal offset-1 match followed by five final literals.
+        packed = oly_compress._encode(raw[:17], 1, 74) + oly_compress._encode(raw[-5:])
+        stored = bytearray(b'\x55' * 256)
+        stored[128:144] = oly_compress.MAGIC
+        struct.pack_into('<II', stored, 144, len(packed), len(raw))
+        stored[152:160] = bytes(8)
+        stored[160:160+len(packed)] = packed
+        image = oly_compress.expand_image(stored)
+        regions = [dict(id=1, start=sm.BASE+128, end=sm.BASE+160, source=0x40001000, compressed=1)]
+        result = sm.build_map(image, regions, {'ranges': []})
+        self.assertEqual(result['sections'][0]['candidate_free_bytes'], 16)
+        self.assertEqual(result['gaps'][0]['end'], sm.BASE+160)
+        self.assertEqual(len(image), 256)
+
 
 if __name__ == '__main__':
     unittest.main()
