@@ -48,10 +48,19 @@ Mark II model; OM-Emu's OM-5 model cannot run Mark II code; open questions are t
 renumbered identifiers, one SRAM layout shift and the relocated resource addresses. See
 `research/OM5I-TRANSPLANT-EMULATOR-AND-STATIC-2026-11-14.md`.
 
+## v0.2.0 priorities (owner, 2026-11-18)
+
+Tone and colour controls come before effects. Order: **Blacks / Whites**, then **split toning**, then
+**Clarity**. All three go on the v0.2.0 development branch and are camera-tested together before an alpha.
+They change the photo-processing stage, which OM-Emu does not run. Each needs its E148 hook located by static
+analysis, and only a camera test shows the result. Film Grain for Color Profiles is already on the branch.
+The Art effects (Glow, Frame, Star Light) and loading code from the card are not planned for 0.2.0.
+[Plan](docs/V0.2.0-PLAN.md).
+
 ## Deferred
 
-Dedicated FILM carousel entries, more than three active slots, film metadata in EXIF, Blacks/Whites,
-split toning, extra grain, Glow and Halation. Looks, HSL, tone and ND64 take priority. Do not remove
+Dedicated FILM carousel entries, more than three active slots, film metadata in EXIF, extra grain,
+Glow, Art effects on Color Profiles, Halation and code loaded from the card. Looks, HSL, tone and ND64 take priority. Do not remove
 native features to gain room without measuring the need and documenting the exact tradeoff.
 
 ## Community handover
