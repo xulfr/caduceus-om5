@@ -45,14 +45,20 @@
 
 ## Development
 
-- Read-only analysis tooling is on `codex/space-map-tooling`, based on main
-  `a72851a`. [Setup, commands and validation limits](tools/ghidra/README.md).
-  Native loader space maps and deduplicated Atlas/linker symbols are generated
-  privately; filler candidates are not approved placement space.
+- Read-only analysis tooling is on `codex/ghidra-analysis`, from tooling commit
+  `3803ff8`. [Setup and queries](tools/ghidra/README.md). The private saved project
+  is `generated/ghidra/projects/E148-1100.gpr`: full analysis took 637 seconds
+  including startup/fix/save; 50,430 functions after six follow-up callback seeds.
+  Space-map pointer hits now reserve target byte ranges, preserving ext5/ext10
+  tails; pointee extents and runtime ownership still need review.
+- [Ghidra findings](research/OM5II-GHIDRA-FINDINGS-2026-11-18.md): gamma stage
+  `0x603e69ae`, RGB setter `0x603e6974`, luma LUT stage `0x603e863e` identified
+  statically. Stock reset/store-copy paths write IDs 907/911/915. Soft Focus flag
+  reader `0x6038d263` located; its weight getter remains unidentified.
 - [Static heap findings](research/OM5II-HEAP-ALLOCATOR-2026-11-18.md): E148
   allocation `0x60023818`, free entry `0x6002384a`; the existing linker comment's
   `0x6002385f` is an interior instruction. A pinned Ghidra import/xref smoke test
-  passed; full auto-analysis and heap runtime validation remain pending.
+  passed; full auto-analysis is complete, heap runtime validation remains pending.
   This branch changes no firmware, installer or release files.
 
 - Official E148 1.1 SHA-256 starts `9de5d77e`. Use GNU `mn10300-elf` tools and
