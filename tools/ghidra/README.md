@@ -58,8 +58,14 @@ Region capacities stop at the next overlay or the native loaded end.
 
 **Candidate free bytes are not a placement approval.** Uniform zeros can be
 live data. Absolute pointer matches are retained even when they might be
-coincidental instructions or end bounds (e.g. ext10); the whole referenced run
-is excluded. Relative branches, computed pointers, table extents and runtime
+coincidental instructions or end bounds (e.g. ext10). Space-map schema 2 reports
+each pointer target as a one-byte `reference_ranges` interval, preserves all
+source hits, and subtracts that interval together with declared patch usage.
+It also reports the remaining `candidate_free_ranges` within referenced runs.
+A pointer establishes an address, **not the pointee's extent**; those extents
+remain explicitly unknown. Hits inside already-used code do not erase a free
+tail: the baseline manifest now reports ext5 = 184 and ext10 = 190 candidate
+free bytes. Relative branches, computed pointers, table extents and runtime
 ownership need separate review. No static dword scan proves their absence.
 File offsets identify the encoded BIN section starts; compressed sections have
 no linear address-to-file mapping. Expanded stream spans can exceed loaded ends.

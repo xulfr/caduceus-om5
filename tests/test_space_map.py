@@ -28,18 +28,31 @@ class SpaceMapTests(unittest.TestCase):
         result = sm.build_map(image, regions, manifest)
         self.assertEqual(len(result['gaps']), 2)
         self.assertEqual(result['gaps'][0]['candidate_free_bytes'], 12)
-        self.assertEqual(result['gaps'][1]['candidate_free_bytes'], 0)
+        self.assertEqual(result['gaps'][1]['candidate_free_bytes'], 15)
+        self.assertEqual(result['gaps'][1]['reference_ranges'], [
+            {'start': sm.BASE+68, 'end': sm.BASE+69, 'pointee_extent_known': False}])
         self.assertEqual(result['gaps'][1]['pointer_refs'][0]['from'], sm.BASE+3)
         self.assertEqual(result['sections'][0]['file_offset'], 48)
         self.assertEqual(result['sections'][0]['patch_bytes_used'], 4)
-        self.assertEqual(result['regions'][0]['candidate_free_bytes'], 8)
+        self.assertEqual(result['regions'][0]['candidate_free_bytes'], 23)
         self.assertLessEqual(len(sm.summary(result).splitlines()), 40)
 
-    def test_ref_to_middle_rejects_whole_run(self):
+    def test_ref_to_middle_reserves_only_target_and_reports_unknown_extent(self):
         image, regions, manifest = self.fixture()
         struct.pack_into('<I', image, 9, sm.BASE+42)
         result = sm.build_map(image, regions, manifest)
-        self.assertEqual(result['sections'][0]['candidate_free_bytes'], 0)
+        self.assertEqual(result['sections'][0]['candidate_free_bytes'], 26)
+
+    def test_ref_inside_used_bytes_does_not_erase_free_tail(self):
+        image, regions, manifest = self.fixture()
+        struct.pack_into('<I', image, 9, sm.BASE+38)
+        result = sm.build_map(image, regions, manifest)
+        self.assertEqual(result['gaps'][0]['candidate_free_bytes'], 12)
+        self.assertEqual(result['regions'][0]['candidate_free_bytes'], 23)
+
+    def test_interval_subtraction_merges_clips_and_deduplicates(self):
+        self.assertEqual(sm.subtract_intervals(10, 30, [(8, 12), (11, 14), (20, 22), (20, 22), (28, 40)]),
+                         [(14, 20), (22, 28)])
 
     def test_manifest_outside_load_is_error(self):
         image, regions, manifest = self.fixture()

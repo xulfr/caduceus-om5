@@ -7,7 +7,7 @@ import re
 
 
 def import_plan(report, image):
-    if report.get('schema') != 'om5-space-map/1':
+    if report.get('schema') not in ('om5-space-map/1', 'om5-space-map/2'):
         raise ValueError('unsupported space map')
     if hashlib.sha256(image).hexdigest() != report['image_sha256']:
         raise ValueError('expanded image and space map disagree')

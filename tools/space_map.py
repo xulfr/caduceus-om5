@@ -47,6 +47,18 @@ def intersection(lo, hi, intervals):
     return [(max(lo, a), min(hi, b)) for a, b in intervals if a < hi and lo < b]
 
 
+def subtract_intervals(lo, hi, blocked):
+    """Complement of clipped, possibly overlapping intervals; ends are exclusive."""
+    cursor, result = lo, []
+    for start, end in sorted(intersection(lo, hi, blocked)):
+        if cursor < start:
+            result.append((cursor, start))
+        cursor = max(cursor, end)
+    if cursor < hi:
+        result.append((cursor, hi))
+    return result
+
+
 def overlays(manifest):
     """Ranges are authoritative byte counts; assembly/data_edits provide names, not extra usage."""
     rows = []
@@ -109,12 +121,25 @@ def build_map(image, regions, manifest, base=BASE, payload_file_offset=32,
     runs = filler_runs(image, regions, base, min_run)
     scan_pointers(image, runs, base)
     used_intervals = [(u['start'], u['end']) for u in usage]
+    candidates = []
     for run in runs:
         run['bytes'] = run['end'] - run['start']
-        run['status'] = 'referenced-filler' if run['pointer_refs'] else 'unreferenced-filler-candidate'
+        run['status'] = 'partly-referenced-filler' if run['pointer_refs'] else 'unreferenced-filler-candidate'
         run['patch_bytes'] = union_size(intersection(run['start'], run['end'], used_intervals))
-        run['candidate_free_bytes'] = 0 if run['pointer_refs'] else run['bytes'] - run['patch_bytes']
-    candidates = [(r['start'], r['end']) for r in runs if not r['pointer_refs']]
+        # An absolute pointer establishes its target address, not the pointee's
+        # extent. Reserve that byte only, report unknown extent, and retain every
+        # source hit for review. Do not let a hit in used code erase an unused tail.
+        pointed = sorted({ref['target'] - 0x40000000 if 0xa0000000 <= ref['target'] < 0xc0000000
+                          else ref['target'] for ref in run['pointer_refs']})
+        reference_ranges = [(target, target+1) for target in pointed]
+        remaining = subtract_intervals(run['start'], run['end'], reference_ranges)
+        candidates.extend(remaining)
+        free = subtract_intervals(run['start'], run['end'], reference_ranges + used_intervals)
+        run['candidate_free_bytes'] = union_size(free)
+        if pointed:
+            run['reference_ranges'] = [{'start': a, 'end': b, 'pointee_extent_known': False}
+                                       for a, b in reference_ranges]
+            run['candidate_free_ranges'] = [{'start': a, 'end': b} for a, b in free]
     sections = []
     for r in regions:
         lo, hi = r['start'], r['end']
@@ -152,10 +177,11 @@ def build_map(image, regions, manifest, base=BASE, payload_file_offset=32,
                             for part in intersection(a, b, used_intervals)])
         region_usage.append(dict(u, capacity_end=end, capacity_bytes=end-u['start'],
                                  candidate_free_bytes=free))
-    return {'schema': 'om5-space-map/1', 'base': base, 'image_sha256': hashlib.sha256(image).hexdigest(),
+    return {'schema': 'om5-space-map/2', 'base': base, 'image_sha256': hashlib.sha256(image).hexdigest(),
             'min_run': min_run, 'sections': sections, 'gaps': runs, 'regions': region_usage,
             'limitations': ['Unreferenced filler is an inference, not certified usable space.',
                             'All-alignment absolute LE32 scan includes uncached aliases and false positives.',
+                            'Only pointed-to bytes are reserved; actual pointee extents are UNKNOWN and require review.',
                             'Relative branches, computed pointers, runtime ownership and constructor extents need review.',
                             'file_offset is the encoded BIN location of a section start; compressed bytes have no linear mapping.']}
 
