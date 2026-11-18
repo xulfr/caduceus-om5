@@ -119,9 +119,10 @@ It additionally maps the prefix from `0x60021020` to section 1 as
 not make the prefix a free-space region. Inter-section padding and the suffix
 are unmapped. Symbols outside mapped memory are labels only. No label is
 automatically declared a function by the importer. With `--analyze`,
-`analysis_start.py` seeds eight documented entry points, then full auto-analysis
-runs before `MN103FixCallFrames.java`, `analysis_report.py` and
-`ExportImmediateIndex.java`. The report records elapsed time, functions,
+`analysis_start.py` seeds eight documented analysis roots, then full auto-analysis
+runs before `MN103FixCallFrames.java`, explicit research seeding, a second
+call-frame repair, `analysis_report.py` and `ExportImmediateIndex.java`.
+The report records elapsed time, functions,
 instructions and timeout status. Without `--analyze`, no auto-analysis runs.
 Omit `--ghidra` to prepare inputs only. Existing projects are not overwritten.
 
@@ -146,13 +147,19 @@ installations/projects yield `false` and exit nonzero. An empty result from a
 live query still means incomplete static coverage, not an absence proof.
 Unknown functions return null; ambiguous names and decompiler failures are
 explicit errors. Decompilation defaults to 32 lines/12,000 characters and a
-45-second timeout. Other lists are bounded to 30 groups/xrefs and eight sites
+45-second timeout. Use `--start-line N` to page through longer C functions while
+keeping `--max-lines 32`. Other lists are bounded to 30 groups/xrefs and eight sites
 per group, with truncation flags. `--near` means +/-64 KiB in instruction
 addresses. `find_imm` includes scalar displacement operands as well as literal
 immediates; inspect the instruction text to distinguish their roles.
 Use `find_imm VALUE --offset 30` (then 60, etc.) to page through large result
 sets without increasing each JSON response; `function_group_count` gives the
 total number of groups.
+`callees` also exposes tail-jump candidates, unresolved indirect call sites,
+and fallthrough into separately callable shared entries. These are separate
+relations, rather than invented direct calls. Function sizes are Ghidra's
+inferred bodies; multiple-entry MN103 routines may have a short prologue body
+and a separately callable common body.
 
 For several cheap queries in one JVM, use `--batch FILE.json`: an array of up to
 20 objects such as `[{"script":"func_at","args":["0x60023818"]}]`. Results retain
@@ -227,13 +234,16 @@ $env:JAVA_HOME = (Resolve-Path 'generated/runtime/jdk-21.0.9+10').Path
 Linux uses the same arguments with `"$GHIDRA_HOME/support/analyzeHeadless"`.
 For a fresh import, `headless.py --analyze` performs the import, seeding, full
 analysis, call-frame repair, reporting and indexing automatically. Do not repeat
-full analysis for ordinary queries. The eight seeds are documented in
-`analysis_start.py`; all other exported symbols remain labels.
+full analysis for ordinary queries. The eight initial analysis roots are
+documented in `analysis_start.py`; they include dispatch sites as well as
+independently known function entries. Their inferred boundaries need review
+when a decompile has unresolved registers. Other exported symbols initially
+remain labels.
 
 The full analysis manager reports **611 seconds**. Seeding through call-frame
 repair/reporting took **627.407 seconds**, and the complete process including
 JVM/project startup and save took **637.044 seconds**. The saved project has
-**50,424 functions and 3,305,241 instructions**. Timeout status was false.
+**50,424 functions and 3,305,241 instructions** after the full pass. Timeout status was false.
 The fixer visited 50,405 entries, updated/re-disassembled 1,750, reported zero
 conflicting frames, and skipped four targets inside another instruction.
 The analysis log also reports unresolved constructors at `0x6159dd31` and
@@ -242,6 +252,29 @@ Logs and machine-readable metrics: `generated/ghidra/full-analysis.log`,
 `analysis-report.json`, and `analysis-process.json`. The immediate index has
 1,829,500 distinct value/address records (14,636,000 bytes).
 
+Six indirect callbacks were then explicitly discovered with `-noanalysis`,
+without repeating the full pass. The saved project now has **50,430 functions**;
+the instruction count is unchanged. Names and these discoveries are reproducible:
+
+```powershell
+& "$ghidra/support/analyzeHeadless.bat" generated/ghidra/projects E148-1100 `
+  -process main.expanded.bin -noanalysis -scriptPath tools/ghidra `
+  -postScript seed_functions.py tools/ghidra/e148_research_seeds.json `
+  -postScript MN103FixCallFrames.java `
+  -postScript ExportImmediateIndex.java generated/ghidra/immediates.idx
+```
+
+The JSON is an explicit list of `address`/`name` objects derived from the
+[dated findings](../../research/OM5II-GHIDRA-FINDINGS-2026-11-18.md), not an
+automatic conversion of data labels into functions. The six callbacks are
+`0x603932cb`, `0x6039333d`, `0x603934ba`, `0x6039352b`, `0x603936a6` and
+`0x6039374d`. Seeding rejects entries inside a different existing function.
+The first attempt with `ADDR=NAME` arguments exposed Windows launcher argument
+splitting; the JSON-file interface fixes that. The failed log is retained as
+`generated/ghidra/soft-callback-seeds.log`; successful follow-up logs are separate.
+Query adapters disable Jython bytecode writes; its `$py.class` artifacts are
+also ignored defensively.
+
 All five query adapters and the index exporter were also executed against a
 small synthetic MN103 project in `generated/query-fixture/`: expected call
 reference, callee, containing function, immediate 600, and truncated decompiler
@@ -249,7 +282,7 @@ output all passed. This is a Ghidra runtime check, separate from CPython tests.
 
 GNU binutils 2.43 in WSL provided the primary static allocator disassembly.
 No emulator, firmware build, camera update or release check was run for this
-analysis-only task. `python scripts/check.py fast` completed 48 tests with two
+analysis-only task. `python scripts/check.py fast` completed 49 tests with two
 existing skips: E144 built-output checks and E148 release reproduction need
-external input/build settings. The other 46 passed. Linux installation was not
+external input/build settings. The other 47 passed. Linux installation was not
 executed. Query coverage and research limits are recorded in the dated findings.

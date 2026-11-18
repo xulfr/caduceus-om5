@@ -25,6 +25,8 @@ def run():
         if not any(ref.getFromAddress().getOffset() == source and ref.getReferenceType().isCall() for ref in refs):
             raise ValueError('native call xref missing: 0x%x -> 0x%x' % (source, target))
     println('OM5_IMPORT_CHECK ' + json.dumps({'passed': True, 'native_call_xrefs': 2,
+                                             'function_count': currentProgram.getFunctionManager().getFunctionCount(),
+                                             'instruction_count': currentProgram.getListing().getNumInstructions(),
                                              'scope': 'bounded static smoke test; no full auto-analysis'}))
 
 

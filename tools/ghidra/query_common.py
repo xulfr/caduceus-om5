@@ -44,15 +44,16 @@ def resolve_function(program, text, to_address):
     return program.getFunctionManager().getFunctionContaining(address)
 
 
-def truncate_lines(text, max_lines=32, max_chars=12000):
-    if max_lines < 1:
-        raise ValueError('max-lines must be positive')
+def truncate_lines(text, max_lines=32, max_chars=12000, start_line=0):
+    if max_lines < 1 or start_line < 0:
+        raise ValueError('max-lines must be positive; start-line must be nonnegative')
     lines = text.splitlines()
-    selected = lines[:max_lines]
+    selected = lines[start_line:start_line+max_lines]
     joined = '\n'.join(selected)
     clipped = joined[:max_chars]
     return {'lines': clipped.splitlines(), 'total_lines': len(lines),
-            'truncated': len(lines) > max_lines or len(joined) > max_chars}
+            'start_line': start_line,
+            'truncated': start_line > 0 or len(lines) > start_line+max_lines or len(joined) > max_chars}
 
 
 def index_addresses(handle, value):

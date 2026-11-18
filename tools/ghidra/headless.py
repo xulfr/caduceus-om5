@@ -32,6 +32,8 @@ def import_command(ghidra, out, analyze=False):
     else:
         command.extend(['-preScript', 'analysis_start.py', str(out / 'analysis-report.json'),
                         '-postScript', 'MN103FixCallFrames.java',
+                        '-postScript', 'seed_functions.py', str(scripts / 'e148_research_seeds.json'),
+                        '-postScript', 'MN103FixCallFrames.java',
                         '-postScript', 'analysis_report.py', str(out / 'analysis-report.json'),
                         '-postScript', 'ExportImmediateIndex.java', str(out / 'immediates.idx')])
     return command

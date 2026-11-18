@@ -11,6 +11,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / 'tools/ghidra'
 sys.path.insert(0, str(SCRIPTS))
 import query_common as common
 import query as runner
+import seed_functions
 
 
 class QueryTests(unittest.TestCase):
@@ -34,7 +35,8 @@ class QueryTests(unittest.TestCase):
 
     def test_decompile_truncation_handles_long_lines_and_empty(self):
         result = common.truncate_lines('a\nb\nc\n', 2)
-        self.assertEqual(result, {'lines': ['a', 'b'], 'total_lines': 3, 'truncated': True})
+        self.assertEqual(result, {'lines': ['a', 'b'], 'total_lines': 3, 'start_line': 0, 'truncated': True})
+        self.assertEqual(common.truncate_lines('a\nb\nc', 1, start_line=1)['lines'], ['b'])
         self.assertEqual(common.truncate_lines('', 10)['lines'], [])
         self.assertTrue(common.truncate_lines('x' * 100, 10, max_chars=10)['truncated'])
 
@@ -63,6 +65,14 @@ class QueryTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()) as output:
             self.assertEqual(common.execute({}, lambda: {'success': True}), 1)
         self.assertFalse(json.loads(output.getvalue())['ghidra_run'])
+
+    def test_explicit_seeds_reject_ambiguous_or_invalid_entries(self):
+        self.assertEqual(seed_functions.parse_seeds([{'address': '0x603932cb', 'name': 'soft_prepare_a'}]),
+                         [(0x603932cb, 'soft_prepare_a')])
+        for values in ([], [{'address': '-1', 'name': 'bad'}], [{'address': 0x60000000, 'name': 'with space'}],
+                       [{'address': 0x60000000, 'name': 'a'}, {'address': 0x60000000, 'name': 'b'}]):
+            with self.assertRaises(ValueError):
+                seed_functions.parse_seeds(values)
 
 
 if __name__ == '__main__':

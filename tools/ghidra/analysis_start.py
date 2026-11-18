@@ -1,4 +1,5 @@
-# Seed documented stock function entries before the one full auto-analysis pass.
+# Seed documented analysis roots before the one full auto-analysis pass.
+# Dispatch-site roots may have inferred/partial function boundaries; review C/ABI.
 # @category OM5
 import json
 import time
