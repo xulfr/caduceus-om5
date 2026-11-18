@@ -37,6 +37,13 @@
   from the card. The alpha2 donor's startup defect and the transplant itself are both possible causes.
   [Report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
 
+## v0.2.0 development (`claude/sharp-cray-0up4d3`)
+
+- Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md). Planning only; nothing built.
+- Parallel Codex task on its own branch `codex/space-map-tooling`: tool-generated map of loaded
+  section ranges and free space, plus a seeded headless Ghidra (MN103) project. No firmware behaviour changes.
+- Claude next: colour grain for Color Profiles (setting 998) and E148 heap-allocator / native effect research.
+
 ## Next camera checks
 
 1. Capture per-step filter and CP results with the installed package SHA-256.

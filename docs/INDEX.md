@@ -6,6 +6,7 @@
 - [Shared agent rules](../AGENTS.md)
 - [Project roadmap](../ROADMAP.md)
 - [Changelog](../CHANGELOG.md)
+- [v0.2.0 plan: space, features, tooling](V0.2.0-PLAN.md)
 - [Alpha12 release notes and camera findings](../releases/v0.1.0-alpha12/README.md)
 
 ## Historical evidence
