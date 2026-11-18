@@ -54,6 +54,15 @@ test table, so they test the table maths, not a picture.
 \*The gate reads the `R+1512` struct; the test passes an all-zero struct to the gate and the Shadows value only
 to the modifier.
 
+## Negative result: a new sidebar row item needs more than dispatch + list (emulator, scratch image)
+
+A scratch image (not committed) added item `0x150a` in an empty slot of the row-item dispatch `0x611a0a98` (slot 4,
+key `0x1504`). Its handler `mov 1017,d0; jmp 0x60e3cd53` follows the sharpness/contrast case path (type 0, setting in
+`(4,sp)`). The item was appended as the eighth entry of the Color Profile row list (count 8). Result: the sidebar
+drew only the seven known rows, and moving down to the eighth stopped the emulator (jump to `0x8940`, fault 3).
+So a row item also needs entries in at least one more per-item table (left-column cell, icon or page). This is
+the next Ghidra question, not more trial edits.
+
 ## Still to do (for a usable feature)
 
 1. Per-profile storage (2 × 3 values; the IDs must default to 0 in the stock reset/init lists, see the CP grain note)
