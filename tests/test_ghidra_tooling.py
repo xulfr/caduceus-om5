@@ -2,10 +2,12 @@
 import hashlib
 import importlib.util
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1] / 'tools/ghidra'
+sys.path.insert(0, str(SCRIPTS))
 
 
 def load(name):

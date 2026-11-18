@@ -1,6 +1,7 @@
 # Print incoming xrefs and call sites as one compact JSON object.
 # @category OM5
 import json
+import query_common as common
 
 
 def parse_address(text):
@@ -10,7 +11,7 @@ def parse_address(text):
     return value
 
 
-def query(program, address, limit=100):
+def query(program, address, limit=30):
     refs, callers, count = [], set(), 0
     iterator = program.getReferenceManager().getReferencesTo(address)
     for ref in iterator:
@@ -27,21 +28,22 @@ def query(program, address, limit=100):
         if kind.isCall():
             callers.add(('0x%x' % function.getEntryPoint().getOffset()) if function else row['from'])
     return {'address': '0x%x' % address.getOffset(), 'xref_count': count,
-            'xrefs': refs, 'callers': sorted(callers), 'truncated': count > limit,
+            'xrefs': refs, 'callers': sorted(callers),
+            'data_refs': [r for r in refs if 'DATA' in r['type'] or 'READ' in r['type'] or 'WRITE' in r['type']],
+            'truncated': count > limit,
             'scope': 'existing Ghidra analysis; indirect/unanalysed references may be missing'}
 
 
 def run():
     args = getScriptArgs()
     if len(args) not in (1, 2):
-        raise ValueError('find_refs.py ADDRESS [LIMIT=100]')
-    limit = int(args[1]) if len(args) == 2 else 100
+        raise ValueError('find_refs.py ADDRESS [LIMIT=30]')
+    limit = int(args[1]) if len(args) == 2 else 30
     if limit < 1:
         raise ValueError('LIMIT must be positive')
     result = query(currentProgram, toAddr(parse_address(args[0])), limit)
-    # Ghidra's own log lines surround this marker; the payload itself is short JSON.
-    println('OM5_REFS ' + json.dumps(result, separators=(',', ':')))
+    return result
 
 
 if __name__ == '__main__':
-    run()
+    common.execute(globals(), run, 'OM5_REFS ')

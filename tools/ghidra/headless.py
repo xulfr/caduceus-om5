@@ -30,7 +30,10 @@ def import_command(ghidra, out, analyze=False):
     if not analyze:
         command.append('-noanalysis')
     else:
-        command.extend(['-postScript', 'MN103FixCallFrames.java'])
+        command.extend(['-preScript', 'analysis_start.py', str(out / 'analysis-report.json'),
+                        '-postScript', 'MN103FixCallFrames.java',
+                        '-postScript', 'analysis_report.py', str(out / 'analysis-report.json'),
+                        '-postScript', 'ExportImmediateIndex.java', str(out / 'immediates.idx')])
     return command
 
 
