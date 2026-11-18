@@ -39,12 +39,16 @@
 
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`)
 
-- Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md). Planning only; nothing built.
-- Parallel Codex task on its own branch `codex/space-map-tooling`: tool-generated map of loaded
-  section ranges and free space, plus a seeded headless Ghidra (MN103) project. No firmware behaviour changes.
-- **Film Grain for Color Profiles implemented (emulator only).** 6/6 `tests/run_cp_grain.py` cases; the static audit
-  against alpha12 is clean. Dev package `39160075…d3c3` (not a release). [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
-  Open: grain in colour JPEGs on the camera; whether any stock path writes 907/911/915 (Ghidra xrefs).
+- Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
+- **Film Grain for Color Profiles (emulator only).** Dev package `0b284188…a3c8` (not a release, never flashed).
+  [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open: grain in colour JPEGs on the camera; whether any stock
+  path writes 907/911/915 (Ghidra xrefs); Reset and custom-mode behaviour.
+- **Next effect: Glow** via the Art Effect converter `0x6042394c` (Soft Focus flag `0x80`), following the OM-3
+  project's camera-proven route. Still to find: E148's Soft Focus weight getter and the live-view gate.
+  [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).
+- Codex branch `codex/space-map-tooling` (not merged): `tools/space_map.py` and `tools/symbols_export.py` run here
+  (31 s). Its free-space figure is conservative: any coincidental pointer zeroes a whole filler run (ext5/ext10
+  show 0). Ghidra import is set up, but full auto-analysis has not been run.
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 

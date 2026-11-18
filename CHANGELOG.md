@@ -6,6 +6,10 @@
   Each profile keeps its own setting, and the camera's grain setting follows the active Color Profile.
 - Emulator only: 6/6 cases in `tests/run_cp_grain.py`. Not built as a release, not camera-tested. Whether the camera
   draws grain in colour photos is unknown until tested. [Research note](research/OM5II-CP-GRAIN-2026-11-18.md).
+- The trash button no longer steps looks from the grain row, and the look name no longer replaces its title
+  (both found in the emulator; regression case `grain-row-delete`).
+- Research: the camera's Art Effect converter (Soft Focus, Frame, Star Light…) is mapped for the Glow work.
+  [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).
 
 ## Camera result — original OM-5, 2026-11-17
 

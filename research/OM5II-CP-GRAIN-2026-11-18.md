@@ -55,6 +55,16 @@ The 6/6 cases pass on the v0.2.0-dev build (package `39160075…d3c3`). Values r
 - Static audit against alpha12: all edits declared, no byte back to stock, native loader bounds and resources
   unchanged.
 
+## Fix: Delete and the title on the Film Grain row
+
+The grain row is a carousel, so the panel updater's `+136` reads 4 there as on the mode strip. The first build stepped
+a look when Delete was pressed on the grain row (case `grain-row-delete` fails on it: "slot 0 untouched"). The
+title restore had the same gate. Both now also require the row's title id (updater `+140`, descriptor `+4`) to be
+the strip's: 203, or 2749..2751. Grain titles are 2772..2775. Emulator dump: `+140` = 2749 / 203 / 2757 on the
+strip (Color, after returning, Monochrome) and 2772 / 2774 on grain. `+260` also separates them (1 vs 0), but its
+meaning is unknown, so it is not used. `row-return` now presses down 7 times; with 6 it had passed by
+stepping a look from the grain row.
+
 ## Not shown
 
 - That E148's image pipeline applies 998 in a colour picture mode. OM-Emu has no image pipeline. Monochrome
