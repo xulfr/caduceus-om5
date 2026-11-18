@@ -29,6 +29,16 @@ No other ID of 0..2299 changed.
 - Lead, not the weight getter: `0x60389774` dispatches on Art Filter job keys `0x01010065..0x01030069`
   (table `0x60564c68`, 16 rows) and its cases also set `0x80`. This is probably how the Soft Focus *filter* gets the pass.
 
+- Not the weight getter (ruled out): `0x602f87d1` and `0x602fa56d` return 600 but are system timing helpers
+  (`divu` by 1000, `0x5001x` codes). The E148 Soft Focus weight getter is still unknown. Ghidra xrefs from the
+  Soft Focus pass would find it faster than byte patterns.
+- Probe design (not built): all cases rejoin at `0x604239db` (`mov (a2),d0` 1 B + `and -16385,d0` 6 B). A 7-byte
+  `jmp` + `nop`s there into a section-2 tail routine could replay both instructions. For a Color capture with Art Effect id
+  (`a3+29473`) = 0, it would OR one flag per Color Profile, as OM-3's test 2 did: CP1 Soft Focus `0x80`,
+  CP2 Frame `0x8000`, CP3 Star Light `0x40`. Then `jmp 0x604239e2`. The open
+  choice is how to recognise a Color capture inside the converter. OM-3 used the job key at params+8 (`0x000b0000`);
+  E148's equivalent is not yet located. The camera question is whether the stock passes render on E148 Color stills.
+
 ## What the OM-3 project did with the same converter (their camera results, other body)
 
 - **Glow:** Color captures with no Art Effect get Soft Focus (`flags |= 0x80`) from a hook in the converter. The
