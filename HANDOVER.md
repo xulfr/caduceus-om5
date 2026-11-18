@@ -45,6 +45,16 @@
 
 ## Development
 
+- Read-only analysis tooling is on `codex/space-map-tooling`, based on main
+  `a72851a`. [Setup, commands and validation limits](tools/ghidra/README.md).
+  Native loader space maps and deduplicated Atlas/linker symbols are generated
+  privately; filler candidates are not approved placement space.
+- [Static heap findings](research/OM5II-HEAP-ALLOCATOR-2026-11-18.md): E148
+  allocation `0x60023818`, free entry `0x6002384a`; the existing linker comment's
+  `0x6002385f` is an interior instruction. A pinned Ghidra import/xref smoke test
+  passed; full auto-analysis and heap runtime validation remain pending.
+  This branch changes no firmware, installer or release files.
+
 - Official E148 1.1 SHA-256 starts `9de5d77e`. Use GNU `mn10300-elf` tools and
   OM-Emu `xulfr/om-emu` branch `fix/e148-ipi-stride`, commit
   `bdb33470705b3be28db52cbe080c31d74db727d8`.
