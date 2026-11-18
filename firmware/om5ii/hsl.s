@@ -2426,3 +2426,74 @@ ftab_col:
 /* filter value 0..8 -> slot */
 ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
+
+/* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
+ * E148's tone-curve modifier 0x60385f08 (one caller, 0x603e86f0) bends the
+ * photo's own copy of the 256-entry brightness table (O+0xa34). Its second
+ * spline takes 8 y values (0..1023) copied from 0x6052ea08 to (124,sp); stock
+ * adds Shadows to point 1 and Highlights to point 6 at 0x60385f9c. bw_apply
+ * runs there first: point 0 += B, point 1 (130) += 7B/8, point 7 -= W,
+ * point 6 (832) -= 13W/16, with B (Blacks, P+BW_B) and W (Whites, P+BW_W) in
+ * curve units. The middle cluster (473..477) stays: a levels map of all 8
+ * points moved middle grey 514 -> 482 in the emulator. Both 0 (the
+ * default, and always when not armed): nothing changes. Uses d0, d1, a0
+ * only; the stock code reloads all four after bw_resume. No calls except
+ * st_ptr, which reads the state handle through RAM for other CPUs.
+ * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
+ * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
+ * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
+BW_B = 1052                     /* s16 Blacks of the active Color Profile (P) */
+BW_W = 1054                     /* s16 Whites */
+.section .bw_hook,"ax"
+ jmp bw_apply
+.section .bw_gate_call,"ax"
+ call bw_gate,[d2],8
+.section .ext2,"ax"
+bw_apply:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq bw_replay
+ mov (BW_B,a0),d0                /* B | W << 16 */
+ cmp 0,d0
+ beq bw_replay
+ movhu (BW_B,a0),d1
+ exth d1                         /* d1 = B */
+ movhu (124,sp),d0
+ add d1,d0
+ movhu d0,(124,sp)               /* point 0 (0) += B */
+ mov d1,d0
+ asr 3,d0
+ sub d0,d1
+ movhu (126,sp),d0
+ add d1,d0
+ movhu d0,(126,sp)               /* point 1 (130) += 7B/8 */
+ movhu (BW_W,a0),d1
+ exth d1                         /* d1 = W */
+ movhu (138,sp),d0
+ sub d1,d0
+ movhu d0,(138,sp)               /* point 7 (1023) -= W */
+ mov 13,d0
+ mul d0,d1
+ asr 4,d1
+ movhu (136,sp),d0
+ sub d1,d0
+ movhu d0,(136,sp)               /* point 6 (832) -= 13W/16 */
+bw_replay:
+ mov (20,sp),a0
+ movhu (126,sp),d1
+ jmp bw_resume
+/* call bw_gate,[d2],8 in place of call 0x60385b9c,[],0: a0 = the tone
+ * values; d0 = 1 when the modifier should run. */
+bw_gate:
+ call tone_gate,[],0
+ cmp 0,d0
+ bne bw_gate_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq bw_gate_out
+ mov (BW_B,a0),d0
+ cmp 0,d0
+ beq bw_gate_out
+ mov 1,d0
+bw_gate_out:
+ ret [d2],8

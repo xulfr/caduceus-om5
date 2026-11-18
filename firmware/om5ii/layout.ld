@@ -30,11 +30,15 @@ SECTIONS {
  .ext5 0x60845a00 : { *(.ext5) }
  .hook_str 0x60d52ed5 : { *(.hook_str) }
  .ext10 0x6169c820 : { *(.ext10) }
+ .bw_hook 0x60385f9c : { *(.bw_hook) }
+ .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 label_resume = 0x60e4adf3;
+tone_gate = 0x60385b9c;          /* any of five tone values non-zero -> d0 = 1; call [],0 / retf */
+bw_resume = 0x60385fa1;          /* tone-curve modifier after the 5 hooked bytes (bw_hook) */
 label_format = 0x611b5af0;
 reset_resume = 0x60e9e0fa;
 parent_resume = 0x60ea0185;

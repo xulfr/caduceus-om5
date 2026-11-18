@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "83dab11e62d94b45a670531d73af55c081d27331665cf67aebbae0778c08f89c",
+      "stored_after_sha256": "abed312a09b82d8fff2ca29cc66134e161d47461da0724d9b832d59c9f33bf27",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "1bcb88890c89e2a22f1f29933ee6b195f51c8768c73f4d963f874d8dd636b120",
+      "after_sha256": "c741e71cd73e709a660f65f13106cf076d8b40fa04662a02f3003e9fa0e10a5a",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -62,7 +62,9 @@
         "ext10": "0x6169c820",
         "tone_pointer": "0x610d6600",
         "cp_any_hook": "0x60d22357",
-        "filter_pointer": "0x610d9bc0"
+        "filter_pointer": "0x610d9bc0",
+        "bw_hook": "0x60385f9c",
+        "bw_gate_call": "0x603e86a8"
       }
     },
     {
@@ -197,9 +199,9 @@
       "component": "0x100",
       "name": "ext2",
       "address": "0x605af4b0",
-      "bytes": 417,
-      "before_sha256": "e8c3f691a0a3402f850de25d0f4ab8f75c6486ad40284741eff0e9d26962c7fc",
-      "after_sha256": "a3f15f29799c9cfff39355bf4b5b608c56103ffab6e2f9a61d82712c917d3e8f"
+      "bytes": 530,
+      "before_sha256": "3ec3b539e189b768dea8561fe47a9959be35f7a2547517709880923f61d1b442",
+      "after_sha256": "e2c7ecc09fabab32a9bf2f03dd80ff9f96408fb3cc8c8a016c5f3974d6d83f24"
     },
     {
       "component": "0x100",
@@ -984,6 +986,22 @@
       "bytes": 1,
       "before_sha256": "67586e98fad27da0b9968bc039a1ef34c939b9b8e523a8bef89d478608c5ecf6",
       "after_sha256": "ca358758f6d27e6cf45272937977a748fd88391db679ceda7dc7bf1f005ee879"
+    },
+    {
+      "component": "0x100",
+      "name": "bw_hook",
+      "address": "0x60385f9c",
+      "bytes": 5,
+      "before_sha256": "278a03dbfc92e867c4c2c1672904160e8ee3e2ad80c923191dfc9a67e9ee8c5b",
+      "after_sha256": "8db7b6b2fefbcc78a7b8ce0a19a46099ebcde474769b119ea84e925be64f0b0b"
+    },
+    {
+      "component": "0x100",
+      "name": "bw_gate_call",
+      "address": "0x603e86a8",
+      "bytes": 7,
+      "before_sha256": "1ce0e4a2659b7d7c2571ad84a41ebce08b4353d482cd74d152e6642486238fbb",
+      "after_sha256": "0dfad927d1395da5746e4e48c69151d97b85178eb4407dd09ebea7bbb0f3367a"
     }
   ],
   "data_edits": [
@@ -1459,7 +1477,7 @@
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "0b2841880397217f81fc940ea9050ec8e1c6d468bab2c145cee9ea03ee44a3c8",
+    "sha256": "24f243a0d7b42815c504d74fcfbe2e9de4d4ef2a1cad9cedb4dfd4a2fdf9a373",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },

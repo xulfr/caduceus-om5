@@ -40,15 +40,16 @@
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
-- **Film Grain for Color Profiles (emulator only).** Dev package `0b284188…a3c8` (not a release, never flashed).
-  [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open: grain in colour JPEGs on the camera; whether any stock
-  path writes 907/911/915 (Ghidra xrefs); Reset and custom-mode behaviour.
-- **Next effect: Glow** via the Art Effect converter `0x6042394c` (Soft Focus flag `0x80`), following the OM-3
-  project's camera-proven route. Still to find: E148's Soft Focus weight getter and the live-view gate.
-  [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).
-- Codex branch `codex/space-map-tooling` (not merged): `tools/space_map.py` and `tools/symbols_export.py` run here
-  (31 s). Its free-space figure is conservative: any coincidental pointer zeroes a whole filler run (ext5/ext10
-  show 0). Ghidra import is set up, but full auto-analysis has not been run.
+- **Film Grain for Color Profiles (emulator only).** Current dev package `24f243a0…a373` (grain + inert
+  Blacks/Whites; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open on the
+  camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
+- **v0.2.0 priorities (owner): Blacks / Whites, split toning, Clarity**, each per Color Profile, all in one
+  tested build before an alpha. Blacks / Whites image side is built and emulator-checked (`tests/bw_assert.mjs`)
+  but inert: no storage, refresh or camera controls yet. Next steps are in [the plan](docs/V0.2.0-PLAN.md).
+  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+- Codex's Ghidra tooling and findings are merged from main
+  ([findings](research/OM5II-GHIDRA-FINDINGS-2026-11-18.md)). The stock reset, init and custom-mode copy lists
+  include 907/911/915, which grain uses; all default to 0 (= Off).
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 

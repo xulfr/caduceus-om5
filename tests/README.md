@@ -60,6 +60,15 @@ setting 998 through OM's getters (`tests/cp_grain_assert.mjs`). On the alpha12 b
 python tests/run_cp_grain.py --emu generated/om-emu --build generated/strict --out generated/cp-grain
 ```
 
+### Blacks / Whites curve (v0.2.0-dev)
+
+`tests/bw_assert.mjs` calls the camera's tone-curve modifier `0x60385f08` and the gate wrapper on a test ramp, with
+Blacks/Whites written into P. Pass the gate wrapper's linked address (from `mn10300-elf-nm`):
+
+```sh
+BW_GATE=0x605af6a1 POST=$PWD/tests/bw_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh generated/strict OUT s1
+```
+
 ### Live ND shooting labels
 
 Run the shooting UI with the display-side reads for settings 1709–1711 supplied by the fixture.
