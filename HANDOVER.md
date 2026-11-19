@@ -47,7 +47,9 @@
   [Note](research/OM5II-CP-GRAIN-2026-11-18.md) (2026-11-19 later section).
 - **Probe cg1** (`firmware/om5ii/cg.s`, 81 B in ext8 + the 7-byte call at `0x6036fc5c`): OM-3's camera-proven recipe
   (gl6/gl7): a COLOR still development request without its own effect gets grain level = effective 998 (1..3) and key
-  12 at +10 and in the context. Grain Off = stock. OM-Emu `run_cp_grain.py` 7/7 incl. request checks; not camera-tested.
+  12 at +10 and in the context. Grain Off = stock. Not camera-tested. 2026-11-19 on this source: `check.py full` pass
+  (fast tests, strict build = package `3836190a…9912`, base emulator suite 20/20, build audit), `run_bw_tint.py` 9/9,
+  `run_cp_grain.py` 7/7 incl. the new request checks (`tests/cg_probe_assert.mjs`).
   Package and test steps: see "Next camera checks" 0a. Carousel order (High..Off) stays open until grain shows.
 
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
