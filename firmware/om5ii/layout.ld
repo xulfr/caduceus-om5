@@ -34,12 +34,12 @@ SECTIONS {
  .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
  .rfa_hook 0x60e49d6f : { *(.rfa_hook) }
  .rfb_hook 0x60e4a1a4 : { *(.rfb_hook) }
- .bw_slot4 0x611a0b38 : { *(.bw_slot4) }
+ .bw_slot4 0x611a0ab8 : { *(.bw_slot4) }
  .bw_style_hook 0x60e4b02c : { *(.bw_style_hook) }
  .bw_knob_hook 0x60e4a9de : { *(.bw_knob_hook) }
  .bw_cell_hook 0x60e4a37a : { *(.bw_cell_hook) }
  .bw_label_hook 0x60e4b09d : { *(.bw_label_hook) }
- .bw_slot5 0x611a0b48 : { *(.bw_slot5) }
+ .bw_slot5 0x611a0ac8 : { *(.bw_slot5) }
  .bw_wslot4 0x611b7ac8 : { *(.bw_wslot4) }
  .bw_wslot6 0x611b7ad8 : { *(.bw_wslot6) }
 }

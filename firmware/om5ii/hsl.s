@@ -2513,10 +2513,10 @@ bw_gate_out:
  * cp_nd_desc. The refresh tail writes the active profile's values for
  * context 0 into P: B = 20 v(Blacks), W = -20 v(Whites) (+Whites brightens),
  * and 0 for any other picture mode. bw_apply reads them.
- * Rows: items 5370 (Blacks) and 5372 (Whites) in the Color Profile row list
+ * Rows: items 5354 (Blacks) and 5356 (Whites) in the Color Profile row list
  * (cp_nd.py cp_grain_rows). Both dispatchers accept only items 7..5377
- * (0x60e3ccc8, 0x60e49f3c). Setting resolver 0x611a0a98 slots 20 / 22 (key =
- * item - 6, & 31) -> bw_item_b / _w; row-widget table 0x611b7aa8 slots 4 / 6
+ * (0x60e3ccc8, 0x60e49f3c). Setting resolver 0x611a0a98 slots 4 / 6 (key =
+ * item - 6, & 31) -> row_item; row-widget table 0x611b7aa8 slots 4 / 6
  * (& 15) -> 0x60e49fdf, the slider handler of Sharpness / Contrast / Shading.
  * All four slots are empty in stock. Records in bw_rows, found by row_find_a / _b in
  * place of the two 17-record loops over 0x611b50f8. The records are sliders
@@ -2525,70 +2525,60 @@ bw_gate_out:
 BW_NDESC = 6
 BW_STEP = 20
 BW_NROWS = 2
+ROW_N = 2                       /* rows: Blacks, Whites */
+ROW_ITEM0 = 5354                /* items 5354 Blacks, 5356 Whites (keys on slots 4, 6) */
+ST_STEP = 40
 .section .ext5,"ax"
 /* d3 = kind (0..2 Color Profile 1..3), a2 = context. */
 bw_refresh:
  mov a2,d0
  cmp 0,d0
  bne bw_rf_out
- clr d2
- clr d0
- mov d0,a3
- cmp 3,d3
- bcc bw_rf_put
- mov d3,d0
- add d0,d0
- mov bw_ids,a0
- add d0,a0
- movhu (a0),d0                   /* Blacks ID of profile d3 */
- mov d0,a0
- call rt_get1,[],4
- extb d0
- mov BW_STEP,d1
- mul d1,d0
- mov d0,d2
- mov d3,d0
- add d0,d0
- mov bw_ids+6,a0
- add d0,a0
- movhu (a0),d0                   /* Whites ID of profile d3 */
- mov d0,a0
- call rt_get1,[],4
- extb d0
- mov -BW_STEP,d1
- mul d1,d0
- mov d0,a3
-bw_rf_put:
  call st_ptr,[],8
  cmp 0,a0
  beq bw_rf_out
- movhu d2,(BW_B,a0)
- mov a3,d0
- movhu d0,(BW_W,a0)
+ mov a0,a3                       /* a3 = P */
+ clr d2                          /* row r: 0 Blacks, 1 Whites (2 Split tone) */
+bw_rf_loop:
+ clr d0
+ cmp 3,d3
+ bcc bw_rf_put
+ mov d2,d0
+ add d2,d0
+ add d2,d0
+ add d3,d0
+ add d0,d0
+ mov row_ids,a0
+ add d0,a0
+ movhu (a0),d0
+ mov d0,a0
+ call rt_get1,[],4
+ extb d0
+ mov bw_rf_mul,a0
+ add d2,a0
+ movbu (a0),d1
+ extb d1
+ mul d1,d0
+bw_rf_put:
+ mov a3,a0
+ add d2,a0
+ add d2,a0
+ movhu d0,(BW_B,a0)
+ inc d2
+ cmp ROW_N,d2
+ bcs bw_rf_loop
 bw_rf_out:
  ret [d2,d3,a2,a3],20
+bw_rf_mul:                       /* curve units per step: Blacks, Whites (+ brightens), Split tone */
+ .byte BW_STEP, -BW_STEP, ST_STEP
 
 .section .ext6,"ax"
 /* Row item handlers (resolver 0x60e3ccba jumps here): d0 = the setting, then
  * the slider path of Sharpness / Contrast. */
-bw_item_b:
- mov bw_ids,d1
- bra bw_item
-bw_item_w:
- mov bw_ids+6,d1
-bw_item:
- mov d1,(4,sp)
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcs bw_item_cp
- clr d0
-bw_item_cp:
- add d0,d0
- mov (4,sp),a0
- add d0,a0
- movhu (a0),d0
+/* Every new row's resolver slot: d0 = key (item - 6) -> the row's setting. */
+row_item:
+ add 6,d0
+ call row_id,[d2],8
  jmp row_slider
 /* In place of the record loop at 0x60e49d6f: d2 = item, a3 = panel. */
 row_find_a:
@@ -2640,12 +2630,12 @@ bw_desc:                         /* stock-format copies of 1017's descriptor */
  .hword 11, 1
  .long 0x200
  .endr
-bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
+row_ids:                         /* Blacks of Color Profile 1..3, then Whites */
  .hword 965, 966, 967, 993, 997, 1020
  .balign 4
 bw_rows:                         /* row records, as Shading's (0x611b5378), kind 4 */
- .long 5370, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0
- .long 5372, 0, 0, 0, bw_title_w, 0, 0x40000, 0, 0, 0
+ .long 5354, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0
+ .long 5356, 0, 0, 0, bw_title_w, 0, 0x40000, 0, 0, 0
 bw_title_b:
  .hword 4, 2202
  .long 0x611b42ac
@@ -2660,18 +2650,18 @@ bw_title_w:
  jmp row_find_b
  nop
 .section .bw_slot4,"a"
- .long 5370-6, bw_item_b
+ .long 5354-6, row_item
 .section .bw_slot5,"a"
- .long 5372-6, bw_item_w
+ .long 5356-6, row_item
 .section .bw_wslot4,"a"
- .long 5370-6, row_slider_widget
+ .long 5354-6, row_slider_widget
 .section .bw_wslot6,"a"
- .long 5372-6, row_slider_widget
+ .long 5356-6, row_slider_widget
 
 /* The slider row's style and value-label lookups (0x60e4b02c, 0x60e4b09d) know
  * only items 7, 8, 59, 616, 5376 (Shading, 11 values -5..+5), 1011 and 5374.
  * Blacks / Whites use Shading's descriptor, so they take Shading's tables:
- * d0 5370 / 5372 -> 5376, then the replaced 5 bytes (mov d1,a1; clr d1;
+ * d0 ROW_ITEM0.. -> 5376, then the replaced 5 bytes (mov d1,a1; clr d1;
  * mov d1,d3; exthu d0) and back. */
 .section .ext6,"ax"
 /* No nested call: both functions return with retf, which uses MDR. */
@@ -2681,11 +2671,10 @@ bw_\n:
  clr d1
  mov d1,d3
  exthu d0
- cmp 5370,d0
- beq bw_\n\()_sh
- cmp 5372,d0
- bne bw_\n\()_out
-bw_\n\()_sh:
+ cmp ROW_ITEM0,d0
+ bcs bw_\n\()_out
+ cmp ROW_ITEM0+2*(ROW_N-1),d0
+ bhi bw_\n\()_out
  mov 5376,d0
 bw_\n\()_out:
  jmp bw_\n\()_back
@@ -2707,29 +2696,13 @@ bw_knob:
  bne bw_kn_ours
  jmp knob_shading
 bw_kn_ours:
- cmp 5370,d0
- beq bw_kn_b
- cmp 5372,d0
- beq bw_kn_w
+ mov d0,d1
+ add -ROW_ITEM0,d1
+ cmp 2*(ROW_N-1),d1
+ bls bw_kn_id
  jmp knob_none
-bw_kn_w:
- mov bw_ids+6,d1
- bra bw_kn_id
-bw_kn_b:
- mov bw_ids,d1
 bw_kn_id:
- mov d1,(4,sp)
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcs bw_kn_cp
- clr d0
-bw_kn_cp:
- add d0,d0
- mov (4,sp),a0
- add d0,a0
- movhu (a0),d0
+ call row_id,[d2],8
  mov d0,(4,sp)
  call settings_obj,[],4
  mov (a0),a2
@@ -2741,46 +2714,54 @@ bw_kn_cp:
  mov -5,a3
  mov 5,d0
  jmp knob_store
+/* call row_id,[d2],8: d0 = row item (ROW_ITEM0 + 2r) -> d0 = row r's setting
+ * for the active Color Profile (Color Profile 1's in any other mode). */
+row_id:
+ add -ROW_ITEM0,d0
+ lsr 1,d0
+ mov d0,d2
+ add d0,d2
+ add d0,d2
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcs row_id_cp
+ clr d0
+row_id_cp:
+ add d2,d0
+ add d0,d0
+ mov row_ids,a0
+ add d0,a0
+ movhu (a0),d0
+ ret [d2],8
 .section .bw_knob_hook,"ax"
  jmp bw_knob
  nop
 
 /* Left-column cell value: the panel row handler Blacks / Whites share with
  * Shading (0x60e4a34e) reads effective 1016 at 0x60e4a37a (mov 1016,d0;
- * calls (a2): 5 bytes). For items 5370 / 5372 read the active Color
+ * calls (a2): 5 bytes). For the new row items read the active Color
  * Profile's own setting instead. d3 = item; a1 = (32,sp) the result slot;
  * d2 is dead here (the stock code sets it at 0x60e4a389). */
 .section .ext2,"ax"
 bw_cell:
- cmp 5370,d3
- beq bw_cell_b
- cmp 5372,d3
- beq bw_cell_w
- mov 1016,d0
- calls (a2)
- jmp cell_back
-bw_cell_w:
- mov bw_ids+6,d2
- bra bw_cell_id
-bw_cell_b:
- mov bw_ids,d2
-bw_cell_id:
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcs bw_cell_cp
- clr d0
-bw_cell_cp:
- add d0,d0
- add d0,d2
- mov d2,a0
- movhu (a0),d2
+ mov d3,d0
+ add -ROW_ITEM0,d0
+ cmp 2*(ROW_N-1),d0
+ bhi bw_cell_stock
+ mov d3,d0
+ call row_id,[d2],8
+ mov d0,d2
  call settings_obj,[],4
  mov (a0),a2
  mov (8,a2),a2
  mov (32,sp),a1
  mov d2,d0
+ calls (a2)
+ jmp cell_back
+bw_cell_stock:
+ mov 1016,d0
  calls (a2)
  jmp cell_back
 .section .bw_cell_hook,"ax"
