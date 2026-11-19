@@ -43,11 +43,11 @@
 - **Film Grain for Color Profiles (emulator only).** Current dev package `24f243a0…a373` (grain + inert
   Blacks/Whites; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open on the
   camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
-- **WIP, do not flash: Blacks / Whites rows are mid-development (the rows show but have no slider yet).**
-- **v0.2.0 priorities (owner): Blacks / Whites, split toning, Clarity**, each per Color Profile, all in one
-  tested build before an alpha. Blacks / Whites image side is built and emulator-checked (`tests/bw_assert.mjs`)
-  but inert: no storage, refresh or camera controls yet. Next steps are in [the plan](docs/V0.2.0-PLAN.md).
-  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+- **Blacks / Whites rows on Color Profile 1–3: built and emulator-checked** (−5..+5, per profile, live in the
+  curve). [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md). Needs a camera test with the grain checks.
+- Split toning is designed; Clarity is blocked. The space budget and the next steps are in [the plan](docs/V0.2.0-PLAN.md).
+- Ghidra is set up in this cloud container (`generated/runtime`, `generated/ghidra`; lost when the container
+  is reclaimed). Rebuild: tools/ghidra/README.md, about 15 minutes.
 - Codex's Ghidra tooling and findings are merged from main
   ([findings](research/OM5II-GHIDRA-FINDINGS-2026-11-18.md)). The stock reset, init and custom-mode copy lists
   include 907/911/915, which grain uses; all default to 0 (= Off).

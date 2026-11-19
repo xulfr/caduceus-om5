@@ -63,7 +63,20 @@ drew only the seven known rows, and moving down to the eighth stopped the emulat
 So a row item also needs entries in at least one more per-item table (left-column cell, icon or page). This is
 the next Ghidra question, not more trial edits.
 
-## Still to do (for a usable feature)
+## Feature (v0.2.0-dev, emulator-checked)
+
+- Two Picture Mode rows on Color Profile 1–3: **Black** and **White**. They use E148's own strings 2202 / 2201,
+  −5..+5 sliders like Shading, and the Shading icon in the left column.
+- Storage: Blacks 965 / 966 / 967, Whites 993 / 997 / 1020 (unused profile-4 cells, default 0, signed through
+  the UI, in the stock reset / init / custom-mode lists). Each gets a copy of 1017's descriptor.
+- The refresh writes, for the active Color Profile (context 0), B = 20 × Blacks and W = −20 × Whites into
+  P+1100 / P+1102, and 0 in other modes. +Blacks lifts the black end; +Whites raises the white end
+  (brighter, clipping sooner).
+- Wiring: see [the row model](OM5II-PICTURE-MODE-ROWS-2026-11-19.md#everything-a-new-slider-row-needs-worked-out-by-building-blacks--whites-emulator).
+- Tests: `tests/run_bw_rows.py` (6 cases: per-profile values, switching, P) and `tests/bw_assert.mjs` (curve).
+- Not shown: the effect in a photo and in live view (camera test), and reset / custom-mode behaviour on the camera.
+
+## Original to-do list (done above except the camera test)
 
 1. Per-profile storage (2 × 3 values; the IDs must default to 0 in the stock reset/init lists, see the CP grain note)
    and refresh writes of the active profile's values into `P+1052/1054` (0 for other modes).

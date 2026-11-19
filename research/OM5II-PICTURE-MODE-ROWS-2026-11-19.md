@@ -29,3 +29,29 @@ Static analysis (objdump) and OM-Emu, 2026-11-19. Emulator and static only.
 
 An item added to the dispatch and the Color Profile list, but with no record in `0x611b50f8`, was not drawn,
 and moving onto it stopped the emulator (jump to `0x8940`). The record is required.
+
+## Everything a new slider row needs (worked out by building Blacks / Whites, emulator)
+
+Row items are accepted only in **7..5377** (`cmp 5377` at `0x60e3ccc8`, `0x60e49f3c`, `0x60e3c64b` …). Each item
+needs, besides its row-list entry and record:
+
+| Table / site | Keyed | What Blacks / Whites (5370 / 5372) use |
+| --- | --- | --- |
+| Setting resolver `0x611a0a98` (32 slots) | `(item−6) & 31` | own handler → setting of the active profile → `jmp 0x60e3cd53` (slider path) |
+| Key/value dispatchers `0x611a0618`, `0x611a0718`, `0x611a0818`, `0x611a0918`, `0x611b79a8`, `0x611b7b28` (32 slots each) | `(item−6) & 31` | Shading's handlers (generic key handlers act on the row's own object) |
+| Row-widget table `0x611b7aa8` (**16 slots**) | `(item−6) & 15` | `0x60e49fdf` (slider). Free slots in stock: 4, 6, 8 only |
+| Editor lists `0x6119ff10` `{u16 mode, u16 count, u32 list}` | mode | Color Profile 1..3 list extended (`0x611a02f8`) |
+| Slider style / value-label lookups `0x60e4b02c` / `0x60e4b09d` | item switch (7, 8, 59, 616, 5376, 1011, 5374) | hooked: our items use Shading's (11 values −5..+5) |
+| Knob value `0x60e4a9d0..` | item switch (7→7, 8→8, 59→59, 5376→1016) | hooked at `0x60e4a9de`: read the active profile's own setting |
+| Left-column value, panel handler `0x60e4a34e` | reads effective 1016 at `0x60e4a37a` | hooked: read the active profile's own setting |
+| Commit refresh (wb.s) | setting id | the new setting ids mapped to their profile |
+
+Free slots common to every 32-slot table in stock: 0, 4–8, 10, 11, 14, 15, 17–20, 22 … With the 16-slot table,
+items whose keys fall on its free slots 4 / 6 / 8 are 5354 / 5356 / 5358 (and 5370 / 5372, now used): **one more
+slider row is possible** without hooking that table's lookup. Knob scale: in this panel the stock Shading knob
+uses the 5-step scale (±2 reaches the ends; ±3..5 leave the bar); the 11-step branch needs `panel+256 == 1`,
+which is not set here. Blacks / Whites behave the same as stock Shading.
+
+**Setting cells differ by id.** Through the UI, 1822 read −2 back as 254, and grain moved there stepped
+Off → High (3) instead of Low. The raw writer/reader `0x602f5121` / `0x602f50f8` store any value for every
+id tested. Use ids whose family is signed in the UI (907/911/915, 965–967, 993/997/1020 work).
