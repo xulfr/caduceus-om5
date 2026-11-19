@@ -30,11 +30,40 @@ SECTIONS {
  .ext5 0x60845a00 : { *(.ext5) }
  .hook_str 0x60d52ed5 : { *(.hook_str) }
  .ext10 0x6169c820 : { *(.ext10) }
+ .bw_hook 0x60385f9c : { *(.bw_hook) }
+ .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
+ .st_hook 0x603e6974 : { *(.st_hook) }
+ .tone_info_ptr 0x61210790 : { *(.tone_info_ptr) }
+ .tone_info_ptr2 0x612107c8 : { *(.tone_info_ptr2) }
+ .tone_info_ptr3 0x61210800 : { *(.tone_info_ptr3) }
+ .tv_call1 0x60df85f3 : { *(.tv_call1) }
+ .tv_call2 0x60df8626 : { *(.tv_call2) }
+ .ext3 0x60621e80 : { *(.ext3) }
+ .ext9 0x615ee5c8 : { *(.ext9) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 label_resume = 0x60e4adf3;
+tone_gate = 0x60385b9c;          /* any of five tone values non-zero -> d0 = 1; call [],0 / retf */
+bw_resume = 0x60385fa1;
+row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
+row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
+row_slider = 0x60e3cd53;
+row_widget_back = 0x60e49f4d;   /* row-widget lookup after add -6,d1; mov table,a1 */
+setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
+tone_info_stock = 0x60e9e8ff;   /* tone editor (type 0x1531) INFO handler, entered by calls */
+tone_view_stock = 0x60df862e;   /* the tone view's label update (a0 = view) */
+st_tint = 0x60829774;           /* wb.s .st_tint (fixed in wb.ld) */
+knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
+knob_none = 0x60e4aa37;
+cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */
+knob_store = 0x60e4aa35;        /* slider knob: store max d0 at (4,sp), min in a3 */
+settings_obj = 0x608eedd3;      /* -> a0 = settings object (vtable +8: value getter) */
+bw_style_back = 0x60e4b031;     /* slider style lookup after its first 5 bytes */
+bw_label_back = 0x60e4b0a2;     /* slider value-label lookup after its first 5 bytes */        /* resolver: d0 = setting -> slider row (Sharpness / Contrast path) */
+rfa_back = 0x60e49d87;          /* after the record loop at 0x60e49d6f */
+rfb_back = 0x60e4a1ba;          /* after the record loop at 0x60e4a1a4 */          /* tone-curve modifier after the 5 hooked bytes (bw_hook) */
 label_format = 0x611b5af0;
 reset_resume = 0x60e9e0fa;
 parent_resume = 0x60ea0185;
@@ -71,7 +100,7 @@ wc_get = 0x602f514d;
 st_handle = 0x6218c2fe;
 st_handle_u = 0xa218c2fe;   /* the same halfword in RAM, past any CPU's cache */
 hls_tid = 0x6218c2fc;
-ST_POOL = 0xa1e27d80;      /* class-1 heap pool 0xa1e27d80..0xa1e32ac0 (free() 0x6002385f) */
+ST_POOL = 0xa1e27d80;      /* class-1 heap pool 0xa1e27d80..0xa1e32ac0 (free wrapper 0x6002384a; see research/OM5II-HEAP-ALLOCATOR-2026-11-18.md on codex/space-map-tooling) */
 ST_HANDLE_MAX = 43329;     /* pool span 44352 - block 1024 + 1 */
 trig = 0x602f0cc2;
 trig_resume = 0x602f0b9a;
@@ -91,7 +120,7 @@ scr_obj = 0x61e588f4;      /* the direct-setting screen object; +4 = its panel u
 ui_timer = 0x60f10fd2;     /* restart GUI timer d0 for d1 ms (cancel 0x60d534c8, start 0x60d53421); call ...,[d2,d3],12 */
 desc_find = 0x602e1edb;    /* setting id d0 -> a0 descriptor or 0 (RAM hash 0x620dc288); call ...,[],0 */
 desc_buckets = 0x620dc288; /* 128 bucket heads, RAM (.bss) */
-cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218, 912..914 */
+cp_nd_desc = 0x604f24f0;   /* data edit cp_nd_descriptors: 2217, 2218, 912..914, 907, 911, 915 */
 pen_color = 0x60d51e2c;   /* a0 dc, d0 colour; call ...,[d2,d3,a2,a3],16 */
 pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
 move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */
@@ -102,6 +131,8 @@ ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(SIZEOF(.cp_any_hook) == 7, "cp_any_hook replaces 7 bytes")
 ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
+ASSERT(ADDR(.ext3) + SIZEOF(.ext3) <= 0x60622000, ".ext3 leaves section 3")
+ASSERT(ADDR(.ext9) + SIZEOF(.ext9) <= 0x615ee800, ".ext9 leaves section 9")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
 ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")

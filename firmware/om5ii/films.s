@@ -35,6 +35,7 @@ FL_MAX   = 10
 FL_SIZE  = FL_HDR + FL_REC * FL_MAX
 FL_READ  = FL_SIZE + 1           /* read one extra byte to detect an oversized file */
 PANEL_ROW = 136                 /* panel updater object: kind of the highlighted row */
+PANEL_TITLE = 140               /* u16: that row's title id (the mode strip: mode name or 203) */
 LABEL_ID = 130                  /* text label: the string id it last laid out */
 FL_TAG   = 0x464c               /* 'FL': word 0 of a slot's name cells = FL_TAG << 16 | index << 8 */
 
@@ -91,6 +92,12 @@ pg_title:
  mov (12,sp),a0
  movhu (a0),d0
  cmp 4,d0
+ bne pg_t_dirty
+ /* kind 4 is any carousel row; the Film Grain row (v0.2.0) is one too.
+  * The mode strip's title is the mode's name (2749+p here) or 203. */
+ movhu (4,a0),d0
+ call fl_strip_title,[],4
+ cmp 0,d0
  bne pg_t_dirty
  mov 111,d0
  call stock_get,[],4
@@ -324,6 +331,10 @@ fl_delete:
  beq fl_d_no
  movbu (PANEL_ROW,a0),d0
  cmp 4,d0
+ bne fl_d_no
+ movhu (PANEL_TITLE,a0),d0       /* not the Film Grain carousel (v0.2.0) */
+ call fl_strip_title,[],4
+ cmp 0,d0
  bne fl_d_no
  mov 111,d0
  call stock_get,[],4
@@ -590,6 +601,20 @@ fl_n_literal:
 fl_n_none:
  mov 0,a0
  ret [d2,d3,a2,a3],28
+
+/* d0 = a carousel row's title id -> d0 = 0 for the Picture Mode strip of a
+ * Color Profile (203 "Picture Mode", or 2749..2751 "Color Profile 1..3"),
+ * else nonzero. Other carousels, such as Film Grain (2772..2775), are not. */
+fl_strip_title:
+ cmp 203,d0
+ beq fl_st_yes
+ add -2749,d0
+ cmp 3,d0
+ bcc fl_st_out                   /* d0 >= 3: nonzero */
+fl_st_yes:
+ clr d0
+fl_st_out:
+ ret [],4
 
 .balign 2
 fl_cells:                        /* a slot's four spare part-1 cells: tag, then 12 name bytes */

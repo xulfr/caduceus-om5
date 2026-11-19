@@ -30,7 +30,13 @@ wb_load:
  add -904,d2
  cmp 126,d2
  bcc wb_not_profile
+ /* 964..975: Blacks and the split-tone tints (hsl.s bw_ids, tint_ids) */
+ add -60,d2
+ cmp 12,d2
+ bcs wb_go_cell
  jmp wb_profile
+wb_go_cell:
+ jmp wb_cell
 wb_not_profile:
  cmp PM_ID,d0
  beq wb_enter
@@ -52,6 +58,20 @@ wb_original:
  jmp commit_resume
 
 .section .wb_body,"ax"
+/* Blacks 965..967 and the tints 964, 968..975 (Color Profile 4's colour
+ * cells) -> profile (id - 962) mod 3, then the profile commit (stock commit,
+ * then refresh of each context showing that profile). */
+wb_cell:
+ mov d0,d2
+ mov d1,d3
+ add -962,d0
+wb_cell_mod:
+ cmp 3,d0
+ bcs wb_cell_p
+ add -3,d0
+ bra wb_cell_mod
+wb_cell_p:
+ jmp wb_profile_have
 /* Replaces the first five bytes of the native commit routine. Its caller
  * already saved d2,d3,a2,a3 in a 20-byte frame. Nested commits use stock. */
 wb_commit:
@@ -272,9 +292,15 @@ wb_profile_color:
  add -904,d0
  cmp 12,d0
  bcc wb_profile_sectors
+ /* 904+4k+p: Sharpness, Contrast, Shading (k 0..2) of profile p. p = 3 is
+  * Color Profile 4's cell, which E148 lacks; v0.2.0 keeps Color Profile
+  * grain there: 907 / 911 / 915 = profile k (cp_nd.py, hsl.s). */
+ mov d0,d1
  and 3,d0
  cmp 3,d0
- beq wb_profile_none
+ bne wb_profile_have
+ lsr 2,d1
+ mov d1,d0
  bra wb_profile_have
 wb_profile_sectors:
  mov d2,d0
@@ -335,6 +361,91 @@ wb_profile_none:
  * 1003, filter 1007, level 1012, shading 1017, tone 1021 (three per profile);
  * SET4 and 985..989, 998, 1011, 1016 are not profile settings here. */
 wb_mono_map:
- .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff
- .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff
+ .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0, 3,4,5,1, 0xff, 3,4,5,0xff
+ .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,2
  .byte 3,3,3,4,4,4,5,5,5
+
+/* ---- Split tone (v0.2.0-dev): tint the photo's R/G/B curve tables ----
+ * Hooks the entry of E148's three-pointer curve setter 0x603e6974 (a0 = the
+ * job output O, a1 / d0 / d1 = R / G / B tables, 256 x u16, 0..4095; callers
+ * 0x603e6b3e and 0x603e6f0b, both call ...,[d2,a2],8). The 5 replaced bytes
+ * are mov a0,a2; inc4 a2; mov d1,d2; mov d0,d1; mov (a2),d0 (replayed).
+ * When armed and the active Color Profile has a tint (ST_A, set by hsl.s
+ * tint_refresh with the delta tables, 0 in other modes) the tinted copies
+ * c'[i] = c[i] + delta_c[i] (0..4095) are built in the buffer (R' +0, G'
+ * +512, B' +1024; deltas at +1552, +2064, +2576) and passed instead. The
+ * buffer is uncached heap memory owned by Caduceus; concurrent jobs write
+ * identical values. research/OM5II-SPLIT-TONE-2026-11-19.md */
+ST_A = 1176                      /* hsl.s */
+ST_BUF = 1180
+ST_MAGIC = 60
+ST_MAGIC_VALUE = 0x55444143
+/* No call anywhere here: the setter returns with retf [d2,a2],8 (through
+ * MDR), and call writes MDR. O, MDR and the G and B inputs are kept in the
+ * buffer at 1536..1551 while the tables are built. */
+.section .st_tint,"ax"
+/* Entered from hsl.s st_entry (ext2) once armed: a2 = P, a0 = O, d2 = MDR,
+ * a1 / d0 / d1 = R / G / B. No call here (see st_entry). */
+.global st_tint
+st_tint:
+ movm [d3,a3],(sp)
+ movhu (ST_A,a2),d3
+ cmp 0,d3
+ beq st_t_none
+ mov (ST_BUF,a2),a3
+ cmp 0,a3
+ beq st_t_none
+ mov a0,(1536,a3)                /* O */
+ mov d2,(1540,a3)                /* MDR */
+ mov d0,(1544,a3)                /* G in */
+ mov d1,(1548,a3)                /* B in; a1 = R in */
+ mov a3,a0                       /* out: R' +0, G' +512, B' +1024 */
+ clr d3
+st_loop:
+ movhu (a1),d0
+ movhu (1552,a0),d1
+ exth d1
+ add d1,d0
+ cmp 0,d0
+ bge st_lo
+ clr d0
+st_lo:
+ cmp 4095,d0
+ ble st_hi
+ mov 4095,d0
+st_hi:
+ movhu d0,(a0)
+ add 2,a0
+ add 2,a1
+ inc d3
+ mov d3,d0
+ and 255,d0
+ cmp 0,d0
+ bne st_loop
+ mov d3,d0                       /* 256 or 512: the next input, G or B */
+ lsr 6,d0
+ mov a3,d1
+ add d1,d0
+ mov d0,a1
+ mov (1540,a1),a1
+ cmp 768,d3
+ bcs st_loop
+ mov a3,a1                       /* R' */
+ mov a3,d0
+ add 512,d0                      /* G' */
+ mov a3,d1
+ add 1024,d1                     /* B' */
+ mov (1540,a3),d2
+ mov d2,mdr
+ mov (1536,a3),a0                /* O */
+ bra st_t_out
+st_t_none:
+ mov d2,mdr
+st_t_out:
+ movm (sp),[d3,a3]
+ mov a0,a2
+ inc4 a2
+ mov d1,d2
+ mov d0,d1
+ mov (a2),d0
+ jmp setter_back
