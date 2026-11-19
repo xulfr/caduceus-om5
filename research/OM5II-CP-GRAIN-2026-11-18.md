@@ -24,8 +24,12 @@
 > `0x6036fc5c` (24 bytes only: candidate). No match for combiner 33 `0x60505142`, the MONO grain gate `0x604b3f28`,
 > the work-list builder, the Grainy Film handler or the Art converter (whose E148 address `0x6042394c` is known:
 > the bodies differ by struct offsets). Next step for a real implementation: Ghidra cross-references from these
-> anchors, then a logging probe on the camera as OM-3's gl1–gl3 (OM-Emu has no image pipeline). Owner decision pending: drop the Color Profile
-> grain row until then, or keep it while the pipeline work is done.
+> anchors, then a logging probe on the camera as OM-3's gl1–gl3 (OM-Emu has no image pipeline).
+>
+> **Removed from the v0.2.0-dev build** (owner, 2026-11-19): `cp_nd.py` `CP_GRAIN = False` drops the row, lookup
+> and descriptor edits; the refresh writes 998 = 0 for Color Profiles again (no `0x4000` stride), `CP_NDESC` = 5,
+> and wb.s no longer maps 907 / 911 / 915. The trash-button fix on the grain row stays (Monochrome has the row).
+> The experiment continues on `claude/cp-grain-experiment`.
 
 Static analysis and OM-Emu only, 2026-11-18. **Not camera-tested.** Addresses are runtime addresses of the
 expanded main program. OM-Emu `bdb33470`, GNU binutils 2.42 `mn10300-elf`.

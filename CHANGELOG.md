@@ -1,22 +1,19 @@
 # Changelog
 
-## Unreleased — v0.2.0-dev: Film Grain for Color Profiles (2026-11-18, emulator only)
+## Unreleased — v0.2.0-dev (2026-11-19, emulator only)
 
-- Color Profile 1–3 gain the **Film Grain Effect** row (Off / Low / Std / High), as in the Monochrome Profiles.
-  Each profile keeps its own setting, and the camera's grain setting follows the active Color Profile.
-- Emulator only: 6/6 cases in `tests/run_cp_grain.py`. Not built as a release, not camera-tested. Whether the camera
-  draws grain in colour photos is unknown until tested. [Research note](research/OM5II-CP-GRAIN-2026-11-18.md).
-- The trash button no longer steps looks from the grain row, and the look name no longer replaces its title
-  (both found in the emulator; regression case `grain-row-delete`).
-- **Black and White on the tone curve page** of Color Profile 1–3 (−7..+7, per profile): INFO now steps
-  Hi/Sh → Black/White → Mid. In Black/White the two dials set Black (+ lifts the blacks) and White (+ brightens
-  the whites), and the curve graphic shows them. Applied inside the camera's own tone curve, beside Shadows /
-  Highlights. Replaces the separate Black and White rows. Emulator only: whether photos change is unknown until a
-  camera test. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
-- **Split toning on the colour wheel** of Color Profile 1–3: three more axes on the trash button (Shadow Tint,
-  Midtone Tint, Highlight Tint). On each, pick any of the wheel's twelve colours and give it a strength 1..5.
-  Applied to the camera's own R/G/B curves. Replaces the teal/orange Split Tone row. Emulator only.
-  [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- **Black and White on the tone curve page** of Color Profile 1–3 (−7..+7, per profile, labelled Blk / Wht): INFO
+  steps Hi/Sh → Black/White → Mid. + lifts the blacks, + brightens the whites. Now applied through the camera's
+  R/G/B curves (the split-tone route): the first build's tone-curve hook showed no effect on the camera.
+  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+- **Split toning on the colour wheel** of Color Profile 1–3: Shadow, Midtone and Highlight Tint on the trash button;
+  any of the twelve colours, strength 1..5. Works on the camera (live view and JPEGs). A tint is one colour: "all"
+  is no longer offered on the tint axes. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- **Picture Mode stays open 30 s** after the last key, dial or tap (was 8 s).
+- **Film Grain for Color Profiles removed**: the camera showed no grain in colour pictures (its grain pass is
+  monochrome-only). Work continues on the experiment branch `claude/cp-grain-experiment`.
+  [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Monochrome Film Grain is unchanged, and the trash button still does
+  not step looks from its row.
 - Research: the camera's Art Effect converter (Soft Focus, Frame, Star Light…) is mapped for the Glow work.
   [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).
 

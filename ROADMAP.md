@@ -27,8 +27,9 @@ The owner performs any physical test; development sessions prepare and check fil
 - Planned after the first alpha: **colour grain for Color Profiles** (Off / Low / Medium / High, as the
   Monochrome Profiles' Film Grain). The camera already applies grain through effective setting 998 for Monochrome
   Profiles; a Color Profile needs its own grain row, per-profile storage and a refresh entry (998 = 0 today).
-  Then the other effects (Glow, Halation). Implemented on the v0.2.0-dev branch (emulator only,
-  [note](research/OM5II-CP-GRAIN-2026-11-18.md)); see [the v0.2.0 plan](docs/V0.2.0-PLAN.md).
+  Then the other effects (Glow, Halation). A first version (setting 998 only) showed no grain on the camera and
+  was removed; the stock grain pass is monochrome-only, so colour grain needs image-pipeline work, on the
+  experiment branch `claude/cp-grain-experiment` ([note](research/OM5II-CP-GRAIN-2026-11-18.md)).
 - Open: ND64 / ND32 digit artwork on the shooting screen.
 - Physical validation remains open: restart with a saved profile, settings persistence,
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
@@ -53,7 +54,7 @@ renumbered identifiers, one SRAM layout shift and the relocated resource address
 Tone and colour controls come before effects. Order: **Blacks / Whites**, then **split toning**, then
 **Clarity**. All three go on the v0.2.0 development branch and are camera-tested together before an alpha.
 They change the photo-processing stage, which OM-Emu does not run. Each needs its E148 hook located by static
-analysis, and only a camera test shows the result. Film Grain for Color Profiles is already on the branch.
+analysis, and only a camera test shows the result. Film Grain for Color Profiles is an experiment branch.
 The Art effects (Glow, Frame, Star Light) and loading code from the card are not planned for 0.2.0.
 [Plan](docs/V0.2.0-PLAN.md).
 

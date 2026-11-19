@@ -66,6 +66,11 @@ DESC_999, GRAIN = 0x605127f0, (907, 911, 915)
 GRAIN_TABLE, ROWS = 0x604f25a8, 0x604ef064
 ROWS_LO, ROWS_HI = 0x604ef064, 0x604ef120  # 111's old record table tail (color_profiles.py OLD_REC + 41 x 64)
 CP_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17)
+# Color Profile grain (edits 2's last three descriptors and 6..9). Off since 2026-11-19: the camera showed no
+# grain in colour pictures (stock grain is monochrome-only); hsl.s CP_NDESC and the refresh's 998 entry follow.
+CP_GRAIN = False
+GRAIN_EDITS = ('cp_grain_table', 'cp_grain_lookup_a', 'cp_grain_count_a', 'cp_grain_lookup_b', 'cp_grain_count_b',
+               'cp_grain_rows', 'cp_grain_list', 'cp_grain_list_count')
 
 
 def edits(img):
@@ -93,7 +98,7 @@ def edits(img):
     out = {'cp_button_items': (ITEMS, struct.pack('<12H', *items)),
            'cp_nd_descriptors': (DESC, b''.join(struct.pack('<H', i) + d2216[2:] for i in (0x8a9, 0x8aa))
                                  + b''.join(struct.pack('<H', i) + d1017[2:] for i in SHADING)
-                                 + b''.join(struct.pack('<H', i) + d999[2:] for i in GRAIN)),
+                                 + (b''.join(struct.pack('<H', i) + d999[2:] for i in GRAIN) if CP_GRAIN else b'')),
            'cp_button_page': (PAGE + 4, struct.pack('<II', ITEMS, len(items)))}
     assert ITEMS + 24 == DESC and DESC + 160 == NEW_VALUES and NEW_VALUES + 2 * len(CP_VALUES) == GRAIN_TABLE
     d2228 = R(DESC_2228, 20)
@@ -101,6 +106,8 @@ def edits(img):
     assert struct.unpack('<10h', R(VALUES_2228, 20)) == (1, 2, 3, 4, 5, 6, 14, 15, 16, 17)
     out['cp_item_values'] = (NEW_VALUES, struct.pack('<12H', *CP_VALUES))
     out['cp_item_desc'] = (DESC_2228, struct.pack('<HHIIHHI', 2228, 0x80, NEW_VALUES, 0, 2 * len(CP_VALUES), 2, 0x500))
+    if not CP_GRAIN:
+        return out
     # Color Profile grain
     stock_grain = [(57, 999), (58, 1000), (59, 1001), (65, 1002)]
     for table in (0x611a02f8, 0x611b5ad0):
@@ -147,7 +154,7 @@ def main():
         for lo, hi in ((FREE_LO, FREE_HI), (ROWS_LO, ROWS_HI)):
             if not mine and a < hi and a + len(e['after']) // 2 > lo:
                 sys.exit(f'{e["name"]} overlaps the free region')
-    retired = lambda n: n.startswith(('bw_disp_', 'cp_bw_editor'))
+    retired = lambda n: n.startswith(('bw_disp_', 'cp_bw_editor')) or (not CP_GRAIN and n in GRAIN_EDITS)
     spec['ranges'] = [r for r in spec['ranges'] if not retired(r['name'])]
     spec['data_edits'] = [e for e in spec['data_edits'] if not retired(e['name'])]
     for name, (address, data) in edits(stock).items():

@@ -44,37 +44,37 @@
   works (live view and JPEG). Black / White: UI only, no effect in pictures. Colour grain: no grain at any level,
   carousel order reversed. "All" on a tint axis changed a seemingly random colour. Black / White labels larger than
   Sh / Hi. [Report](research/OM5II-V020DEV-CAMERA-2026-11-19.md).
-- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `27ad9db3…5c2b`, emulator only, never flashed):
+- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `4f7aeb6c…4636`, emulator only, never flashed):
   - Black / White now go into the split-tone R/G/B delta tables (the route the camera showed working); the
     brightness-curve hooks are removed. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
   - Tint axes stay on one colour: arriving with "all" switches back, INFO there does nothing.
   - Picture Mode stays open 30 s after the last key, dial or tap (9 stock timer arms + Caduceus's own re-arm;
     `firmware/om5ii/pm_timeout.py`; OM-Emu `tap:X,Y` in tools/dev/sess.mjs).
-- **Open:** colour grain needs real image-pipeline work (stock grain is monochrome-only; OM-3 needed a texture
-  pass over many camera rounds): owner to decide whether to drop the row meanwhile.
-  [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Black / White label size: OM has one shared font object;
-  resizing it garbles text, and the stock labels are images: one text size only; owner to pick an option. [Tone page note](research/OM5II-TONE-PAGE-2026-11-19.md#open-black--white-labels-larger-than-sh--hi-camera-report-2026-11-19).
+  - Black / White labelled Blk / Wht (OM's text has one size, larger than the stock Sh / Hi images).
+  - **Color Profile grain removed** (owner): it showed no grain on the camera; stock grain is monochrome-only.
+    Image-pipeline work continues on `claude/cp-grain-experiment`. [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
 - Black / White on the tone page: INFO steps Hi/Sh → Black/White → Mid on Color Profile 1–3; −7..+7 per profile.
   [Tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md). Split tone: trash steps on to Shadow / Midtone /
   Highlight Tint; one of 12 colours, strength 1..5. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
 - Space is used up again (about 30 bytes left in the tails). This build also uses the FF tails of sections 3 and 9
   for the first time; the 15 new descriptors are built in the heap at arming.
 - Clarity is blocked on the Soft Focus weight getter. Free space is nearly gone (see [the plan](docs/V0.2.0-PLAN.md)).
-- Ghidra is set up in this cloud container (`generated/runtime`, `generated/ghidra`; lost when the container
-  is reclaimed). Rebuild: tools/ghidra/README.md, about 15 minutes.
+- Ghidra is not set up in the current container; rebuild per tools/ghidra/README.md (about 15 minutes). OM-Emu
+  `xulfr/om-emu` branch `fix/e148-ipi-stride` (`bdb3347`) and binutils 2.42 rebuild as in docs/OM5_PREALPHA.md.
 - Codex's Ghidra tooling and findings are merged from main
   ([findings](research/OM5II-GHIDRA-FINDINGS-2026-11-18.md)). The stock reset, init and custom-mode copy lists
-  include 907/911/915, which grain uses; all default to 0 (= Off).
+  include 907/911/915 (used by the removed Color Profile grain); all default to 0.
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
 ## Next camera checks
 
-0. **Dev package `27ad9db3…5c2b`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
+0. **Dev package `4f7aeb6c…4636`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
    live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
    INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
    Mode stays open about 30 s after the last key, dial or tap, on the strip, tone page and colour wheel; other menus and
-   the super control panel still close after 8 s. Then: Reset, C1–C5 and power-off keep / clear values as expected.
+   the super control panel still close after 8 s. Color Profiles show six sidebar rows (no Film Grain);
+   Monochrome Film Grain still works. Then: Reset, C1–C5 and power-off keep / clear values as expected.
 
 1. Capture per-step filter and CP results with the installed package SHA-256.
    [Checklist](docs/FIRST_FLASH.md#alpha12-camera-checks).
