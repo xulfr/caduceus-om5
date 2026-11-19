@@ -11,10 +11,12 @@ Stock (static and OM-Emu evidence, 2026-11-19):
    ID_ST_DIRECT_PICTUREMODE_ART): opening it arms at 0x60e3c4f8, up 0x60e3c567, down 0x60e3c5ea, left
    0x60e3c6df, right 0x60e3c7db, the dials 0x60e3c8de and 0x60e3c9d6. These also serve the tone page and the
    colour wheel (same screen). 0x60e3ca98 is the same handler's case for the sidebar row items 5029, 0x14fd..0x14ff.
+   A tap (touch message 0x9755, OM-3's 0x611c3b20) arms at 0x60e3daca (OM-Emu tap:40,220 on the sidebar).
    The super control panel (event 510), the direct WB screen (0x60e3dda3..) and menus keep 8 s.
  * Without the edit, OM-Emu closes Picture Mode after 9 s idle.
-Edit: the eight `mov 8000,d1` become `mov 30000,d1` (2d 30 75; a signed 16-bit immediate, so 32767 ms at most).
-Not covered: touch. The OM-3 needed a hook on a shared touch re-arm; E148's equivalent is not located.
+Edit: the nine `mov 8000,d1` become `mov 30000,d1` (2d 30 75; a signed 16-bit immediate, so 32767 ms at most).
+The OM-3 also needed a hook on a shared touch re-arm (0x612a8db3); E148's (0x60f22bcc) did not run for a
+Picture Mode tap in OM-Emu.
 """
 import hashlib
 import json
@@ -23,7 +25,7 @@ import struct
 import sys
 
 B = 0x60021020
-SITES = (0x60e3c4f8, 0x60e3c567, 0x60e3c5ea, 0x60e3c6df, 0x60e3c7db, 0x60e3c8de, 0x60e3c9d6, 0x60e3ca98)
+SITES = (0x60e3c4f8, 0x60e3c567, 0x60e3c5ea, 0x60e3c6df, 0x60e3c7db, 0x60e3c8de, 0x60e3c9d6, 0x60e3ca98, 0x60e3daca)
 TIMER = 0x60f10fd2
 MS = 30000
 
