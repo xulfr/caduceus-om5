@@ -17,11 +17,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 CP1 = 's1 ok ok ' + 'right ' * 8              # shooting screen -> Picture Mode, highlight on Color Profile 1
 GRAIN = 'down ' * 6                            # Picture Mode row -> Film Grain (the seventh row)
-SET_CP1_LOW = CP1 + GRAIN + 'left ok wait:500'  # the carousel reads High Std Low Off; left from Off is Low
+# The carousel reads Off Low Std High, as Monochrome's (cp_nd.py cp_grain_order_*): right from Off is Low. Before that
+# fix it read High Std Low Off and these steps fail (right from Off does not give Low).
+SET_CP1_LOW = CP1 + GRAIN + 'right ok wait:500'
 REOPEN = ' ok ok down '                        # reopens on the grain row (the last of 7); down wraps to the mode row
 CASES = [
     ('cp1-low', SET_CP1_LOW, dict(cells=[1, 0, 0], effective=1), 1),
-    ('cp2-high', CP1 + 'right ' + GRAIN + 'left left left ok wait:500', dict(cells=[0, 3, 0], effective=3), 3),
+    ('cp2-high', CP1 + 'right ' + GRAIN + 'right right right ok wait:500', dict(cells=[0, 3, 0], effective=3), 3),
     ('to-cp2', SET_CP1_LOW + REOPEN + 'right ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),
     ('to-stock-mode', SET_CP1_LOW + REOPEN + 'left ' * 6 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),
     ('to-mono1', SET_CP1_LOW + REOPEN + 'right ' * 3 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),

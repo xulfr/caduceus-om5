@@ -13,6 +13,8 @@
 > RAW+JPEG). Source: androidfanman/caduceus-om3 `research/NOTES.md` at `e32363a`, sections gl1–gl10, gt1–gt4,
 > ft1–ft9, rc1–rc2c, rj1. Effective 998 alone therefore cannot give colour grain on E148.
 >
+> (The carousel order is fixed since: see "carousel order fixed" below.)
+>
 > E148 leads for a real implementation: the Art Effect converter `0x6042394c` tests `a3 + 28736`, the field the OM-3
 > converter uses for its monochrome grain/filter route ([effects map](OM5II-EFFECTS-MAP-2026-11-18.md)); 998's only
 > direct references are its setting descriptors (`0x608623a2`) and a logger (`0x6072c992`). The E148 development
@@ -75,6 +77,16 @@ heap memory after the GUI steps): CP1 Low → level 1, the COLOR still request g
 CP2 High → 3; CP2 / stock mode / Monochrome 1 after CP1 Low, and CP1 Off → 0 and the request untouched. In every case
 live view (+14 0x0130), kind 3, a MONO request and a request with effect 0x0c00 are untouched (0x0c00 → combiner 33,
 as on OM-3). OM-Emu has no image pipeline: whether grain appears is a camera question.
+
+## 2026-11-19: carousel order fixed (OM-Emu; not camera-tested)
+
+Observation (OM-Emu call trace of opening the grain row, Monochrome 1 vs Color Profile 1, then static): the carousel
+builder `0x60e2c539` (and 14 other carousel sites, each the same loop over 0x144 IDs) draws a setting high to low when
+its ID is in the table `0x61197b8a`. 907 / 911 / 915 are entries 235 / 239 / 323 (Color Profile 4's Sharpness,
+Contrast and Shading, which run high to low); 999..1002 are not listed. `cp_nd.py` `cp_grain_order_907/911/915`
+replace them with their neighbours 906 / 910 / 914, which the table already lists, so no other setting changes (E148
+has no Color Profile 4). The Color Profile carousel now reads Off, Low, Std, High, and right steps up, as Monochrome.
+`run_cp_grain.py` steps now go right; the build without the fix fails `cp1-low` and `cp2-high` (control).
 
 ## How the Picture Mode sidebar chooses its rows (observation)
 

@@ -41,6 +41,11 @@ Color Profile grain (v0.2.0, emulator and static evidence, 2026-11-18):
  8. cp_grain_lookup_a 0x60e3d10b / cp_grain_count_a 0x60e3d120, and _b 0x60e4b344 / 0x60e4b359: both lookups
     take table 6 with 7 entries.
  9. cp_grain_list    0x60e376c3 / cp_grain_list_count 0x60e376c9: the Color Profile case takes list 7, 7 items.
+10. cp_grain_order_907 / _911 / _915: the carousel read High, Std, Low, Off (Monochrome: Off, Low, Std, High). The
+    carousel code (0x60e2c539 and 14 other sites, each a loop over 0x144 IDs) draws a setting in reverse when its ID
+    is in the table 0x61197b8a. 907 / 911 / 915 are there (entries 235, 239, 323: Color Profile 4's Sharpness,
+    Contrast and Shading run high to low); 999 is not. Each entry becomes its neighbour 906 / 910 / 914, which the
+    table already lists, so no other setting changes. Found by an OM-Emu call trace, 2026-11-19.
 Setting 2228 is the CP button's current item (1 + the item index k of the CP table 0x60f7f57c; k 6, 7 are ND32,
 ND64). Its stock allowed values are 1..6, 14..17 (list 0x6050da8e), and the CP carousel lists exactly the allowed
 values (GUI 0x60e27d22 iterates them through the data model, count +24 / value +28), so ND32 and ND64 never appear
@@ -70,7 +75,9 @@ CP_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17)
 # grain in colour pictures (stock grain is monochrome-only); hsl.s CP_NDESC and the refresh's 998 entry follow.
 CP_GRAIN = True
 GRAIN_EDITS = ('cp_grain_table', 'cp_grain_lookup_a', 'cp_grain_count_a', 'cp_grain_lookup_b', 'cp_grain_count_b',
-               'cp_grain_rows', 'cp_grain_list', 'cp_grain_list_count')
+               'cp_grain_rows', 'cp_grain_list', 'cp_grain_list_count',
+               'cp_grain_order_907', 'cp_grain_order_911', 'cp_grain_order_915')
+REVERSED, REVERSED_N = 0x61197b8a, 0x144   # setting IDs whose carousel is drawn high to low
 
 
 def edits(img):
@@ -131,6 +138,10 @@ def edits(img):
     assert R(0x60e376b9, 8) == b'\xfc\xdf' + struct.pack('<I', 0x6119a0d0) + b'\x80\x08'
     out['cp_grain_list'] = (0x60e376c5, struct.pack('<I', ROWS))
     out['cp_grain_list_count'] = (0x60e376ca, bytes([len(rows)]))
+    reversed_ids = list(struct.unpack('<%dH' % REVERSED_N, R(REVERSED, 2 * REVERSED_N)))
+    for old, index, new in ((907, 235, 906), (911, 239, 910), (915, 323, 914)):
+        assert reversed_ids[index] == old and reversed_ids.count(old) == 1 and new in reversed_ids
+        out['cp_grain_order_%d' % old] = (REVERSED + 2 * index, struct.pack('<H', new))
     return out
 
 
