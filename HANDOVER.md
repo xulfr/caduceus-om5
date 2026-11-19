@@ -57,6 +57,11 @@
 
 ## Next camera checks
 
+0. **v0.2.0-dev build** (once the owner flashes it; record the package SHA-256). On Color Profile 1, 2 and 3:
+   Film Grain Off/Low/Std/High; Black and White −5 / 0 / +5; Split Tone −5 / 0 / +5. Look for a visible change
+   in JPEGs and live view, nothing at 0, no slowdown or restart. Then: the values survive power-off, Reset sets
+   them to 0, C1–C5 keep them, and other picture modes are unaffected.
+
 1. Capture per-step filter and CP results with the installed package SHA-256.
    [Checklist](docs/FIRST_FLASH.md#alpha12-camera-checks).
 2. Per-profile WB, JPEG colour output and ND exposure still need documented camera checks.
