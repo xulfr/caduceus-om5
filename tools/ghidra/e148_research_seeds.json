@@ -1,0 +1,19 @@
+[
+  {"address": "0x603e69ae", "name": "e148_gamma_stage"},
+  {"address": "0x603e6974", "name": "e148_rgb_curve_set"},
+  {"address": "0x603e644a", "name": "e148_rgb_curve_select"},
+  {"address": "0x6037ccd2", "name": "e148_curve_expand"},
+  {"address": "0x603e863e", "name": "e148_luma_lut_stage"},
+  {"address": "0x603e85de", "name": "e148_luma_lut_compose"},
+  {"address": "0x6038d263", "name": "e148_effect_worklist"},
+  {"address": "0x602e131b", "name": "e148_setting_store_init"},
+  {"address": "0x602e1153", "name": "e148_setting_store_save"},
+  {"address": "0x602e1071", "name": "e148_setting_store_restore"},
+  {"address": "0x602e0cea", "name": "e148_setting_reset_all"},
+  {"address": "0x603932cb", "name": "soft_flag_callback_a1"},
+  {"address": "0x6039333d", "name": "soft_flag_callback_a2"},
+  {"address": "0x603934ba", "name": "soft_flag_callback_a3"},
+  {"address": "0x6039352b", "name": "soft_flag_callback_b1"},
+  {"address": "0x603936a6", "name": "soft_flag_callback_b2"},
+  {"address": "0x6039374d", "name": "soft_completion_callback"}
+]
