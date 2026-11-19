@@ -49,6 +49,7 @@
 - **Split tone on the colour wheel** (owner request: midtones too, any colour; the teal/orange row is gone): trash
   steps on to Shadow / Midtone / Highlight Tint; each tint is one of the 12 colours, strength 1..5. Emulator-checked.
   [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- Emulator on `7d611008…`: `run_emulator.py` 20/20, `run_bw_tint.py` 7/7, `run_cp_grain.py` 6/6, `bw_assert.mjs` pass.
 - Space is used up again (about 30 bytes left in the tails). This build also uses the FF tails of sections 3 and 9
   for the first time; the 15 new descriptors are built in the heap at arming.
 - Clarity is blocked on the Soft Focus weight getter. Free space is nearly gone (see [the plan](docs/V0.2.0-PLAN.md)).
