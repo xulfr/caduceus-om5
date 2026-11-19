@@ -2533,73 +2533,13 @@ ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
- * E148's tone-curve modifier 0x60385f08 (one caller, 0x603e86f0) bends the
- * photo's own copy of the 256-entry brightness table (O+0xa34). Its second
- * spline takes 8 y values (0..1023) copied from 0x6052ea08 to (124,sp); stock
- * adds Shadows to point 1 and Highlights to point 6 at 0x60385f9c. bw_apply
- * runs there first: point 0 += B, point 1 (130) += 7B/8, point 7 -= W,
- * point 6 (832) -= 13W/16, with B (Blacks, P+BW_B) and W (Whites, P+BW_W) in
- * curve units. The middle cluster (473..477) stays: a levels map of all 8
- * points moved middle grey 514 -> 482 in the emulator. Both 0 (the
- * default, and always when not armed): nothing changes. Uses d0, d1, a0
- * only; the stock code reloads all four after bw_resume. No calls except
- * st_ptr, which reads the state handle through RAM for other CPUs.
- * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
- * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
- * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
-.section .bw_hook,"ax"
- jmp bw_apply
-.section .bw_gate_call,"ax"
- call bw_gate,[d2],8
-.section .ext2,"ax"
-bw_apply:
- call st_ptr,[],8
- cmp 0,a0
- beq bw_replay
- mov (BW_B,a0),d0                /* B | W << 16 */
- cmp 0,d0
- beq bw_replay
- movhu (BW_B,a0),d1
- exth d1                         /* d1 = B */
- movhu (124,sp),d0
- add d1,d0
- movhu d0,(124,sp)               /* point 0 (0) += B */
- mov d1,d0
- asr 3,d0
- sub d0,d1
- movhu (126,sp),d0
- add d1,d0
- movhu d0,(126,sp)               /* point 1 (130) += 7B/8 */
- movhu (BW_W,a0),d1
- exth d1                         /* d1 = W */
- movhu (138,sp),d0
- sub d1,d0
- movhu d0,(138,sp)               /* point 7 (1023) -= W */
- mov 13,d0
- mul d0,d1
- asr 4,d1
- movhu (136,sp),d0
- sub d1,d0
- movhu d0,(136,sp)               /* point 6 (832) -= 13W/16 */
-bw_replay:
- mov (20,sp),a0
- movhu (126,sp),d1
- jmp bw_resume
-/* call bw_gate,[d2],8 in place of call 0x60385b9c,[],0: a0 = the tone
- * values; d0 = 1 when the modifier should run. */
-bw_gate:
- call tone_gate,[],0
- cmp 0,d0
- bne bw_gate_out
- call st_ptr,[],8
- cmp 0,a0
- beq bw_gate_out
- mov (BW_B,a0),d0
- cmp 0,d0
- beq bw_gate_out
- mov 1,d0
-bw_gate_out:
- ret [d2],8
+ * Blacks / Whites are added to the split-tone delta tables (tn_tables, ext3), so
+ * they reach photos and live view through the R/G/B curve setter (wb.s st_tint),
+ * the route the camera showed working for split tone (2026-11-19). The first
+ * version bent E148's brightness curve (modifier 0x60385f08, hooks at
+ * 0x60385f9c and 0x603e86a8): the UI worked but the camera showed no effect in
+ * live view or photos, so those hooks are gone.
+ * research/OM5II-BLACKS-WHITES-2026-11-18.md, OM5II-V020DEV-CAMERA-2026-11-19.md */
 
 /* ---- Black / White and split tone (v0.2.0-dev): settings, refresh, UI ----
  * Black / White live on the tone page (no sidebar rows since 2026-11-19).
@@ -2831,6 +2771,8 @@ tn_ok:
  cmp 3,d2
  bcs tn_zone
  mov (4,sp),d0
+ mov (BW_B,a3),d1                /* Blacks | Whites << 16 */
+ or d1,d0
  cmp 0,d0
  beq tn_out
  mov (ST_BUF,a3),a2
@@ -2843,11 +2785,35 @@ tn_ok:
  cmp 0,a2
  beq tn_out
 tn_build:
+ jmp tn_tables                     /* ext3: the delta tables */
+tn_out:
+ ret [d2,d3,a2,a3],32
+
+
+.section .ext3,"a"
+/* tint_refresh (ext8) continues here, in its own frame, once a tint or Black /
+ * White is set: a2 = the buffer, a3 = P. For table index i (u = i - 128, w =
+ * u * u) and channel c: delta_c[i] = (w * T[edge][c] + (16384 - w) *
+ * T[mid][c]) >> 14 - (X * u) >> 5, X = Blacks (P+BW_B) for u < 0, Whites
+ * (P+BW_W) from the middle up; i.e. Blacks lift the black end by 4 * B (0..4095
+ * units) fading linearly to 0 at the middle, Whites move the white end by -4 * W.
+ * The same delta goes to R, G and B, so Black / White leave the colour alone. */
+tn_tables:
  add 1552,a2
  clr d3
 tn_i:
  mov d3,d0
  add -128,d0
+ mov a3,a0                       /* Blacks below the middle, Whites above */
+ cmp 0,d0
+ blt tn_bw
+ add 2,a0
+tn_bw:
+ movhu (BW_B,a0),d1
+ exth d1
+ mul d0,d1
+ asr 5,d1
+ mov d1,(12,sp)                  /* X * u / 32: X * 4 * (-u) / 128, subtracted below */
  mov d0,d1
  mul d0,d1
  mov d1,(8,sp)
@@ -2872,6 +2838,8 @@ tn_c:
  mov (4,sp),d1
  add d1,d0
  asr 14,d0
+ mov (12,sp),d1
+ sub d1,d0
  movhu d0,(a2)
  add 2,a0
  add 2,a1
@@ -2886,7 +2854,6 @@ tn_c:
  bcs tn_i
  mov 1,d0
  movhu d0,(ST_A,a3)
-tn_out:
  ret [d2,d3,a2,a3],32
 
 .section .ext5,"ax"

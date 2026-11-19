@@ -24,12 +24,13 @@ DONE = 'ok wait:500'
 # OM-Emu's dials: in the Black/White state sub+2 sets Black -1 and main-3 White -2 (the stock Sh / Hi steps).
 BW = CP1 + TONE + 'info sub+2 main-3 '
 CASES = [
-    ('cp1-black-white', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=1, tone3=[0, 0, 0])),
+    ('cp1-black-white', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=1, tone3=[0, 0, 0], stFlag=1, st=True)),
     ('cp1-info-cycle', BW + 'info info sub+1 ' + DONE,
      dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=0, tone3=[-1, 0, 0])),
     # a lone main-3 moves OM's Sh by -3 (checked on stock Hi/Sh), so here Black of Color Profile 2
-    ('cp2-black', CP1 + 'right ' + TONE + 'info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1)),
-    ('stock-after-bw', BW + DONE + ' ok ok up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0])),
+    ('cp2-black', CP1 + 'right ' + TONE + 'info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1,
+                                                                   stFlag=1, st=True)),
+    ('stock-after-bw', BW + DONE + ' ok ok up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0], stFlag=0)),
     ('cp1-tints', CP1 + WHEEL + TINT + 'main+3 delete delete sub+2 sub+2 main+2 ' + DONE,
      dict(pm=54, tint={968: 0x30, 974: 0x19}, stFlag=1, st=True)),
     ('cp3-midtone', CP1 + 'right right ' + WHEEL + TINT + 'delete main+3 ' + DONE,

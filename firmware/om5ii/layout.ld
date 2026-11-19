@@ -30,8 +30,6 @@ SECTIONS {
  .ext5 0x60845a00 : { *(.ext5) }
  .hook_str 0x60d52ed5 : { *(.hook_str) }
  .ext10 0x6169c820 : { *(.ext10) }
- .bw_hook 0x60385f9c : { *(.bw_hook) }
- .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
  .st_hook 0x603e6974 : { *(.st_hook) }
  .tone_info_ptr 0x61210790 : { *(.tone_info_ptr) }
  .tone_info_ptr2 0x612107c8 : { *(.tone_info_ptr2) }
@@ -45,8 +43,6 @@ screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 label_resume = 0x60e4adf3;
-tone_gate = 0x60385b9c;          /* any of five tone values non-zero -> d0 = 1; call [],0 / retf */
-bw_resume = 0x60385fa1;
 row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
 row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
 row_slider = 0x60e3cd53;

@@ -2,7 +2,8 @@
 // refresh built in P against the documented formula (from the tint cells) and calls the camera's R/G/B curve setter
 // 0x603e6974 (hooked by wb.s st_entry / st_tint) with three ramp tables and a fake job output: the stored table
 // pointers (O+0xa24/0xa28/0xa2c) and values must be the ramps plus the deltas, clamped to 0..4095. With ST_A cleared
-// the stock tables must pass through. Emulator only: no photo is developed.
+// the stock tables must pass through. Black / White (P+1172 / 1174) add -(X * u) >> 5 to every channel, X = Blacks
+// below the middle and Whites from it up (hsl.s tn_tables). Emulator only: no photo is developed.
 // OM5_ST_EXPECT (JSON, optional): {"cells": {"968": 48, ...}} cell values the GUI should have produced.
 import assert from 'node:assert/strict';
 
@@ -22,14 +23,15 @@ export default function (g) {
   assert.ok(p >= 0 && p < 3, 'a Color Profile is selected');
   const T = [0, 1, 2].map(z => { const v = get(TINT_IDS[3 * z + p]) & 0xff, k = v & 15, s = v >> 4;
     return k < 12 && s < 6 ? RGB[k].map(x => s * x) : [0, 0, 0]; });
-  const any = T.some(t => t.some(x => x));
+  const bw = Buffer.from(M.dbgRead(P + 1172, 4)), BB = bw.readInt16LE(0), WW = bw.readInt16LE(2);   // Blacks, Whites
+  const any = T.some(t => t.some(x => x)) || BB !== 0 || WW !== 0;
   const pb = Buffer.from(M.dbgRead(P + ST_A, 8));
-  assert.equal(pb.readInt16LE(0), any ? 1 : 0, 'ST_A follows the tints');
+  assert.equal(pb.readInt16LE(0), any ? 1 : 0, 'ST_A follows the tints and Black / White');
   if (!any) { console.log('ST no tint'); console.log('ASSERTIONS passed'); return; }
   const buf = pb.readUInt32LE(4);
   assert.notEqual(buf, 0, 'buffer allocated');
   const exp = [0, 1, 2].map(c => Array.from({ length: 256 }, (_, i) => { const u = i - 128, w = u * u, e = u < 0 ? 0 : 2;
-    return (w * T[e][c] + (16384 - w) * T[1][c]) >> 14; }));
+    return ((w * T[e][c] + (16384 - w) * T[1][c]) >> 14) - (((u < 0 ? BB : WW) * u) >> 5); }));
   const db = Buffer.from(M.dbgRead(buf + 1552, 1536));
   for (let c = 0; c < 3; c++) for (let i = 0; i < 256; i++) assert.equal(db.readInt16LE(512 * c + 2 * i), exp[c][i], `delta c${c} i${i}`);
   const alloc = n => g.__call(0x60023818, { d0: n }, [0, 4]).a0 >>> 0;
