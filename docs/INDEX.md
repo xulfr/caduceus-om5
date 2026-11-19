@@ -29,6 +29,10 @@
 The archive contains historical findings, not necessarily
 the current state of the repository.
 
+## Proposals
+
+- [Shared Caduceus Control Panel for the OM-5 (issue #4)](../research/SHARED-CONTROL-PANEL-2026-11-18.md)
+
 ## Testing and safety
 
 - [Existing test documentation](../tests/README.md)
