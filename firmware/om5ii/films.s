@@ -47,8 +47,6 @@ FL_TAG   = 0x464c               /* 'FL': word 0 of a slot's name cells = FL_TAG 
 .section .ext7,"ax"
 fl_str:
  mov d0,d2
- cmp 3838,d0                     /* hsl.s Split tone row title */
- beq fl_str_st
  sub 2749,d0                     /* "Color Profile 1..3", and the same with the icon prefix */
  cmp 6,d0
  bcs fl_str_cp
@@ -60,9 +58,6 @@ fl_str_stock:
  mov d2,d0
  call str_lang,[],0
  jmp str_back
-fl_str_st:
- mov st_name,a0
- ret [d2],8
 fl_str_cp:
  call st_ptr,[],8
  cmp 0,a0
@@ -79,15 +74,6 @@ fl_str_cp:
  * mode strip, where stock substitutes "Picture Mode" after a row return.
  * Preserves d0, d1, a0, a1.
  * call pg_title,[d2,d3,a2,a3],36 */
-.balign 2
-st_name:                         /* UTF-16 "Split Tone" for string 3838 */
- .hword 'S','p','l','i','t',' ','T','o','n','e',0
-.balign 4
-.global st_title
-st_title:                        /* row title descriptor: string 3838 */
- .hword 4, 3838
- .long 0x611b42ac
-
 .section .ext6,"ax"
 .global pg_title
 pg_title:

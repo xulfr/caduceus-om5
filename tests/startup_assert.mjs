@@ -9,7 +9,7 @@ export default function(g) {
   const half = (a, v) => { const b = Buffer.alloc(2); b.writeUInt16LE(v); M.dbgWrite(a, b); };
   const handle = 0x6218c2fe, tid = 0x6218c2fc, ready = 0xa26e2694;
   const malloc = 0x60023818, getTid = 0x600317b4;
-  const SIZE = 1136;   // hsl.s ST_SIZE (1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1064 / 1104 before Blacks/Whites / Split tone)
+  const SIZE = 1528;   // hsl.s ST_SIZE (1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Black/White/Split Tone rows)
   const saved = [read(handle, 2), read(tid, 2), read(ready, 4)];
   const trig = 0x602f0cc2, resume = 0x602f0b9a, armGate = 0x613f2d93;
   const hooks = new Map([malloc, getTid, trig, resume, armGate].map(pc => [pc, lab.hooks.get(pc)]));

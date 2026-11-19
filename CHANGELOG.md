@@ -8,13 +8,15 @@
   draws grain in colour photos is unknown until tested. [Research note](research/OM5II-CP-GRAIN-2026-11-18.md).
 - The trash button no longer steps looks from the grain row, and the look name no longer replaces its title
   (both found in the emulator; regression case `grain-row-delete`).
-- **Black and White rows** on Color Profile 1–3 (−5..+5, per profile): +Black lifts the blacks, +White
-  brightens the whites. Applied inside the camera's own tone curve, beside Shadows / Highlights. Emulator only:
-  whether photos change is unknown until a camera test.
-- **Split Tone row** on Color Profile 1–3 (−5..+5): + tints shadows teal and highlights orange, − the
-  reverse; midtones stay. Applied to the camera's own R/G/B curves. Emulator only.
+- **Black and White on the tone curve page** of Color Profile 1–3 (−7..+7, per profile): INFO now steps
+  Hi/Sh → Black/White → Mid. In Black/White the two dials set Black (+ lifts the blacks) and White (+ brightens
+  the whites), and the curve graphic shows them. Applied inside the camera's own tone curve, beside Shadows /
+  Highlights. Replaces the separate Black and White rows. Emulator only: whether photos change is unknown until a
+  camera test. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+- **Split toning on the colour wheel** of Color Profile 1–3: three more axes on the trash button (Shadow Tint,
+  Midtone Tint, Highlight Tint). On each, pick any of the wheel's twelve colours and give it a strength 1..5.
+  Applied to the camera's own R/G/B curves. Replaces the teal/orange Split Tone row. Emulator only.
   [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
-  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
 - Research: the camera's Art Effect converter (Soft Focus, Frame, Star Light…) is mapped for the Glow work.
   [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).
 

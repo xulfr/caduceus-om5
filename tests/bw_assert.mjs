@@ -1,5 +1,5 @@
 // POST module: Blacks / Whites (v0.2.0-dev) on the stock tone-curve modifier 0x60385f08 and the gate wrapper.
-// Calls the firmware's own code on a 256-entry ramp in heap memory, with P+1100/1102 (Blacks/Whites) set as
+// Calls the firmware's own code on a 256-entry ramp in heap memory, with P+1172/1174 (Blacks/Whites) set as
 // given. Emulator only: OM-Emu does not develop photos, so this checks the table maths, not a picture.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ export default function(g) {
   M.dbgWrite(zero, new Uint8Array(32));
   const gate = Number(process.env.BW_GATE);
   const curve = (b, w, shadows) => {
-    const bw = Buffer.alloc(4); bw.writeInt16LE(b, 0); bw.writeInt16LE(w, 2); M.dbgWrite(P + 1124, new Uint8Array(bw));
+    const bw = Buffer.alloc(4); bw.writeInt16LE(b, 0); bw.writeInt16LE(w, 2); M.dbgWrite(P + 1172, new Uint8Array(bw));
     const t = Buffer.alloc(512); for (let i = 0; i < 256; i++) t.writeUInt16LE(Math.round(i * 1023 / 255), 2 * i);
     M.dbgWrite(tab, new Uint8Array(t));
     const p = Buffer.alloc(32); p.writeInt16LE(shadows, 6); M.dbgWrite(par, new Uint8Array(p));
@@ -25,7 +25,7 @@ export default function(g) {
   };
   const out = { off: curve(0, 0, 0), off_sh: curve(0, 0, 40), bw: curve(64, 64, 0), bw_sh: curve(64, 64, 40),
                 crush: curve(-64, -64, 0) };
-  M.dbgWrite(P + 1124, new Uint8Array(4));
+  M.dbgWrite(P + 1172, new Uint8Array(4));
   if (process.env.BW_OUT) fs.writeFileSync(process.env.BW_OUT, JSON.stringify(out));
   const pick = k => [0, 32, 64, 128, 192, 240, 255].map(i => out[k].lut[i]);
   for (const k of Object.keys(out)) console.log(`BW ${k} gate=${out[k].opened} ${pick(k).join(' ')}`);

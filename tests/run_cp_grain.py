@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CP1 = 's1 ok ok ' + 'right ' * 8              # shooting screen -> Picture Mode, highlight on Color Profile 1
 GRAIN = 'down ' * 6                            # Picture Mode row -> Film Grain (the seventh row)
 SET_CP1_LOW = CP1 + GRAIN + 'left ok wait:500'  # the carousel reads High Std Low Off; left from Off is Low
-REOPEN = ' ok ok ' + 'down ' * 4                  # reopens on the grain row (7 of 10); 4 downs wrap to the mode row
+REOPEN = ' ok ok down '                        # reopens on the grain row (the last of 7); down wraps to the mode row
 CASES = [
     ('cp1-low', SET_CP1_LOW, dict(cells=[1, 0, 0], effective=1)),
     ('cp2-high', CP1 + 'right ' + GRAIN + 'left left left ok wait:500', dict(cells=[0, 3, 0], effective=3)),

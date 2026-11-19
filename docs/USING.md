@@ -28,10 +28,21 @@ Each Color Profile has its own rows (press down from the list):
 
 | Row | What |
 |---|---|
-| Colour wheel | 12 colours. **INFO**: one colour / all. **Trash button: Saturation → Hue → Lightness.** Saturation −5..+5, Hue and Lightness −5..+5 on the camera (looks can hold −7..+7). |
-| Tone curve | Shadows, Midtones, Highlights, −7..+7 (INFO moves between them). |
+| Colour wheel | 12 colours. **INFO**: one colour / all. **Trash button: Saturation → Hue → Lightness → Shadow Tint → Midtone Tint → Highlight Tint.** Saturation −5..+5, Hue and Lightness −5..+5 on the camera (looks can hold −7..+7). Tints: see below. |
+| Tone curve | **INFO: Hi/Sh → Black/White → Mid.** Shadows and Highlights (Hi/Sh), Black and White, Midtones, each −7..+7. |
 | Shading | −5..+5 |
 | Sharpness, Contrast | −2..+2 |
+
+**Black and White** (v0.2.0-dev, not yet checked on a camera) bend the two ends of the tone curve: +Black lifts the
+blacks (no pure black), −Black crushes them; +White brightens the whites (they clip sooner), −White dims them.
+On the tone curve page press INFO until the labels read Black and White; the two dials then set them, as they set
+Shadows and Highlights in Hi/Sh. The curve graphic shows all five. Hold OK resets the state you are in.
+
+**Split toning** (v0.2.0-dev, not yet checked on a camera): on the colour wheel, press the trash button until the
+title reads Shadow Tint, Midtone Tint or Highlight Tint. Each tint is one of the twelve colours with a strength 1..5:
+turn the value up on the colour you want (the other colours then read 0); turning it back to 0 removes the tint. The
+three tints blend smoothly: Shadow Tint is strongest in the blacks, Midtone Tint in the middle greys, Highlight Tint
+in the whites. With INFO on "all" the dial sets the last colour only, so use the one-colour mode.
 
 Each Color Profile also remembers its own **white balance**: the mode, the Kelvin value and the A/B, G/M shift you
 set while it is selected come back when you select it again. All other picture modes share one white balance. This

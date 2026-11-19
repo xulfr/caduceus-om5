@@ -19,7 +19,17 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_SIZE = 1136                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1064 / 1104 before Blacks/Whites / Split tone */
+ST_SIZE = 1528                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows */
+/* v0.2.0-dev fields of P (after the 23 descriptor nodes at P+988..1171): */
+BW_B = 1172                     /* s16 Blacks of the active Color Profile, curve units */
+BW_W = 1174                     /* s16 Whites: positive lowers the white end */
+ST_A = 1176                     /* s16: 1 while the split-tone delta tables are valid (wb.s st_tint) */
+ST_TM = 1178                    /* byte: 1 = the tone page's Black / White state */
+ST_BUF = 1180                   /* split-tone buffer: 3 x 512 output tables, 16 bytes, 3 x 512 deltas */
+TINT_T = 1184                   /* 9 s16: tint of zone z (shadows, midtones, highlights), channel c (R, G, B) */
+ST_BUF_SIZE = 3088
+CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descriptors (cad_build) */
+TT_BUF = 1504                   /* 24: tone_text's value label */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -164,7 +174,7 @@ hsl_container:
  mov a2,(ST_EDITOR,a0)
  movbu (ST_AXIS,a0),d0
  inc d0
- cmp 3,d0
+ cmp 6,d0                        /* Saturation, Hue, Lightness, Shadow / Midtone / Highlight tint */
  bcs container_axis
  clr d0
 container_axis:
@@ -418,14 +428,16 @@ make_axis_label:
  call st_axis,[],12
  mov d0,d3
  mov text_saturation,a1
- cmp 1,d3
- bne label_not_hue
- mov text_hue,a1
- bra label_copy
-label_not_hue:
- cmp 2,d3
- bne label_copy
- mov text_lightness,a1
+label_skip:                      /* the axis' name is the d3-th of the list */
+ cmp 0,d3
+ beq label_copy
+label_skip_ch:
+ movhu (a1),d0
+ add 2,a1
+ cmp 0,d0
+ bne label_skip_ch
+ add -1,d3
+ bra label_skip
 label_copy:
  movhu (a1),d0
  movhu d0,(a2)
@@ -445,8 +457,9 @@ text_hue:
  .short 'H','u','e',0
 text_lightness:
  .short 'L','i','g','h','t','n','e','s','s',0
-text_switch:
- .short 'S','w','i','t','c','h',' ','@','A','0','3','4','@',0
+ .short 'S','h','a','d','o','w',' ','T','i','n','t',0
+ .short 'M','i','d','t','o','n','e',' ','T','i','n','t',0
+ .short 'H','i','g','h','l','i','g','h','t',' ','T','i','n','t',0
 
 .section .ext6,"ax"
 read_hook:
@@ -454,11 +467,16 @@ read_hook:
  jmp read_resume
 ui_read:
  mov d0,d2
+ call ui_alias,[d2,d3],12        /* the tone page's Black / White state */
+ cmp d0,d2
+ bne ui_read_alias
  sub 928,d0
  cmp 48,d0
  bcc ui_read_stock
  call st_axis,[],12
  mov d0,d3
+ cmp 3,d3
+ bcc ui_read_tint
  cmp 1,d3
  beq ui_read_alt
  cmp 2,d3
@@ -477,10 +495,14 @@ read_light:
 read_signed:
  asr 28,d0
  ret [d2,d3,a2,a3],24
+ui_read_alias:
+ mov d0,d2
 ui_read_stock:
  mov d2,d0
  call stock_get,[],4
  ret [d2,d3,a2,a3],24
+ui_read_tint:
+ jmp tint_read
 
 write_hook:
  call ui_write,[d2,d3,a2,a3],24
@@ -489,10 +511,15 @@ ui_write:
  mov d0,d2
  mov d1,d3
  mov a0,a2
+ call ui_alias,[d2,d3],12
+ cmp d0,d2
+ bne ui_write_alias
  sub 928,d0
  cmp 48,d0
  bcc ui_write_stock
  call st_axis,[],12
+ cmp 3,d0
+ bcc ui_write_tint
  cmp 1,d0
  beq ui_write_alt
  cmp 2,d0
@@ -539,6 +566,10 @@ write_merge:
 ui_write_end:
  mov 1,d0
  ret [d2,d3,a2,a3],24
+ui_write_tint:
+ jmp tint_write
+ui_write_alias:
+ mov d0,d2
 ui_write_stock:
  mov d2,d0
  mov d3,d1
@@ -553,6 +584,8 @@ display_hook:
  call st_axis,[],12
  cmp 0,d0
  beq display_stock
+ cmp 3,d0
+ bcc display_stock
  mov (a3),d0
  cmp 6,d0
  bne display_stock
@@ -678,7 +711,7 @@ pg_axis:
  movbu (247,a0),d0
  mov 2,d1
  cmp 1,d0
- beq pg_inval
+ beq pg_tone
  movbu (246,a0),d0               /* Monochrome colour filter page */
  mov 3,d1
  cmp 1,d0
@@ -694,6 +727,15 @@ pg_inval:
  call ui_invalidate,[],4
 pg_axis_out:
  ret [d2,d3,a2,a3],24
+pg_tone:                         /* the tone page: its labels follow the Black / White state */
+ mov a3,a0
+ mov 2,d0
+ call child_get,[],0
+ cmp 0,a0
+ beq pg_axis_out
+ call tone_labels,[d2,d3,a2,a3],24
+ mov 2,d1
+ bra pg_inval
 
 /* d0 = flag byte, d1 = child index, a3 = controller */
 show_page:
@@ -1134,7 +1176,9 @@ st_reset_put:
 st_reset_out:
  mov a2,a0
  ret [d2,a2],12
-/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all. */
+/* Remember the colour editor object in a0. call ...,[a2],8. Preserves all.
+ * (Section 5 loads before the GUI's section 7.) */
+.section .ext5,"ax"
 st_set_editor:
  mov a0,a2
  call st_ptr,[],8
@@ -1144,6 +1188,15 @@ st_set_editor:
 st_set_editor_out:
  mov a2,a0
  ret [a2],8
+/* ui_read / ui_write: tone_alias (section 9) only once armed, when every
+ * section is loaded. call ui_alias,[d2,d3],12: d0 = id -> d0 */
+ui_alias:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq ua_out
+ jmp tone_alias
+ua_out:
+ ret [d2,d3],12
 
 .section .ext8,"ax"
 creset_armed:
@@ -1782,7 +1835,7 @@ ui_info_out:
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
  * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988                  /* 17 nodes: P+988..1123 (8 cp_nd_desc, 6 bw_desc, 3 st_desc) */
+CP_NODES = 988                  /* 23 nodes: P+988..1171 (8 cp_nd_desc, 15 cad_desc) */
 CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
@@ -1820,13 +1873,9 @@ cp_nd_next:
  inc d3
  cmp CP_NDESC,d3
  bne cp_nd_more
- mov bw_desc,a3                  /* then the Blacks / Whites descriptors (ext8) */
+ call cad_build,[d2,d3],12       /* then Black / White and the tints (built in P) */
 cp_nd_more:
- cmp CP_NDESC+BW_NDESC,d3
- bne cp_nd_more2
- mov st_desc,a3                  /* then Split tone's (ext10) */
-cp_nd_more2:
- cmp CP_NDESC+BW_NDESC+3,d3
+ cmp CP_NDESC+CAD_NDESC,d3
  bcs cp_nd_one
  ret [d2,d3,a2,a3],24
 
@@ -2109,7 +2158,7 @@ paint_tone:
  cmp 0,a0
  beq pt_out
  mov a2,a0
- call gfx_tone,[d2,d3,a2,a3],64
+ call gfx_tone,[d2,d3,a2,a3],72
 pt_out:
  mov (8,sp),d0
  add 12,sp
@@ -2146,9 +2195,10 @@ pf_out:
 /* a0 = context. Shadows / Midtones / Highlights of the selected profile
  * (976+3p.. Color, 1021+3p.. Monochrome; stored Highlights, Midtones,
  * Shadows) bend the diagonal with one bump each, centred on columns 12, 24
- * and 36 of 48. Frame: (4,sp) loop, (8..19,sp) the three values,
- * (20..39,sp) the pen, (40,sp) the curve at this column.
- * call gfx_tone,[d2,d3,a2,a3],64 */
+ * and 36 of 48; a Color Profile's Black and White lift or lower the two
+ * halves (v0.2.0-dev). Frame: (4,sp) loop, (8..19,sp) the three values,
+ * (20..39,sp) the pen, (40,sp) the curve at this column, (44,sp) Black,
+ * (48,sp) White. call gfx_tone,[d2,d3,a2,a3],72 */
 gfx_tone:
  mov a0,a2
  mov sp,a1
@@ -2159,6 +2209,27 @@ gfx_tone:
  sub 54,d0
  cmp 6,d0
  bcc gt_done
+ clr d1
+ mov d1,(44,sp)
+ mov d1,(48,sp)
+ cmp 3,d0
+ bcc gt_mono
+ mov d0,(4,sp)
+ mov bw_ids,a0
+ add d0,a0
+ add d0,a0
+ movhu (a0),d0
+ call stock_get,[],4
+ mov d0,(44,sp)
+ mov (4,sp),d0
+ mov bw_ids+6,a0
+ add d0,a0
+ add d0,a0
+ movhu (a0),d0
+ call stock_get,[],4
+ mov d0,(48,sp)
+ mov (4,sp),d0
+gt_mono:
  mov d0,d2
  add d0,d0
  add d0,d2
@@ -2263,10 +2334,13 @@ gt_done:
  mov sp,a1
  add 20,a1
  call gfx_restore,[],4
- ret [d2,d3,a2,a3],64
+ call tone_text,[d2,d3,a2,a3],48
+ ret [d2,d3,a2,a3],72
 
-/* d0 = column 0..48, a3 = the three values -> d0 = height of the curve there
- * (0..192): 4 per column plus value * bump / 8. Frame: (4,sp) index.
+/* d0 = column 0..48, a3 = the three values, Black at (36,a3), White at
+ * (40,a3) -> d0 = height of the curve there (0..192): 4 per column plus
+ * value * bump / 8, plus Black * (24 - column) or White * (column - 24)
+ * times 21/128 (4 px per step at the ends). Frame: (4,sp) index.
  * call gfx_curve,[d2,d3],16 */
 gfx_curve:
  mov d0,d2
@@ -2291,10 +2365,32 @@ gc_skip:
  add 12,a0
  cmp a0,a1
  bne gc_loop
+ mov 24,d0
+ sub d2,d0
+ mov (36,a3),d1                  /* Black on the left half */
+ cmp 0,d0
+ bgt gc_bw
+ not d0
+ inc d0
+ mov (40,a3),d1                  /* White on the right half */
+gc_bw:
+ mul d1,d0
+ mov 21,d1
+ mul d1,d0
+ asr 4,d0
+ add d0,d3
  asr 3,d3
  mov d2,d0
  asl2 d0
  add d3,d0
+ cmp 0,d0                        /* the curve stays in the box */
+ bge gc_lo
+ clr d0
+gc_lo:
+ cmp 192,d0
+ ble gc_hi
+ mov 192,d0
+gc_hi:
  ret [d2,d3],16
 
 /* 16 (1 - cos(15 i)), i = 0..24 */
@@ -2451,9 +2547,6 @@ ftab_slot:
  * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
  * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
  * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
-BW_B = 1124                     /* s16 Blacks of the active Color Profile, curve units (P) */
-BW_W = 1126                     /* s16 Whites: positive lowers the white end */
-/* P+1128 s16 Split tone amount A, P+1132 its 1552-byte table buffer (wb.s st_entry) */
 .section .bw_hook,"ax"
  jmp bw_apply
 .section .bw_gate_call,"ax"
@@ -2508,36 +2601,38 @@ bw_gate:
 bw_gate_out:
  ret [d2],8
 
-/* ---- Blacks / Whites (v0.2.0-dev): settings, refresh and Picture Mode rows ----
- * Storage (bw_ids): Blacks 965 / 966 / 967 (Color Profile 4's colour-sector
- * cells, part 0; part 1 is the tone save), Whites 993 / 997 / 1020
- * (Monochrome Profile 4's Sharpness, Contrast, Shading): E148 has neither
- * profile 4; no stock descriptor; default 0; read back signed through the UI
- * (1822 read -2 as 254 and broke the grain carousel). Each gets a copy of
- * Shading 1017's descriptor (11 values -5..+5), linked by cp_nd_link after
- * cp_nd_desc. The refresh tail writes the active profile's values for
- * context 0 into P: B = 20 v(Blacks), W = -20 v(Whites) (+Whites brightens),
- * and 0 for any other picture mode. bw_apply reads them.
- * Rows: items 5354 (Blacks) and 5356 (Whites) in the Color Profile row list
- * (cp_nd.py cp_grain_rows). Both dispatchers accept only items 7..5377
- * (0x60e3ccc8, 0x60e49f3c). Setting resolver 0x611a0a98 slots 4 / 6 (key =
- * item - 6, & 31) -> row_item; row-widget table 0x611b7aa8 slots 4 / 6
- * (& 15) -> 0x60e49fdf, the slider handler of Sharpness / Contrast / Shading.
- * All four slots are empty in stock. Records in bw_rows, found by row_find_a / _b in
- * place of the two 17-record loops over 0x611b50f8. The records are sliders
- * of kind 4 as Shading's (kind 2 stepped backwards), titled with E148's own
- * strings 2202 "Black" and 2201 "White". research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md */
-BW_NDESC = 6
-BW_STEP = 20
-BW_NROWS = 3
-ROW_N = 3                       /* rows: Blacks, Whites, Split tone */
-ROW_ITEM0 = 5354                /* items 5354 Blacks, 5356 Whites, 5358 Split tone (keys on slots 4, 6, 8) */
-ST_STEP = 60                    /* table units (0..4095) per Split tone step at the extremes */
+/* ---- Black / White and split tone (v0.2.0-dev): settings, refresh, UI ----
+ * Black / White live on the tone page (no sidebar rows since 2026-11-19).
+ * INFO there cycles Hi/Sh -> Black/White -> Mid -> Hi/Sh. The Black/White
+ * state is the stock Hi/Sh state with P+ST_TM = 1: the page's Shadows and
+ * Highlights children then read and write Blacks and Whites instead
+ * (tone_alias in ui_read / ui_write), so OM's own dials, value labels and
+ * Reset work on them. The "Sh" / "Hi" title labels are hidden and "Black" /
+ * "White" drawn in their place; in Hi/Sh the hint ("Mid INFO") is replaced by
+ * one naming the Black/White state. The state lasts until INFO leaves it or
+ * power-off, like OM's own Hi/Sh / Mid choice (setting 2189).
+ * Storage: Blacks 965 / 966 / 967, Whites 993 / 997 / 1020 (unused profile-4
+ * cells, default 0), -7..+7 with a copy of tone 976's descriptor.
+ * Split tone: three tints per Color Profile (shadows, midtones, highlights),
+ * each one colour of the colour wheel's twelve and a strength 0..5, set on
+ * the colour wheel's axes 3..5 (trash: Saturation, Hue, Lightness, Shadow
+ * Tint, Midtone Tint, Highlight Tint). A tint axis shows the strength on its
+ * colour and 0 elsewhere; setting a colour moves the tint there. Cell value
+ * strength * 16 + colour (0 = none), cells tint_ids (Color Profile 4's
+ * colour-sector cells; descriptor: byte list 0..95 at 0x60207318).
+ * research/OM5II-SPLIT-TONE-2026-11-19.md, OM5II-BLACKS-WHITES-2026-11-18.md */
+BW_STEP = 20                    /* curve units (0..1023) per Black / White step */
+.section .tone_info_ptr,"a"      /* tone editor types 0x1531..0x1533 (Color Profile 1..3): INFO */
+ .long tone_info
+.section .tone_info_ptr2,"a"
+ .long tone_info
+.section .tone_info_ptr3,"a"
+ .long tone_info
 
-ST_BUF = 1132
-ST_BUF_SIZE = 1552               /* 3 x 512 tables + 16 bytes wb.s saves registers in */
 .section .ext5,"ax"
-/* d3 = kind (0..2 Color Profile 1..3), a2 = context. */
+/* d3 = kind (0..2 Color Profile 1..3), a2 = context: P's Black / White in
+ * curve units and the split-tone tables, for context 0 only (0 in other
+ * modes). call bw_refresh,[d2,d3,a2,a3],20 */
 bw_refresh:
  mov a2,d0
  cmp 0,d0
@@ -2546,7 +2641,7 @@ bw_refresh:
  cmp 0,a0
  beq bw_rf_out
  mov a0,a3                       /* a3 = P */
- clr d2                          /* row r: 0 Blacks, 1 Whites (2 Split tone) */
+ clr d2                          /* 0 Blacks, 1 Whites */
 bw_rf_loop:
  clr d0
  cmp 3,d3
@@ -2556,16 +2651,17 @@ bw_rf_loop:
  add d2,d0
  add d3,d0
  add d0,d0
- mov row_ids,a0
+ mov bw_ids,a0
  add d0,a0
  movhu (a0),d0
  mov d0,a0
  call rt_get1,[],4
  extb d0
- mov bw_rf_mul,a0
- add d2,a0
- movbu (a0),d1
- extb d1
+ mov BW_STEP,d1
+ cmp 0,d2
+ beq bw_rf_mul
+ mov -BW_STEP,d1                 /* + White brightens: W lowers the white end when negative */
+bw_rf_mul:
  mul d1,d0
 bw_rf_put:
  mov a3,a0
@@ -2573,219 +2669,634 @@ bw_rf_put:
  add d2,a0
  movhu d0,(BW_B,a0)
  inc d2
- cmp ROW_N,d2
+ cmp 2,d2
  bcs bw_rf_loop
- /* Split tone set and no buffer yet: allocate it (settings task, as P) */
- movhu (BW_B+4,a3),d0
+ call tint_refresh,[d2,d3,a2,a3],32
+bw_rf_out:
+ ret [d2,d3,a2,a3],20
+
+.section .ext3,"a"
+/* Descriptors (stock format, linked by cp_nd_link), built in P at arming:
+ * Black / White as tone 976's (-7..+7), the tints a byte list 0..95 (E148's
+ * identity table 0x60207318). Ids: bw_ids then tint_ids.
+ * a2 = P -> a3 = the first. call cad_build,[d2,d3],12 */
+cad_build:
+ mov a2,a0
+ add CAD_DESC,a0
+ mov bw_ids,a1
+ clr d3
+cb_loop:
+ mov cad_tpl,a3
+ cmp 6,d3
+ bcs cb_copy
+ add 16,a3
+cb_copy:
+ movhu (a1),d0
+ movhu d0,(a0)
+ mov 0x80,d0
+ movhu d0,(2,a0)
+ mov (a3),d0
+ mov d0,(4,a0)
+ clr d0
+ mov d0,(8,a0)
+ mov (4,a3),d0
+ mov d0,(12,a0)
+ mov (8,a3),d0
+ mov d0,(16,a0)
+ add 2,a1
+ add 20,a0
+ inc d3
+ cmp 15,d3
+ bcs cb_loop
+ mov a2,a3
+ add CAD_DESC,a3
+ ret [d2,d3],12
+.balign 4
+cad_tpl:                         /* list, {count, kind}, flags */
+ .long 0x6050ce24
+ .hword 30, 2
+ .long 0x401
+ .long 0
+ .long 0x60207318
+ .hword 96, 1
+ .long 0x100
+ .long 0
+CAD_NDESC = 15
+
+/* The tone view's own label update 0x60df862e (a0 = the view; called at
+ * 0x60df85f3 and 0x60df8626, each followed by ret [a2],8) shows OM's labels
+ * again after each change; both calls jump here: OM's update, then, once
+ * armed, tone_labels_v. Section 3 loads before the GUI. */
+.section .tv_call1,"ax"
+ jmp tv_upd
+.section .tv_call2,"ax"
+ jmp tv_upd
+.section .ext3,"a"
+tv_upd:
+ call tone_view_stock,[d2,d3,a2,a3],48
+ call tv_after,[d2,d3,a2,a3],24
+ ret [a2],8
+tv_after:                        /* a2 = the view; d0 kept */
+ mov d0,(4,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tva_out
+ call tone_labels_v,[d2,d3,a2,a3],24
+tva_out:
+ mov (4,sp),d0
+ ret [d2,d3,a2,a3],24
+bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
+ .hword 965, 966, 967, 993, 997, 1020
+tint_ids:                        /* zone z of Color Profile p: 3z + p (shadows, midtones, highlights) */
+ .hword 968, 969, 970, 971, 972, 973, 974, 975, 964
+/* R, G, B of each wheel colour (Yellow at the top, clockwise; hue 60 - 30k
+ * degrees): 64 cos(h - 120c), sum 0 */
+tint_rgb:
+ .byte 32,32,-64
+ .byte 55,0,-55
+ .byte 64,-32,-32
+ .byte 55,-55,0
+ .byte 32,-64,32
+ .byte 0,-55,55
+ .byte -32,-32,64
+ .byte -55,0,55
+ .byte -64,32,32
+ .byte -55,55,0
+ .byte -32,64,-32
+ .byte 0,55,-55
+
+.section .ext8,"ax"
+/* z = 0..2 (shadows, midtones, highlights): T[z] = strength * tint_rgb[colour]
+ * into P+TINT_T; then, when any is set, deltas for table index i (u = i - 128,
+ * w = u * u): edge zone (shadows below the middle, highlights above) * w plus
+ * midtones * (16384 - w), / 16384, into the buffer's delta tables, and
+ * ST_A = 1. d3 = kind, a3 = P. Settings task (refresh).
+ * call tint_refresh,[d2,d3,a2,a3],32 */
+tint_refresh:
+ clr d0
+ movhu d0,(ST_A,a3)
+ mov d0,(4,sp)                   /* any zone set */
+ clr d2
+tn_zone:
+ clr d0
+ cmp 3,d3
+ bcc tn_have
+ mov d2,d0
+ add d2,d0
+ add d2,d0
+ add d3,d0
+ add d0,d0
+ mov tint_ids,a0
+ add d0,a0
+ movhu (a0),d0
+ mov d0,a0
+ clr d0
+ mov 1,d1
+ call refresh_get,[d2],8
+ extbu d0
+tn_have:
+ mov d0,d1
+ lsr 4,d1                        /* strength */
+ and 15,d0                       /* colour */
+ cmp 12,d0
+ bcc tn_off
+ cmp 6,d1
+ bcs tn_ok
+tn_off:
+ clr d0
+ clr d1
+tn_ok:
+ mov tint_rgb,a0
+ add d0,a0
+ add d0,a0
+ add d0,a0
+ mov (4,sp),d0
+ or d1,d0
+ mov d0,(4,sp)
+ mov d2,d0
+ add d0,d0
+ add d2,d0
+ add d0,d0
+ mov a3,a1
+ add d0,a1
+ .rept 3
+ movbu (a0),d0
+ extb d0
+ mul d1,d0
+ movhu d0,(TINT_T,a1)
+ inc a0
+ add 2,a1
+ .endr
+ inc d2
+ cmp 3,d2
+ bcs tn_zone
+ mov (4,sp),d0
  cmp 0,d0
- beq bw_rf_out
- mov (ST_BUF,a3),d0
- cmp 0,d0
- bne bw_rf_out
+ beq tn_out
+ mov (ST_BUF,a3),a2
+ cmp 0,a2
+ bne tn_build
  mov ST_BUF_SIZE,d0
  call malloc,[],4
  mov a0,(ST_BUF,a3)
-bw_rf_out:
- ret [d2,d3,a2,a3],20
-bw_rf_mul:                       /* curve units per step: Blacks, Whites (+ brightens), Split tone */
- .byte BW_STEP, -BW_STEP, ST_STEP
-
-.section .ext6,"ax"
-/* Row item handlers (resolver 0x60e3ccba jumps here): d0 = the setting, then
- * the slider path of Sharpness / Contrast. */
-/* Every new row's resolver slot: d0 = key (item - 6) -> the row's setting. */
-row_item:
- add 6,d0
- call row_id,[d2],8
- jmp row_slider
-/* In place of the record loop at 0x60e49d6f: d2 = item, a3 = panel. */
-row_find_a:
- mov row_table,a0
- clr d1
-rfa_loop:
- movhu (a0),d0
- cmp d2,d0
- beq rfa_hit
- add 40,a0
- inc d1
- cmp 17,d1
- bne rfa_next
- mov bw_rows,a0
-rfa_next:
- cmp 17+BW_NROWS,d1
- bcs rfa_loop
- jmp rfa_back
-rfa_hit:
- mov a0,(4452,a3)
- jmp rfa_back
-/* In place of the record loop at 0x60e4a1a4: d3 = item, record -> (16,sp). */
-row_find_b:
- mov row_table,a3
- clr d1
-rfb_loop:
- movhu (a3),d0
- cmp d3,d0
- beq rfb_hit
- add 40,a3
- inc d1
- cmp 17,d1
- bne rfb_next
- mov bw_rows,a3
-rfb_next:
- cmp 17+BW_NROWS,d1
- bcs rfb_loop
- jmp rfb_back
-rfb_hit:
- mov a3,(16,sp)
- jmp rfb_back
-
-.section .ext8,"ax"
-.balign 4
-bw_desc:                         /* stock-format copies of 1017's descriptor */
- .irp id,965,966,967,993,997,1020
- .hword \id, 0x80
- .long 0x6050cee0, 0
- .hword 11, 1
- .long 0x200
- .endr
-row_ids:                         /* Blacks of Color Profile 1..3, then Whites */
- .hword 965, 966, 967, 993, 997, 1020, 971, 972, 973
- .balign 4
-bw_rows:                         /* row records, as Shading's (0x611b5378), kind 4 */
- .long 5354, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0
- .long 5356, 0, 0, 0, bw_title_w, 0, 0x40000, 0, 0, 0
- .long 5358, 0, 0, 0, st_title, 0, 0x40000, 0, 0, 0
-bw_title_b:
- .hword 4, 2202
- .long 0x611b42ac
-bw_title_w:
- .hword 4, 2201
- .long 0x611b42ac
-
-.section .rfa_hook,"ax"
- jmp row_find_a
- nop
-.section .rfb_hook,"ax"
- jmp row_find_b
- nop
-.section .bw_slot4,"a"
- .long 5354-6, row_item
-.section .bw_slot5,"a"
- .long 5356-6, row_item
-.section .st_slot8,"a"
- .long 5358-6, row_item
-
-
-/* The slider row's style and value-label lookups (0x60e4b02c, 0x60e4b09d) know
- * only items 7, 8, 59, 616, 5376 (Shading, 11 values -5..+5), 1011 and 5374.
- * Blacks / Whites use Shading's descriptor, so they take Shading's tables:
- * d0 ROW_ITEM0.. -> 5376, then the replaced 5 bytes (mov d1,a1; clr d1;
- * mov d1,d3; exthu d0) and back. */
-.section .ext6,"ax"
-/* No nested call: both functions return with retf, which uses MDR. */
-.irp n,style,label
-bw_\n:
- mov d1,a1
- clr d1
- mov d1,d3
- exthu d0
- cmp ROW_ITEM0,d0
- bcs bw_\n\()_out
- cmp ROW_ITEM0+2*(ROW_N-1),d0
- bhi bw_\n\()_out
- mov 5376,d0
-bw_\n\()_out:
- jmp bw_\n\()_back
-.endr
-.section .bw_style_hook,"ax"
- jmp bw_style
-.section .bw_label_hook,"ax"
- jmp bw_label
-
-/* Slider knob (0x60e4a9d0..: item 7/8/59 read settings 7/8/59, Shading 5376
- * reads effective 1016 with range -5..+5). Blacks / Whites read the active
- * Color Profile's own setting, same range. Replaces cmp 5376,d0; beq at
- * 0x60e4a9de (6 bytes). (4,sp) is the stock frame's max slot, written at
- * knob_store; used here first to hold the setting id. In section 2 (ext6 and
- * ext5 are full); section 2 loads before section 7's GUI code can run. */
-.section .ext2,"ax"
-bw_knob:
- cmp 5376,d0
- bne bw_kn_ours
- jmp knob_shading
-bw_kn_ours:
+ mov a0,a2
+ cmp 0,a2
+ beq tn_out
+tn_build:
+ add 1552,a2
+ clr d3
+tn_i:
+ mov d3,d0
+ add -128,d0
  mov d0,d1
- add -ROW_ITEM0,d1
- cmp 2*(ROW_N-1),d1
- bls bw_kn_id
- jmp knob_none
-bw_kn_id:
- call row_id,[d2],8
+ mul d0,d1
+ mov d1,(8,sp)
+ mov 16384,d2
+ sub d1,d2
+ mov a3,a0
+ add TINT_T+6,a0
+ mov a3,a1
+ add TINT_T,a1
+ cmp 0,d0
+ blt tn_c
+ add 12,a1
+tn_c:
+ mov (8,sp),d1
+ movhu (a1),d0
+ exth d0
+ mul d1,d0
  mov d0,(4,sp)
- call settings_obj,[],4
- mov (a0),a2
- mov sp,a1
- mov (8,a2),a2
- add 20,a1
- mov (4,sp),d0
- calls (a2)
- mov -5,a3
- mov 5,d0
- jmp knob_store
-.section .bw_knob_hook,"ax"
- jmp bw_knob
- nop
+ movhu (a0),d0
+ exth d0
+ mul d2,d0
+ mov (4,sp),d1
+ add d1,d0
+ asr 14,d0
+ movhu d0,(a2)
+ add 2,a0
+ add 2,a1
+ add 512,a2
+ mov a3,d0
+ add TINT_T+12,d0
+ cmp d0,a0
+ bne tn_c
+ add -1534,a2
+ inc d3
+ cmp 256,d3
+ bcs tn_i
+ mov 1,d0
+ movhu d0,(ST_A,a3)
+tn_out:
+ ret [d2,d3,a2,a3],32
 
-/* Left-column cell value: the panel row handler Blacks / Whites share with
- * Shading (0x60e4a34e) reads effective 1016 at 0x60e4a37a (mov 1016,d0;
- * calls (a2): 5 bytes). For the new row items read the active Color
- * Profile's own setting instead. d3 = item; a1 = (32,sp) the result slot;
- * d2 is dead here (the stock code sets it at 0x60e4a389). */
-.section .ext2,"ax"
-bw_cell:
- mov d3,d0
- add -ROW_ITEM0,d0
- cmp 2*(ROW_N-1),d0
- bhi bw_cell_stock
- mov d3,d0
- call row_id,[d2],8
- mov d0,d2
- call settings_obj,[],4
- mov (a0),a2
- mov (8,a2),a2
- mov (32,sp),a1
+.section .ext5,"ax"
+/* d2 = sector cell 928+12p+k, a3 = axis 3..5 -> d0 = the tint cell, d1 = k.
+ * call tint_cell,[],4 */
+tint_cell:
  mov d2,d0
- calls (a2)
- jmp cell_back
-bw_cell_stock:
- mov 1016,d0
- calls (a2)
- jmp cell_back
-.section .bw_cell_hook,"ax"
- jmp bw_cell
+ add -928,d0
+ clr d1
+tc_div:
+ cmp 12,d0
+ bcs tc_done
+ add -12,d0
+ inc d1
+ bra tc_div
+tc_done:
+ cmp 3,d1
+ bcs tc_p
+ mov 2,d1
+tc_p:
+ mov d0,a1
+ mov a3,d0
+ add -3,d0
+ add d0,d1
+ add d0,d1
+ add d0,d1
+ add d1,d1
+ mov tint_ids,a0
+ add d1,a0
+ movhu (a0),d0
+ mov a1,d1
+ ret [],4
 
-/* ---- Split tone (v0.2.0-dev) ----
- * Row item 5358 (slot 8 in every row table), storage 971 / 972 / 973 (Color
- * Profile 4's colour-sector cells, part 0; default 0), -5..+5 like Blacks /
- * Whites. The refresh writes A = 60 v into P+1128 and allocates the table
- * buffer; wb.s st_entry tints the R/G/B curve tables with it. Title: string
- * 3838 (an internal name never shown) overridden by films.s fl_str. */
 .section .ext10,"ax"
-.balign 4
-st_desc:
- .irp id,971,972,973
- .hword \id, 0x80
- .long 0x6050cee0, 0
- .hword 11, 1
- .long 0x200
- .endr
+/* From ui_read (its frame): d2 = sector cell, d3 = axis -> d0 = strength
+ * on the tint's colour, 0 elsewhere. */
+tint_read:
+ mov d3,a3
+ call tint_cell,[],4
+ mov d1,d3
+ call stock_get,[],4
+ mov d0,d1
+ and 15,d1
+ cmp d3,d1
+ bne tint_zero
+ lsr 4,d0
+ ret [d2,d3,a2,a3],24
+tint_zero:
+ clr d0
+ ret [d2,d3,a2,a3],24
 
-/* Split tone entry (v0.2.0-dev): the R/G/B curve setter 0x603e6974 is a leaf
- * that returns with retf (MDR) and whose frame has no slot for a return
- * address, so nothing here calls: st_ptr's check is inline. d2 and a2 are
- * free at its entry (its callers save them). Unarmed: replay the 5 replaced
- * bytes and continue. Armed: wb.s st_tint (section 4, fixed address) gets
- * a2 = P, d2 = MDR and continues the setter itself. */
+.section .ext9,"ax"
+/* From ui_write (its frame): d0 = axis, d2 = sector cell, d3 = value,
+ * a2 = the writer's a0. Strength 1..5 puts the tint on this colour, 0 clears
+ * it if it is here; then the editor's children follow. */
+tint_write:
+ mov d0,a3
+ mov ST_RESET,d0
+ call st_getb,[],12
+ cmp 0,d0
+ beq tw_nr
+ clr d3
+tw_nr:
+ cmp 0,d3
+ bge tw_pos
+ clr d3
+tw_pos:
+ cmp 5,d3
+ ble tw_le
+ mov 5,d3
+tw_le:
+ call tint_cell,[],4
+ mov d1,(4,sp)
+ mov d0,a3
+ call stock_get,[],4
+ mov d3,d1
+ cmp 0,d1
+ bne tw_set
+ and 15,d0
+ mov (4,sp),d1
+ cmp d1,d0
+ bne tw_done
+ clr d1
+ bra tw_put
+tw_set:
+ asl 4,d1
+ mov (4,sp),d0
+ or d0,d1
+tw_put:
+ mov a3,d0
+ mov a2,a0
+ call stock_ui_write,[d2,d3,a2,a3],20
+ call refresh_children,[d2,d3,a2,a3],24
+tw_done:
+ mov 1,d0
+ ret [d2,d3,a2,a3],24
+
+/* d0 = setting id -> d0 = the id the UI edits: in the Black/White state on
+ * Color Profile p, Shadows 978+3p -> Blacks, Highlights 976+3p -> Whites.
+ * call tone_alias,[d2,d3],12 */
+tone_alias:
+ mov d0,d2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq ta_out
+ movbu (ST_TM,a0),d0
+ cmp 0,d0
+ beq ta_out
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc ta_out
+ mov d0,d3
+ add d0,d0
+ add d3,d0
+ add 976,d0
+ mov bw_ids+6,a0
+ cmp d0,d2
+ beq ta_pick
+ add 2,d0
+ mov bw_ids,a0
+ cmp d0,d2
+ bne ta_out
+ta_pick:
+ add d3,a0
+ add d3,a0
+ movhu (a0),d0
+ ret [d2,d3],12
+ta_out:
+ mov d2,d0
+ ret [d2,d3],12
+
+.section .ext2,"ax"          /* reached from the GUI before arming too */
+/* Tone editor INFO (types 0x1531..0x1533, slots 0x61210790 / 0x612107c8 /
+ * 0x61210800 of the type records at 0x6120e9dc, stock 0x60e9e8ff; entered
+ * by calls from 0x60e9c10e: a0 = editor, d0 / d1 the command) -> d0. On
+ * Color Profile 1-3 once armed: Hi/Sh -> Black/White (consumed, OM's state
+ * stays Hi/Sh), Black/White -> Mid (OM's own step), Mid -> Hi/Sh (OM's). */
+tone_info:
+ movm [d2,d3,a2,a3],(sp)
+ add -8,sp
+ mov a0,a2
+ mov d0,d2
+ mov d1,d3
+ call st_ptr,[],8
+ cmp 0,a0
+ beq ti_stock
+ mov a0,a3
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc ti_stock
+ movbu (ST_TM,a3),d0
+ cmp 0,d0
+ bne ti_from_bw
+ movhu (122,a2),d0
+ cmp 0,d0
+ bne ti_stock
+ mov 1,d0
+ movbu d0,(ST_TM,a3)
+ call tone_refresh,[d2,d3,a2,a3],24
+ mov 1,d0
+ ret [d2,d3,a2,a3],24
+ti_from_bw:
+ clr d0
+ movbu d0,(ST_TM,a3)
+ call tone_refresh,[d2,d3,a2,a3],24
+ti_stock:
+ mov a2,a0
+ mov d2,d0
+ mov d3,d1
+ calls tone_info_stock
+ ret [d2,d3,a2,a3],24
+
+.section .ext2,"ax"
+/* a2 = tone editor: its value children (setting at +80, index at +94 of the
+ * list +7..-7) take what the page now edits; then the editor's own update
+ * (0x900c, its +72) redraws. call tone_refresh,[d2,d3,a2,a3],24 */
+tone_refresh:
+ mov a2,a3
+ add 128,a3                      /* children 1..3; child 0 is the Hi/Sh / Mid switch */
+ mov 3,d3
+trf_loop:
+ mov (a3),a0
+ cmp 0,a0
+ beq trf_next
+ movhu (80,a0),d0
+ mov d0,d1
+ add -976,d1
+ cmp 9,d1
+ bcc trf_next
+ call ui_read,[d2,d3,a2,a3],24
+ mov 7,d1
+ sub d0,d1
+ mov (a3),a0
+ movhu d1,(94,a0)
+trf_next:
+ add 4,a3
+ add -1,d3
+ bne trf_loop
+ mov a2,a0
+ mov 0x900c,d0
+ clr d1
+ mov (72,a2),a1
+ calls (a1)
+ ret [d2,d3,a2,a3],24
+
+.section .ext9,"ax"
+/* a0 = the tone page (child 2) -> its view; a2 = the view: in the
+ * Black/White state the "Sh" / "Hi" titles and values (labels 2..4, 10..12)
+ * are hidden (tone_text draws Black / White) and the hint (label 16, "Mid
+ * INFO") shown; in Hi/Sh the hint is hidden (tone_text names Black/White).
+ * Other cases are OM's. Runs at each layout (pg_tone).
+ * call tone_labels,[d2,d3,a2,a3],24 */
+tone_labels:
+ mov (36,a0),a2
+tone_labels_v:
+ cmp 0,a2
+ beq tl_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tl_out
+ movbu (ST_TM,a0),d3
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc tl_out
+ mov 1,d2
+ cmp 0,d3
+ bne tl_bw
+ mov 2189,d0
+ call stock_get,[],4
+ cmp 1,d0
+ beq tl_out                      /* Mid: OM's hint (Hi/Sh) */
+ clr d2
+ bra tl_hint
+tl_bw:
+ mov tl_labels,a3
+tl_hide:
+ movbu (a3),d0
+ asl2 d0
+ add 792,d0
+ mov a2,a0
+ add d0,a0
+ mov (a0),a0
+ clr d0
+ call set_visible,[d2,d3,a2],16
+ inc a3
+ cmp tl_labels+6,a3
+ bne tl_hide
+tl_hint:
+ mov (856,a2),a0
+ mov d2,d0
+ call set_visible,[d2,d3,a2],16
+ mov a2,a0                       /* repaint the view where labels went */
+ mov 0,a1
+ mov 1,d0
+ call ui_invalidate,[],4
+tl_out:
+ ret [d2,d3,a2,a3],24
+tl_labels:                       /* view labels (at +792 + 4k) */
+ .byte 2, 3, 4, 10, 11, 12
+/* a2 = paint context: "Black n" / "White n" in the Black/White state, the
+ * hint "Black/White" in Hi/Sh. call tone_text,[d2,d3,a2,a3],48 */
+tone_text:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tt_out
+ movbu (ST_TM,a0),d3
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc tt_out
+ mov d0,d2
+ add d0,d2
+ add bw_ids,d2                   /* d2 -> the profile's Blacks id */
+ cmp 0,d3
+ beq tt_hint
+ mov d2,(4,sp)
+ mov d2,a0
+ movhu (a0),d1
+ mov text_black,a1
+ mov 395,d0
+ call tt_value,[d2,d3,a2,a3],24
+ mov (4,sp),a0
+ movhu (6,a0),d1
+ mov text_white,a1
+ mov 600,d0
+ call tt_value,[d2,d3,a2,a3],24
+ bra tt_out
+tt_hint:
+ mov 2189,d0
+ call stock_get,[],4
+ cmp 1,d0
+ beq tt_out
+ mov text_bw,a1
+ mov 270,d0
+ mov 426,d1
+ mov 180,d2
+ call tx_draw,[d2,d3,a2,a3],44
+tt_out:
+ ret [d2,d3,a2,a3],48
+/* a1 = name, d0 = x, d1 = setting: "name +n" (P's label buffer), box
+ * 110 wide at y 84. call tt_value,[d2,d3,a2,a3],24 */
+tt_value:
+ mov d0,d3
+ mov a1,a3
+ mov d1,d0
+ call stock_get,[],4
+ mov d0,d2
+ call st_ptr,[],8
+ add TT_BUF,a0
+ mov a0,a1
+tt_copy:
+ movhu (a3),d0
+ add 2,a3
+ movhu d0,(a0)
+ add 2,a0
+ cmp 0,d0
+ bne tt_copy
+ mov ' ',d0
+ movhu d0,(-2,a0)
+ mov '+',d0
+ cmp 0,d2
+ bge tt_pos
+ mov '-',d0
+ not d2
+ inc d2
+tt_pos:
+ beq tt_digit
+ movhu d0,(a0)
+ add 2,a0
+tt_digit:
+ mov d2,d0
+ add '0',d0
+ movhu d0,(a0)
+ clr d0
+ movhu d0,(2,a0)
+ mov d3,d0
+ mov 84,d1
+ mov 110,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ ret [d2,d3,a2,a3],24
+
+.section .ext6,"ax"
+/* a2 = paint context, a1 = UTF-16 text, d0 = x, d1 = y, d2 = width: the text
+ * in OM's font, centred in a box 32 high (as paint_axis).
+ * call tx_draw,[d2,d3,a2,a3],44 */
+tx_draw:
+ mov a1,(4,sp)
+ movhu d0,(8,sp)
+ add d2,d0
+ movhu d0,(12,sp)
+ movhu d1,(10,sp)
+ add 32,d1
+ movhu d1,(14,sp)
+ movhu (52,a2),d0
+ mov d0,(16,sp)
+ mov (76,a2),d0
+ mov d0,(20,sp)
+ mov a2,a0
+ mov 1,d0
+ call stock_font,[a2],8
+ cmp 0,a0
+ beq tx_restore
+ mov a0,(24,sp)
+ mov 2,d0
+ movhu d0,(52,a2)
+ mov (4,sp),d1
+ mov a2,a0
+ mov sp,a1
+ add 8,a1
+ mov text_style,d0
+ call stock_text,[d2,d3,a2,a3],16
+ mov (24,sp),a0
+ call stock_font_release,[],4
+tx_restore:
+ mov (16,sp),d0
+ movhu d0,(52,a2)
+ mov (20,sp),d0
+ mov d0,(76,a2)
+ ret [d2,d3,a2,a3],44
+.section .ext3,"a"
+.balign 2
+text_black:
+ .short 'B','l','a','c','k',0
+.section .ext9,"ax"
+.balign 2
+text_white:
+ .short 'W','h','i','t','e',0
+.section .ext8,"ax"
+.balign 2
+text_bw:
+ .short 'B','l','a','c','k','/','W','h','i','t','e',0
+
+.section .ext6,"ax"
+.balign 2
+text_switch:
+ .short 'S','w','i','t','c','h',' ','@','A','0','3','4','@',0
+
+/* Split tone entry: the R/G/B curve setter 0x603e6974 is a leaf that returns
+ * with retf (MDR) and whose frame has no slot for a return address, so
+ * nothing here calls: st_ptr's check is inline. d2 and a2 are free at its
+ * entry (its callers save them). Unarmed: replay the 5 replaced bytes and
+ * continue. Armed: wb.s st_tint (section 4, fixed address) gets a2 = P,
+ * d2 = MDR and continues the setter itself. */
 .section .st_hook,"ax"
  jmp st_entry
 .section .ext2,"ax"
@@ -2807,48 +3318,3 @@ st_unarmed:
  mov d0,d1
  mov (a2),d0
  jmp setter_back
-
-.section .ext6,"ax"
-/* call row_id,[d2],8: d0 = row item (ROW_ITEM0 + 2r) -> d0 = row r's setting
- * for the active Color Profile (Color Profile 1's in any other mode). */
-row_id:
- add -ROW_ITEM0,d0
- lsr 1,d0
- mov d0,d2
- add d0,d2
- add d0,d2
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcs row_id_cp
- clr d0
-row_id_cp:
- add d2,d0
- add d0,d0
- mov row_ids,a0
- add d0,a0
- movhu (a0),d0
- ret [d2],8
-
-/* Row-widget lookup (16-slot table 0x611b7aa8, open addressing, 3 empty
- * slots in stock): filling all of them makes every miss loop for ever, so
- * the new rows are not entered there. Instead, at 0x60e49f45 (add -6,d1;
- * mov 0x611b7aa8,a1: 8 bytes) the new row items go straight to the slider
- * handler 0x60e49fdf; anything else replays the stock lookup. */
-.section .ext2,"ax"
-row_widget:
- mov d1,d0
- add -ROW_ITEM0,d0
- cmp 2*(ROW_N-1),d0
- bhi row_widget_stock
- jmp row_slider_widget
-row_widget_stock:
- add -6,d1
- mov 0x611b7aa8,a1
- jmp row_widget_back
-.section .row_widget_hook,"ax"
- jmp row_widget
- nop
- nop
- nop

@@ -32,17 +32,14 @@ SECTIONS {
  .ext10 0x6169c820 : { *(.ext10) }
  .bw_hook 0x60385f9c : { *(.bw_hook) }
  .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
- .rfa_hook 0x60e49d6f : { *(.rfa_hook) }
- .rfb_hook 0x60e4a1a4 : { *(.rfb_hook) }
- .bw_slot4 0x611a0ab8 : { *(.bw_slot4) }
- .bw_style_hook 0x60e4b02c : { *(.bw_style_hook) }
- .bw_knob_hook 0x60e4a9de : { *(.bw_knob_hook) }
- .bw_cell_hook 0x60e4a37a : { *(.bw_cell_hook) }
- .bw_label_hook 0x60e4b09d : { *(.bw_label_hook) }
- .bw_slot5 0x611a0ac8 : { *(.bw_slot5) }
- .st_slot8 0x611a0ad8 : { *(.st_slot8) }
  .st_hook 0x603e6974 : { *(.st_hook) }
- .row_widget_hook 0x60e49f45 : { *(.row_widget_hook) }
+ .tone_info_ptr 0x61210790 : { *(.tone_info_ptr) }
+ .tone_info_ptr2 0x612107c8 : { *(.tone_info_ptr2) }
+ .tone_info_ptr3 0x61210800 : { *(.tone_info_ptr3) }
+ .tv_call1 0x60df85f3 : { *(.tv_call1) }
+ .tv_call2 0x60df8626 : { *(.tv_call2) }
+ .ext3 0x60621e80 : { *(.ext3) }
+ .ext9 0x615ee5c8 : { *(.ext9) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
@@ -55,7 +52,9 @@ row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 
 row_slider = 0x60e3cd53;
 row_widget_back = 0x60e49f4d;   /* row-widget lookup after add -6,d1; mov table,a1 */
 setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
-st_tint = 0x60829764;           /* wb.s .st_tint (fixed in wb.ld) */
+tone_info_stock = 0x60e9e8ff;   /* tone editor (type 0x1531) INFO handler, entered by calls */
+tone_view_stock = 0x60df862e;   /* the tone view's label update (a0 = view) */
+st_tint = 0x60829774;           /* wb.s .st_tint (fixed in wb.ld) */
 knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
 knob_none = 0x60e4aa37;
 cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */
@@ -132,6 +131,8 @@ ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(SIZEOF(.cp_any_hook) == 7, "cp_any_hook replaces 7 bytes")
 ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
+ASSERT(ADDR(.ext3) + SIZEOF(.ext3) <= 0x60622000, ".ext3 leaves section 3")
+ASSERT(ADDR(.ext9) + SIZEOF(.ext9) <= 0x615ee800, ".ext9 leaves section 9")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
 ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")

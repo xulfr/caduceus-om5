@@ -2,6 +2,10 @@
 
 Static analysis (objdump) and OM-Emu, 2026-11-19. Emulator and static only.
 
+**Status (2026-11-19, later):** the Black, White and Split Tone rows built from this model were removed (Black / White
+moved to the tone page, split toning to the colour wheel; their hooks and data edits are gone). The findings below
+still describe how E148 defines a row.
+
 ## The pieces of a row (observation)
 
 1. **Row list per picture-mode family**: chosen at `0x60e37600..0x60e376d5` (`mov list,a3` + `mov count,d0`).

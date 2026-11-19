@@ -66,17 +66,19 @@ python tests/run_cp_grain.py --emu generated/om-emu --build generated/strict --o
 Blacks/Whites written into P. Pass the gate wrapper's linked address (from `mn10300-elf-nm`):
 
 ```sh
-BW_GATE=0x605af6a1 POST=$PWD/tests/bw_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh generated/strict OUT s1
+BW_GATE=0x605af690 POST=$PWD/tests/bw_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh generated/strict OUT s1
 ```
 
-### Blacks / Whites / Split tone rows (v0.2.0-dev)
+### Black / White on the tone page and split tone on the colour wheel (v0.2.0-dev)
 
-`tests/run_bw_rows.py` drives the Black, White and Split Tone rows (9 cases: per-profile values, profile and mode
-switches) and checks the six settings, the curve values in P and the Split tone buffer. `tests/st_assert.mjs`
-calls the camera's R/G/B curve setter with test ramps (run it as `POST` with keys `s1`).
+`tests/run_bw_tint.py` drives the tone page (INFO into Black/White, the dials, the INFO cycle, Color Profile 2, a stock
+mode afterwards) and the colour wheel's tint axes (7 cases). `tests/bw_tint_assert.mjs` checks the settings, OM's own
+tone values, P's curve values and states; for tint cases it runs `tests/st_assert.mjs`, which recomputes every delta
+from the tint cells and calls the camera's R/G/B curve setter with test ramps (every output entry must match; with the
+tint flag cleared the stock tables must pass through).
 
 ```sh
-python tests/run_bw_rows.py --emu generated/om-emu --build generated/strict --out generated/bw-rows
+python tests/run_bw_tint.py --emu generated/om-emu --build generated/strict --out generated/bw-tint
 ```
 
 ### Live ND shooting labels

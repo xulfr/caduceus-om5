@@ -63,23 +63,28 @@ drew only the seven known rows, and moving down to the eighth stopped the emulat
 So a row item also needs entries in at least one more per-item table (left-column cell, icon or page). This is
 the next Ghidra question, not more trial edits.
 
-## Feature (v0.2.0-dev, emulator-checked)
+## Feature (v0.2.0-dev, emulator-checked): on the tone page since 2026-11-19
 
-- Two Picture Mode rows on Color Profile 1–3: **Black** and **White**. They use E148's own strings 2202 / 2201,
-  −5..+5 sliders like Shading, and the Shading icon in the left column.
+- First built as two Picture Mode rows (Black, White, −5..+5). At the owner's request they moved onto the tone curve
+  page: INFO steps **Hi/Sh → Black/White → Mid → Hi/Sh** on Color Profile 1–3. In Black/White OM's own Sh / Hi
+  children edit Blacks / Whites (−7..+7) through `tone_alias`, so the dials, Reset and limits are OM's. Page
+  details, labels and hooks: [tone page note](OM5II-TONE-PAGE-2026-11-19.md).
 - Storage: Blacks 965 / 966 / 967, Whites 993 / 997 / 1020 (unused profile-4 cells, default 0, signed through
-  the UI, in the stock reset / init / custom-mode lists). Each gets a copy of 1017's descriptor.
+  the UI, in the stock reset / init / custom-mode lists). Descriptor: a copy of tone 976's (list −7..+7, built in P
+  by `cad_build`).
 - The refresh writes, for the active Color Profile (context 0), B = 20 × Blacks and W = −20 × Whites into
-  P+1100 / P+1102, and 0 in other modes. +Blacks lifts the black end; +Whites raises the white end
-  (brighter, clipping sooner).
-- Wiring: see [the row model](OM5II-PICTURE-MODE-ROWS-2026-11-19.md#everything-a-new-slider-row-needs-worked-out-by-building-blacks--whites-emulator).
-- Tests: `tests/run_bw_rows.py` (6 cases: per-profile values, switching, P) and `tests/bw_assert.mjs` (curve).
+  P+1172 / P+1174 (`BW_B` / `BW_W`; P+1124 / 1126 with the rows), and 0 in other modes. +Blacks lifts the black end;
+  +Whites raises the white end (brighter, clipping sooner). ±7 gives ±140 of 1023 at the ends.
+- The curve graphic (`gfx_tone` / `gfx_curve`) adds Black × (24 − column) or White × (column − 24) × 21/128 px
+  (4 px per step at the ends) and keeps the curve in its box.
+- Tests: `tests/run_bw_tint.py` (cases `cp1-black-white`, `cp1-info-cycle`, `cp2-black`, `stock-after-bw`) and
+  `tests/bw_assert.mjs` (curve maths, unchanged results).
 - Not shown: the effect in a photo and in live view (camera test), and reset / custom-mode behaviour on the camera.
 
 ## Original to-do list (done above except the camera test)
 
 1. Per-profile storage (2 × 3 values; the IDs must default to 0 in the stock reset/init lists, see the CP grain note)
    and refresh writes of the active profile's values into `P+1052/1054` (0 for other modes).
-2. Two Picture Mode sidebar rows (Blacks, Whites). Unlike grain, E148 has no ready-made row items for these.
+2. UI (rows first, now the tone page's Black/White state).
 3. Check that live view also goes through `0x603e863e` (the preview would then show the change).
 4. Camera test: Blacks and Whites visible in JPEGs, no slowdown, no change with both at 0.
