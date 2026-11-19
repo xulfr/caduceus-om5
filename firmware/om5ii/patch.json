@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "b02abf494730cdf78b4ce7ce3ce0e3260e2c8567a2c44855de9e23e2d998d8d2",
+      "stored_after_sha256": "396dcb7c37d5722e278549412815c220059be36d7801d9db2854194b838afb6d",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "bb53c0c281f7dd4b63a176f4a62f816e866b818bd4069bb2feedf825722641c4",
+      "after_sha256": "0673ff53aba0d9f7f0e8d2a622fde94e2d86440e37a9b710132cad8f4fc79b06",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -1022,17 +1022,17 @@
       "component": "0x100",
       "name": "ext3",
       "address": "0x60621e80",
-      "bytes": 340,
-      "before_sha256": "cb9c3eae31ea3b5ebf14eee1fcf3522df1441095c4605ad670a4daa3e3d05984",
-      "after_sha256": "6ebc8eeb53d3bdab95ad8ba0a81c0dc3fb2b9b2018d4b84ff5df677117c86021"
+      "bytes": 336,
+      "before_sha256": "77071fc978963dce5058c795643c95c195d0d2506c5f02ff38c09e4c8d6ec517",
+      "after_sha256": "0d29f4d4cd55c975ee40e69036058a1ae1d36d3a660073a71f0320a4b2a9eeab"
     },
     {
       "component": "0x100",
       "name": "ext9",
       "address": "0x615ee5c8",
-      "bytes": 508,
-      "before_sha256": "c5298fa426e927387dafeee13f558f4a0a517c7f3fafaf4c7e1df7f95662a42c",
-      "after_sha256": "8d4be2281071eb0ef3d1c81de8a1a4e83533c0e436c067dc853b3ddef4f55626"
+      "bytes": 504,
+      "before_sha256": "c00173cde437c86c96c67f70c1a2514bbe571e4c9649e8f4b36277f9a555380f",
+      "after_sha256": "110fd6a173039788d92d6b8bf1cf9b2aba57d615ac04407ae675395f2ba42f58"
     },
     {
       "component": "0x100",
@@ -1666,7 +1666,7 @@
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "27ad9db3e7b7eb4f795f8efaa00d98edaeac48f0931f655c05033efc14a95c2b",
+    "sha256": "4db51f7fb8a600777787054c41a32beeff1dd11e3e60be8039ba3b819103c27b",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },

@@ -3297,11 +3297,11 @@ tx_restore:
 .section .ext3,"a"
 .balign 2
 text_black:
- .short 'B','l','a','c','k',0
+ .short 'B','l','k',0             /* short: OM's one text size is larger than the Sh / Hi images (owner, 2026-11-19) */
 .section .ext9,"ax"
 .balign 2
 text_white:
- .short 'W','h','i','t','e',0
+ .short 'W','h','t',0
 .section .ext8,"ax"
 .balign 2
 text_bw:
