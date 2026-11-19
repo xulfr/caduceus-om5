@@ -37,19 +37,26 @@
   from the card. The alpha2 donor's startup defect and the transplant itself are both possible causes.
   [Report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
 
-## v0.2.0 development (`claude/sharp-cray-0up4d3`)
+## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
-- **Film Grain for Color Profiles (emulator only).** Current dev package `7d611008…8c7f` (grain, Black/White on the
-  tone page, split tone on the colour wheel; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
-  Open on the camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
-- **Black / White on the tone page** (owner request 2026-11-19; the sidebar rows are gone): INFO steps Hi/Sh →
-  Black/White → Mid on Color Profile 1–3; −7..+7 per profile. Emulator-checked.
-  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md), [tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md).
-- **Split tone on the colour wheel** (owner request: midtones too, any colour; the teal/orange row is gone): trash
-  steps on to Shadow / Midtone / Highlight Tint; each tint is one of the 12 colours, strength 1..5. Emulator-checked.
-  [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
-- Emulator on `7d611008…`: `run_emulator.py` 20/20, `run_bw_tint.py` 7/7, `run_cp_grain.py` 6/6, `bw_assert.mjs` pass.
+- **Camera, 2026-11-19, package `7d611008…1c7f`** (the earlier `…8c7f` was a typo): boots and works. Split tone
+  works (live view and JPEG). Black / White: UI only, no effect in pictures. Colour grain: no grain at any level,
+  carousel order reversed. "All" on a tint axis changed a seemingly random colour. Black / White labels larger than
+  Sh / Hi. [Report](research/OM5II-V020DEV-CAMERA-2026-11-19.md).
+- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `e0f5b658…3bea`, emulator only, never flashed):
+  - Black / White now go into the split-tone R/G/B delta tables (the route the camera showed working); the
+    brightness-curve hooks are removed. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+  - Tint axes stay on one colour: arriving with "all" switches back, INFO there does nothing.
+  - Picture Mode stays open 30 s after the last key or dial (8 stock timer arms + Caduceus's own re-arm;
+    `firmware/om5ii/pm_timeout.py`). Touch not covered.
+- **Open:** colour grain needs real image-pipeline work (stock grain is monochrome-only; OM-3 needed a texture
+  pass over many camera rounds): owner to decide whether to drop the row meanwhile.
+  [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Black / White label size: OM has one shared font object;
+  resizing it garbles text, so not fixed. [Tone page note](research/OM5II-TONE-PAGE-2026-11-19.md#open-black--white-labels-larger-than-sh--hi-camera-report-2026-11-19).
+- Black / White on the tone page: INFO steps Hi/Sh → Black/White → Mid on Color Profile 1–3; −7..+7 per profile.
+  [Tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md). Split tone: trash steps on to Shadow / Midtone /
+  Highlight Tint; one of 12 colours, strength 1..5. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
 - Space is used up again (about 30 bytes left in the tails). This build also uses the FF tails of sections 3 and 9
   for the first time; the 15 new descriptors are built in the heap at arming.
 - Clarity is blocked on the Soft Focus weight getter. Free space is nearly gone (see [the plan](docs/V0.2.0-PLAN.md)).
@@ -63,12 +70,11 @@
 
 ## Next camera checks
 
-0. **v0.2.0-dev build** (once the owner flashes it; record the package SHA-256). Boot and half-press first (new code
-   in sections 3 and 9). On Color Profile 1, 2 and 3: Film Grain Off/Low/Std/High; tone page INFO cycle and Black /
-   White −7 / 0 / +7 (labels, curve graphic, JPEG); colour wheel Shadow / Midtone / Highlight Tint on a few colours at
-   strength 1 and 5. Look for a visible change in JPEGs and live view, nothing at 0, no slowdown or restart. Then:
-   the values survive power-off, Reset sets them to 0 / none, C1–C5 keep them, and other picture modes are
-   unaffected.
+0. **Dev package `e0f5b658…3bea`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
+   live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
+   INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
+   Mode stays open about 30 s after the last key or dial, on the strip, tone page and colour wheel; other menus and
+   the super control panel still close after 8 s. Then: Reset, C1–C5 and power-off keep / clear values as expected.
 
 1. Capture per-step filter and CP results with the installed package SHA-256.
    [Checklist](docs/FIRST_FLASH.md#alpha12-camera-checks).
