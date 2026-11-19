@@ -51,11 +51,15 @@ from patch-origin writes; it does not prove that all hardware paths are safe.
 All results are **emulator only**. No loader, second CPU, ISP, physical persistence or exposure validation
 is implied. Do not change `camera_tested` after a passing run.
 
-### Color Profile grain (removed)
+### Color Profile grain (experiment branch)
 
-Color Profile grain was removed on 2026-11-19 (no grain in colour pictures on the camera; stock grain is
-monochrome-only). Its tests, `run_cp_grain.py` and `cp_grain_assert.mjs`, are on the experiment branch
-`claude/cp-grain-experiment`.
+Six GUI cases set and switch the Color Profile Film Grain row. They then read cells 907/911/915 and the effective
+setting 998 through OM's getters (`tests/cp_grain_assert.mjs`). These check the settings only: the camera showed no
+grain in colour pictures with them (2026-11-19).
+
+```sh
+python tests/run_cp_grain.py --emu generated/om-emu --build generated/strict --out generated/cp-grain
+```
 
 ### Blacks / Whites curve (retired)
 

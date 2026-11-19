@@ -68,7 +68,7 @@ ROWS_LO, ROWS_HI = 0x604ef064, 0x604ef120  # 111's old record table tail (color_
 CP_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17)
 # Color Profile grain (edits 2's last three descriptors and 6..9). Off since 2026-11-19: the camera showed no
 # grain in colour pictures (stock grain is monochrome-only); hsl.s CP_NDESC and the refresh's 998 entry follow.
-CP_GRAIN = False
+CP_GRAIN = True
 GRAIN_EDITS = ('cp_grain_table', 'cp_grain_lookup_a', 'cp_grain_count_a', 'cp_grain_lookup_b', 'cp_grain_count_b',
                'cp_grain_rows', 'cp_grain_list', 'cp_grain_list_count')
 

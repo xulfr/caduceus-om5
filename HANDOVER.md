@@ -37,6 +37,15 @@
   from the card. The alpha2 donor's startup defect and the transplant itself are both possible causes.
   [Report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
 
+## Colour grain experiment (`claude/cp-grain-experiment`)
+
+- Branched from `claude/wizardly-feynman-wejd65` at `4ce7194` with the Color Profile grain row restored
+  (`cp_nd.py` `CP_GRAIN = True`; package `4db51f7f…c27b`, OM-Emu `run_cp_grain.py` 6/6). That row alone gives no
+  grain on the camera: the stock grain pass is monochrome-only. Goal: find E148's development request, job key and
+  combiner selection (leads `0x603ecda1`, `0x6053138e`, `0x6036fc5c`, `0x6042394c` + 28736), then a logging probe
+  for the camera as OM-3's gl1–gl3. [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Not for merging until grain shows
+  on the camera; the carousel order (High..Off, reversed from Monochrome) is also open.
+
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).

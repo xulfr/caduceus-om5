@@ -64,9 +64,11 @@ def main():
         ('name-control', control_bad, True, 'delete', 2, 0, [None] * 3),
         ('persisted-name', good, True, 'delete', 1, 4, [selected(0), None, None]),
         # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
-        ('other-rows', good, True, ('down delete ' * 5).strip(), 1, 4, [None] * 3),
-        ('row-return', good, True, 'down ' * 6 + 'delete', 1, 4, [selected(0), None, None]),
-        ('row-return-title', twins, True, 'delete ' + 'down ' * 6 + 'delete delete', 1, 2, [twin(0), None, None]),
+        # v0.2.0: Color Profiles have a seventh row, Film Grain (a carousel, row kind 4 like the mode strip).
+        ('other-rows', good, True, ('down delete ' * 6).strip(), 1, 4, [None] * 3),
+        ('grain-row-delete', good, True, 'down ' * 6 + 'delete', 1, 4, [None] * 3),
+        ('row-return', good, True, 'down ' * 7 + 'delete', 1, 4, [selected(0), None, None]),
+        ('row-return-title', twins, True, 'delete ' + 'down ' * 7 + 'delete delete', 1, 2, [twin(0), None, None]),
         # Two films that differ only in name: the frame must change on each step (title repaint).
         ('title-redraw', twins, True, 'delete delete', 1, 2, [twin(1), None, None]),
         ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),
@@ -132,9 +134,11 @@ def main():
             for k in range(1, len(keys.split()) + 1):
                 assert frames[-k] != frames[-k - 1], f'{name}: no repaint after delete {len(keys.split()) - k + 1}'
         if name == 'other-rows':
-            # tone, shading, sharpness and contrast rows: Delete changes nothing on screen (as stock)
-            for k in (4, 6, 8, 10):
-                assert frames[-11 + k] == frames[-12 + k], f'{name}: Delete acted on row {k // 2}'
+            # tone, shading, sharpness, contrast and grain rows: Delete changes nothing on screen (as stock)
+            for k in (4, 6, 8, 10, 12):
+                assert frames[-13 + k] == frames[-14 + k], f'{name}: Delete acted on row {k // 2}'
+        if name == 'grain-row-delete':
+            assert frames[-1] == frames[-2], 'grain-row-delete: Delete changed the Film Grain row'
         if name == 'scp-name':
             assert frames[-1] != stock_frames[-1], 'scp-name: the control panel shows no film name'
         if name == 'row-return-title':
