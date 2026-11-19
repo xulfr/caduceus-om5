@@ -34,11 +34,12 @@ Color Profile grain (v0.2.0, emulator and static evidence, 2026-11-18):
    E148 has no Color Profile 4, no stock descriptor exists for them, and their part 1 (WB records) is separate).
    Each gets a copy of 999's descriptor (4 values, list 0x6050ced8). hsl.s writes effective 998 = 907 + 4p.
  6. cp_grain_table   0x604f25a8: 57..59, 65 -> 999..1002 as stock, then 54..56 -> 907, 911, 915 (7 x 8 bytes).
- 7. cp_grain_rows    0x604ef064: the Color Profile row list with 0x1501 appended (7 x 4 bytes); in the tail of
+ 7. cp_grain_rows    0x604ef064: the Color Profile row list with 0x1501 (grain) and, since the Blacks / Whites
+    rows, 5370 / 5372 appended (9 x 4 bytes); in the tail of
     111's old record table that color_profiles.py frees and does not fill.
  8. cp_grain_lookup_a 0x60e3d10b / cp_grain_count_a 0x60e3d120, and _b 0x60e4b344 / 0x60e4b359: both lookups
     take table 6 with 7 entries.
- 9. cp_grain_list    0x60e376c3 / cp_grain_list_count 0x60e376c9: the Color Profile case takes list 7, 7 items.
+ 9. cp_grain_list    0x60e376c3 / cp_grain_list_count 0x60e376c9: the Color Profile case takes list 7, 9 items.
 Setting 2228 is the CP button's current item (1 + the item index k of the CP table 0x60f7f57c; k 6, 7 are ND32,
 ND64). Its stock allowed values are 1..6, 14..17 (list 0x6050da8e), and the CP carousel lists exactly the allowed
 values (GUI 0x60e27d22 iterates them through the data model, count +24 / value +28), so ND32 and ND64 never appear
@@ -114,14 +115,24 @@ def edits(img):
     stock_rows = (0x6f, 0x14fe, 0x14ff, 0x1500, 7, 8)
     assert struct.unpack('<6I', R(0x6119a0f0, 24)) == stock_rows
     assert struct.unpack('<8I', R(0x6119a0d0, 32))[6] == 0x1501
-    rows = stock_rows + (0x1501,)
+    rows = stock_rows + (0x1501, 5370, 5372)   # + Film Grain, Blacks, Whites (hsl.s bw_rows)
     assert ROWS_LO <= ROWS and ROWS + 4 * len(rows) <= ROWS_HI
-    out['cp_grain_rows'] = (ROWS, struct.pack('<7I', *rows))
+    out['cp_grain_rows'] = (ROWS, struct.pack('<%dI' % len(rows), *rows))
     # mov imm32,a3 (fc df) then mov 6,d0 (80 06); the Monochrome case beside it is mov 8,d0
     assert R(0x60e376c3, 8) == b'\xfc\xdf' + struct.pack('<I', 0x6119a0f0) + b'\x80\x06'
     assert R(0x60e376b9, 8) == b'\xfc\xdf' + struct.pack('<I', 0x6119a0d0) + b'\x80\x08'
     out['cp_grain_list'] = (0x60e376c5, struct.pack('<I', ROWS))
     out['cp_grain_list_count'] = (0x60e376ca, bytes([len(rows)]))
+    # Blacks / Whites: the per-mode editor lists {u16 mode, u16 count, u32 list} at 0x6119ff10 build the slider for
+    # the highlighted row; Color Profile 1..3 (54..56) get 0x6119fefc's 5 items plus 5370, 5372. The new list goes
+    # in the first grain table 0x611a02f8, unreferenced since cp_grain_lookup_a/_b (only those two loads used it).
+    ed_stock = (0x14fe, 0x14ff, 0x1500, 7, 8)
+    assert struct.unpack('<5I', R(0x6119fefc, 20)) == ed_stock
+    ed = ed_stock + (5370, 5372)
+    out['cp_bw_editor_list'] = (0x611a02f8, struct.pack('<%dI' % len(ed), *ed))
+    for mode, at in ((54, 0x6119ff30), (55, 0x6119ff38), (56, 0x6119ff40)):
+        assert struct.unpack('<HHI', R(at, 8)) == (mode, 5, 0x6119fefc)
+        out['cp_bw_editor_%d' % mode] = (at, struct.pack('<HHI', mode, len(ed), 0x611a02f8))
     return out
 
 

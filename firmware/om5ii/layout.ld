@@ -32,13 +32,24 @@ SECTIONS {
  .ext10 0x6169c820 : { *(.ext10) }
  .bw_hook 0x60385f9c : { *(.bw_hook) }
  .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
+ .rfa_hook 0x60e49d6f : { *(.rfa_hook) }
+ .rfb_hook 0x60e4a1a4 : { *(.rfb_hook) }
+ .bw_slot4 0x611a0b38 : { *(.bw_slot4) }
+ .bw_slot5 0x611a0b48 : { *(.bw_slot5) }
+ .bw_wslot4 0x611b7ac8 : { *(.bw_wslot4) }
+ .bw_wslot6 0x611b7ad8 : { *(.bw_wslot6) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 label_resume = 0x60e4adf3;
 tone_gate = 0x60385b9c;          /* any of five tone values non-zero -> d0 = 1; call [],0 / retf */
-bw_resume = 0x60385fa1;          /* tone-curve modifier after the 5 hooked bytes (bw_hook) */
+bw_resume = 0x60385fa1;
+row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
+row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
+row_slider = 0x60e3cd53;        /* resolver: d0 = setting -> slider row (Sharpness / Contrast path) */
+rfa_back = 0x60e49d87;          /* after the record loop at 0x60e49d6f */
+rfb_back = 0x60e4a1ba;          /* after the record loop at 0x60e4a1a4 */          /* tone-curve modifier after the 5 hooked bytes (bw_hook) */
 label_format = 0x611b5af0;
 reset_resume = 0x60e9e0fa;
 parent_resume = 0x60ea0185;

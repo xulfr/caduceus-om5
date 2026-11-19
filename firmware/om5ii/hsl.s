@@ -19,7 +19,7 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_SIZE = 1064                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's */
+ST_SIZE = 1104                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1064 before Blacks/Whites */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -1350,6 +1350,7 @@ rt_untagged:
  add 964,d0
  mov d0,d2
 rt_have:
+ call bw_refresh,[d2,d3,a2,a3],20
  cmp 6,d3
  bcs rt_profile
  /* stock mode: undo a profile only if a save is held */
@@ -1781,7 +1782,7 @@ ui_info_out:
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
  * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988                  /* 8 nodes: P+988..1051 (P is ST_SIZE bytes) */
+CP_NODES = 988                  /* 14 nodes: P+988..1099 (8 in cp_nd_desc, 6 in bw_desc) */
 CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
@@ -1818,6 +1819,10 @@ cp_nd_next:
  add 20,a3
  inc d3
  cmp CP_NDESC,d3
+ bne cp_nd_more
+ mov bw_desc,a3                  /* then the Blacks / Whites descriptors (ext8) */
+cp_nd_more:
+ cmp CP_NDESC+BW_NDESC,d3
  bcs cp_nd_one
  ret [d2,d3,a2,a3],24
 
@@ -2442,8 +2447,8 @@ ftab_slot:
  * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
  * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
  * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
-BW_B = 1052                     /* s16 Blacks of the active Color Profile (P) */
-BW_W = 1054                     /* s16 Whites */
+BW_B = 1100                     /* s16 Blacks of the active Color Profile, curve units (P) */
+BW_W = 1102                     /* s16 Whites: positive lowers the white end */
 .section .bw_hook,"ax"
  jmp bw_apply
 .section .bw_gate_call,"ax"
@@ -2497,3 +2502,157 @@ bw_gate:
  mov 1,d0
 bw_gate_out:
  ret [d2],8
+
+/* ---- Blacks / Whites (v0.2.0-dev): settings, refresh and Picture Mode rows ----
+ * Storage: 1822..1824 Blacks, 1825..1827 Whites of Color Profile 1..3 (E147
+ * IDs with no E148 descriptor, default 0, found only in the stock per-mode,
+ * init, reset and custom-mode copy lists, as 907). Each gets a copy of
+ * Shading 1017's descriptor (11 values -5..+5), linked by cp_nd_link after
+ * cp_nd_desc. The refresh tail writes the active profile's values for
+ * context 0 into P: B = 20 v(Blacks), W = -20 v(Whites) (+Whites brightens),
+ * and 0 for any other picture mode. bw_apply reads them.
+ * Rows: items 5370 (Blacks) and 5372 (Whites) in the Color Profile row list
+ * (cp_nd.py cp_grain_rows). Both dispatchers accept only items 7..5377
+ * (0x60e3ccc8, 0x60e49f3c). Setting resolver 0x611a0a98 slots 20 / 22 (key =
+ * item - 6, & 31) -> bw_item_b / _w; row-widget table 0x611b7aa8 slots 4 / 6
+ * (& 15) -> 0x60e49fdf, the slider handler of Sharpness / Contrast / Shading.
+ * All four slots are empty in stock. Records in bw_rows, found by row_find_a / _b in
+ * place of the two 17-record loops over 0x611b50f8. The records are sliders
+ * of kind 2 (Contrast's icon), titled with E148's own strings 2202 "Black"
+ * and 2201 "White". research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md */
+BW_NDESC = 6
+BW_ID_B = 1822
+BW_ID_W = 1825
+BW_STEP = 20
+BW_NROWS = 2
+.section .ext5,"ax"
+/* d3 = kind (0..2 Color Profile 1..3), a2 = context. */
+bw_refresh:
+ mov a2,d0
+ cmp 0,d0
+ bne bw_rf_out
+ clr d2
+ clr d0
+ mov d0,a3
+ cmp 3,d3
+ bcc bw_rf_put
+ mov d3,d0
+ add BW_ID_B,d0
+ mov d0,a0
+ call rt_get1,[],4
+ extb d0
+ mov BW_STEP,d1
+ mul d1,d0
+ mov d0,d2
+ mov d3,d0
+ add BW_ID_W,d0
+ mov d0,a0
+ call rt_get1,[],4
+ extb d0
+ mov -BW_STEP,d1
+ mul d1,d0
+ mov d0,a3
+bw_rf_put:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq bw_rf_out
+ movhu d2,(BW_B,a0)
+ mov a3,d0
+ movhu d0,(BW_W,a0)
+bw_rf_out:
+ ret [d2,d3,a2,a3],20
+
+.section .ext6,"ax"
+/* Row item handlers (resolver 0x60e3ccba jumps here): d0 = the setting, then
+ * the slider path of Sharpness / Contrast. */
+bw_item_b:
+ mov BW_ID_B,d1
+ bra bw_item
+bw_item_w:
+ mov BW_ID_W,d1
+bw_item:
+ mov d1,(4,sp)
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcs bw_item_cp
+ clr d0
+bw_item_cp:
+ mov (4,sp),d1
+ add d1,d0
+ jmp row_slider
+/* In place of the record loop at 0x60e49d6f: d2 = item, a3 = panel. */
+row_find_a:
+ mov row_table,a0
+ clr d1
+rfa_loop:
+ movhu (a0),d0
+ cmp d2,d0
+ beq rfa_hit
+ add 40,a0
+ inc d1
+ cmp 17,d1
+ bne rfa_next
+ mov bw_rows,a0
+rfa_next:
+ cmp 17+BW_NROWS,d1
+ bcs rfa_loop
+ jmp rfa_back
+rfa_hit:
+ mov a0,(4452,a3)
+ jmp rfa_back
+/* In place of the record loop at 0x60e4a1a4: d3 = item, record -> (16,sp). */
+row_find_b:
+ mov row_table,a3
+ clr d1
+rfb_loop:
+ movhu (a3),d0
+ cmp d3,d0
+ beq rfb_hit
+ add 40,a3
+ inc d1
+ cmp 17,d1
+ bne rfb_next
+ mov bw_rows,a3
+rfb_next:
+ cmp 17+BW_NROWS,d1
+ bcs rfb_loop
+ jmp rfb_back
+rfb_hit:
+ mov a3,(16,sp)
+ jmp rfb_back
+
+.section .ext8,"ax"
+.balign 4
+bw_desc:                         /* stock-format copies of 1017's descriptor */
+ .irp id,1822,1823,1824,1825,1826,1827
+ .hword \id, 0x80
+ .long 0x6050cee0, 0
+ .hword 11, 1
+ .long 0x200
+ .endr
+bw_rows:                         /* row records, as Contrast's (0x611b5148) */
+ .long 5370, 0, 0, 0, bw_title_b, 0, 0x20000, 0, 0, 0
+ .long 5372, 0, 0, 0, bw_title_w, 0, 0x20000, 0, 0, 0
+bw_title_b:
+ .hword 4, 2202
+ .long 0x611b42ac
+bw_title_w:
+ .hword 4, 2201
+ .long 0x611b42ac
+
+.section .rfa_hook,"ax"
+ jmp row_find_a
+ nop
+.section .rfb_hook,"ax"
+ jmp row_find_b
+ nop
+.section .bw_slot4,"a"
+ .long 5370-6, bw_item_b
+.section .bw_slot5,"a"
+ .long 5372-6, bw_item_w
+.section .bw_wslot4,"a"
+ .long 5370-6, row_slider_widget
+.section .bw_wslot6,"a"
+ .long 5372-6, row_slider_widget

@@ -43,6 +43,7 @@
 - **Film Grain for Color Profiles (emulator only).** Current dev package `24f243a0…a373` (grain + inert
   Blacks/Whites; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open on the
   camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
+- **WIP, do not flash: Blacks / Whites rows are mid-development (the rows show but have no slider yet).**
 - **v0.2.0 priorities (owner): Blacks / Whites, split toning, Clarity**, each per Color Profile, all in one
   tested build before an alpha. Blacks / Whites image side is built and emulator-checked (`tests/bw_assert.mjs`)
   but inert: no storage, refresh or camera controls yet. Next steps are in [the plan](docs/V0.2.0-PLAN.md).
