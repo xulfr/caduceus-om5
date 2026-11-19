@@ -20,14 +20,29 @@ GRAIN = 'down ' * 6                            # Picture Mode row -> Film Grain 
 SET_CP1_LOW = CP1 + GRAIN + 'left ok wait:500'  # the carousel reads High Std Low Off; left from Off is Low
 REOPEN = ' ok ok down '                        # reopens on the grain row (the last of 7); down wraps to the mode row
 CASES = [
-    ('cp1-low', SET_CP1_LOW, dict(cells=[1, 0, 0], effective=1)),
-    ('cp2-high', CP1 + 'right ' + GRAIN + 'left left left ok wait:500', dict(cells=[0, 3, 0], effective=3)),
-    ('to-cp2', SET_CP1_LOW + REOPEN + 'right ok wait:500', dict(cells=[1, 0, 0], effective=0)),
-    ('to-stock-mode', SET_CP1_LOW + REOPEN + 'left ' * 6 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0)),
-    ('to-mono1', SET_CP1_LOW + REOPEN + 'right ' * 3 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0)),
+    ('cp1-low', SET_CP1_LOW, dict(cells=[1, 0, 0], effective=1), 1),
+    ('cp2-high', CP1 + 'right ' + GRAIN + 'left left left ok wait:500', dict(cells=[0, 3, 0], effective=3), 3),
+    ('to-cp2', SET_CP1_LOW + REOPEN + 'right ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),
+    ('to-stock-mode', SET_CP1_LOW + REOPEN + 'left ' * 6 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),
+    ('to-mono1', SET_CP1_LOW + REOPEN + 'right ' * 3 + 'ok wait:500', dict(cells=[1, 0, 0], effective=0), 0),
     ('back-to-cp1', SET_CP1_LOW + REOPEN + 'left ' * 6 + 'ok wait:500 ok ok ' + 'right ' * 6 + 'ok wait:500',
-     dict(cells=[1, 0, 0], effective=1)),
+     dict(cells=[1, 0, 0], effective=1), 1),
+    ('cp1-off', CP1 + 'ok wait:500', dict(cells=[0, 0, 0], effective=0), 0),
 ]
+
+
+def probe_symbols(build):
+    """cg_sel / cg_level addresses from the build's linked ELF, or None when the build has no colour grain probe."""
+    elf = build.resolve() / 'assembly/hsl/patch.elf'
+    nm = os.environ.get('NM', 'mn10300-elf-nm')
+    try:
+        out = subprocess.run([nm, str(elf)], stdout=subprocess.PIPE, check=True).stdout.decode()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    syms = {f[2]: int(f[0], 16) for f in (line.split() for line in out.splitlines()) if len(f) == 3}
+    if 'cg_sel' not in syms or 'cg_level' not in syms:
+        return None
+    return dict(sel=syms['cg_sel'], lvl=syms['cg_level'])
 
 
 def main():
@@ -38,13 +53,17 @@ def main():
     ap.add_argument('--case', action='append', help='run only named cases')
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
+    probe = probe_symbols(a.build)
+    print('colour grain probe: ' + (f"cg_sel {probe['sel']:#x}, cg_level {probe['lvl']:#x}" if probe
+                                    else 'not in this build (or no mn10300-elf-nm): request checks skipped'))
     results, failed = [], []
-    for name, keys, want in CASES:
+    for name, keys, want, level in CASES:
         if a.case and name not in a.case:
             continue
         folder = a.out.resolve() / name
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tools/dev/mount.mjs'),
-                   POST=str(ROOT / 'tests/cp_grain_assert.mjs'), OM5_GRAIN_EXPECT=json.dumps(want))
+                   POST=str(ROOT / 'tests/cg_probe_assert.mjs'), OM5_GRAIN_EXPECT=json.dumps(want),
+                   OM5_CG=json.dumps(dict(probe, level=level) if probe else {}))
         command = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()),
                    str(a.build.resolve() / 'decoded/0100.bin'), str(a.build.resolve() / 'decoded/0101.bin'),
                    str(folder / 'screens'), keys, '--ready']
@@ -53,8 +72,11 @@ def main():
         folder.mkdir(parents=True, exist_ok=True)
         (folder / 'session.log').write_text(log, encoding='utf-8')
         got = [line[len('CP GRAIN '):] for line in log.splitlines() if line.startswith('CP GRAIN ')]
-        ok = run.returncode == 0 and 'ASSERTIONS passed' in log and bool(got)
-        results.append(dict(case=name, passed=ok, expected=want, observed=json.loads(got[-1]) if got else None))
+        cg = [json.loads(line[3:]) for line in log.splitlines() if line.startswith('CG {')]
+        ok = (run.returncode == 0 and 'ASSERTIONS passed' in log and bool(got)
+              and (not probe or 'CG ASSERTIONS passed' in log))
+        results.append(dict(case=name, passed=ok, expected=want, observed=json.loads(got[-1]) if got else None,
+                            probe_level=level if probe else None, probe=cg))
         print(f'{name}: {"passed" if ok else "FAILED"}' + ('' if ok else f' (see {folder / "session.log"})'))
         if not ok:
             failed.append(name)

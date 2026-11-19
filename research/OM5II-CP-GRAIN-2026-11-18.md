@@ -34,6 +34,48 @@
 Static analysis and OM-Emu only, 2026-11-18. **Not camera-tested.** Addresses are runtime addresses of the
 expanded main program. OM-Emu `bdb33470`, GNU binutils 2.42 `mn10300-elf`.
 
+## 2026-11-19 (later): E148's development request located; probe cg1 (static analysis + OM-Emu only)
+
+Static analysis of the expanded E148 1.1 main (objdump, GNU binutils 2.42; Ghidra 11.4.2 import for cross-checks)
+against OM-3 E147 1.1 (`caduceus-om3` NOTES gl1–gl10, gt1–gt4, ft1–ft9, rc1–rc2c, rj1 read first). **Not
+camera-tested.**
+
+**Observations (E148 code):**
+
+| What | E148 | OM-3 E147 | Evidence |
+| --- | --- | --- | --- |
+| Combiner selector | `0x603ecda1` | `0x6052cf39` | same body; request at context +4: kind +16, stage +12, flags +14 |
+| Context key | context **+52** | +48 | `mov (52,a0),d2` at `0x603ecde7`; hash table `0x60576aa8` `{key − 11, case}`: 0x1 (key 12, MONO) → `0x603ecebb` (stage 0x0901 / 0x0902 → combiner 31 / 32), GF I / II `0x01010068` / `0x01020068` → `0x603ece2e` (stage 0x0100 → combiner 1; E148 also tests request +1807 == 2 there); no entry for key 11 (default `0x603ecf43`) |
+| Request configuration | `0x6036fc58`, selector call at **`0x6036fc5c`** `call SEL,[d2,a2],12` (`dd 45 d1 07 00 a0 0c`) | `0x604955ed` / `0x604955f1` | then combiner config `0x60372fdb` (OM-3 `0x60504779`); one direct caller `0x6036f801`. The second selector call (inside combiner set-up) is `0x603d8112` (OM-3 `0x60504b5d`) |
+| Development effect | request **+1838** (kind 0 / 16), kind 3 +656 | +1756 / +1084 | getter `0x603ed07a` (OM-3 `0x6052d1a9`); effect 0x0c00 selects combiner 33 (OM-Emu, below) |
+| Grain level | request **+1828** | +1751 | combiner-31 handler reads it at `0x603d85b2` and indexes the gains `0x6053138e` (110/300/600); combiner 32 at `0x603d8649` |
+| Request builder | `~0x6038acd3..` | — | copies job +5551 → request +1828, +5552 → +1829, clears +1838 |
+| MONO-only grain copy | **`0x6041ef09`**: `if key == 12` snapshot +28766/+28767/+28768 → job +5550/+5551/+5552 (second copy at `0x60422067`) | `0x6054fd52`, `0x60553e44` | so a COLOR job never gets a grain level: the reason the restored row showed nothing |
+| Key writer | `0x604237fc` (OM-3 `0x60555d10`) | | params +10 = picture-mode byte (snapshot +28735; mapping `0x6037f16a`: default = that byte), before the Art Effect converter `0x6042394c` (callers `0x6041e91a`, `0x60421924`) |
+
+Inference: E148 runs the same grain machinery as OM-3, at different struct offsets. Color Profile stills carry job key 11
+(picture-mode byte 11, as `apply_values` already documents); the key-12 recipe OM-3 proved on its camera (gl6/gl7:
+request +10 = 12, grain level, context key 12 at configuration time) should therefore apply. Not yet observed on E148:
+the still request's +14 = 0x1000 and +10 = 11 (taken from OM-3's logs), and whether key 12 drops Color Profile
+settings as it dropped Blacks/Whites, WB fine-tune and NR on OM-3 (gt3) until their tone gate was patched (gw1).
+
+Logging probe: not feasible now. OM-3 logged to a card file from a 16 KB code block; E148 has about 120 bytes of free
+tail space left (ext8 88, ext9 64, ext3 48 unreferenced bytes per the space map), and no card-loaded code yet.
+
+**Probe cg1 (`firmware/om5ii/cg.s`):** the 7-byte selector call at `0x6036fc5c` becomes `call cg_sel,[d2,a2],12`
+(same frame); `cg_sel` (81 bytes, ext8 `0x613f2ec8..0x613f2f19`) passes every request to the stock selector, and
+first, only for a kind-0 request with +14 = 0x1000, +10 = 11 and +1838 = 0 (no own effect), reads effective setting 998
+(store 0, context 0, `0x602f514d`, the element read `active_read` also uses) and, for 1..3, writes request +1828 =
+level, +10 = 12 and context +52 = 12. Grain Off (default) = stock request. The Shading gate avoids combiner 33's mono
+set-up (OM-3 gl3: grey). The settings getter OM-3 found unsafe during capture (v0.24's AGET reboot) is not used.
+Emulator bug caught on the way: `0x602f514a` is a `calls` entry (own `add -4,sp`); `call` must target `0x602f514d`.
+
+OM-Emu (`tests/run_cp_grain.py`, 7/7; `tests/cg_probe_assert.mjs` calls `cg_level` and `cg_sel` on a fake request in
+heap memory after the GUI steps): CP1 Low → level 1, the COLOR still request gets +1828 = 1, key 12, context 12;
+CP2 High → 3; CP2 / stock mode / Monochrome 1 after CP1 Low, and CP1 Off → 0 and the request untouched. In every case
+live view (+14 0x0130), kind 3, a MONO request and a request with effect 0x0c00 are untouched (0x0c00 → combiner 33,
+as on OM-3). OM-Emu has no image pipeline: whether grain appears is a camera question.
+
 ## How the Picture Mode sidebar chooses its rows (observation)
 
 - `0x60e376c3` picks the row list by picture-mode family. Color Profiles take `0x6119a0f0`, 6 row items

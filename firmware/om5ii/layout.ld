@@ -38,6 +38,7 @@ SECTIONS {
  .tv_call2 0x60df8626 : { *(.tv_call2) }
  .ext3 0x60621e80 : { *(.ext3) }
  .ext9 0x615ee5c8 : { *(.ext9) }
+ .cg_hook 0x6036fc5c : { *(.cg_hook) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
@@ -132,3 +133,6 @@ ASSERT(ADDR(.ext9) + SIZEOF(.ext9) <= 0x615ee800, ".ext9 leaves section 9")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
 ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")
+ASSERT(SIZEOF(.cg_hook) == 7, "cg_hook replaces the 7-byte selector call at 0x6036fc5c")
+setting_store0 = 0x602f514d;    /* d0 = ID -> d0 = store 0 of context 0, entered by call [],4 (43 stock callers; 0x602f514a is the calls entry) */
+cg_select = 0x603ecda1;          /* combiner selector (OM-3 0x6052cf39), called by request configuration 0x6036fc58 */
