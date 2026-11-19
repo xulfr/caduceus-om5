@@ -64,11 +64,11 @@ def main():
         ('name-control', control_bad, True, 'delete', 2, 0, [None] * 3),
         ('persisted-name', good, True, 'delete', 1, 4, [selected(0), None, None]),
         # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
-        # v0.2.0: Color Profiles have 9 rows: + Film Grain (a carousel, row kind 4 like the mode strip), Black, White.
-        ('other-rows', good, True, ('down delete ' * 8).strip(), 1, 4, [None] * 3),
+        # v0.2.0: Color Profiles have 10 rows: + Film Grain (a carousel, row kind 4 like the mode strip), Black, White, Split Tone.
+        ('other-rows', good, True, ('down delete ' * 9).strip(), 1, 4, [None] * 3),
         ('grain-row-delete', good, True, 'down ' * 6 + 'delete', 1, 4, [None] * 3),
-        ('row-return', good, True, 'down ' * 9 + 'delete', 1, 4, [selected(0), None, None]),
-        ('row-return-title', twins, True, 'delete ' + 'down ' * 9 + 'delete delete', 1, 2, [twin(0), None, None]),
+        ('row-return', good, True, 'down ' * 10 + 'delete', 1, 4, [selected(0), None, None]),
+        ('row-return-title', twins, True, 'delete ' + 'down ' * 10 + 'delete delete', 1, 2, [twin(0), None, None]),
         # Two films that differ only in name: the frame must change on each step (title repaint).
         ('title-redraw', twins, True, 'delete delete', 1, 2, [twin(1), None, None]),
         ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),
@@ -134,9 +134,9 @@ def main():
             for k in range(1, len(keys.split()) + 1):
                 assert frames[-k] != frames[-k - 1], f'{name}: no repaint after delete {len(keys.split()) - k + 1}'
         if name == 'other-rows':
-            # tone, shading, sharpness, contrast, grain, black and white rows: Delete changes nothing (as stock)
-            for k in range(4, 17, 2):
-                assert frames[-17 + k] == frames[-18 + k], f'{name}: Delete acted on row {k // 2}'
+            # tone, shading, sharpness, contrast, grain, black, white and split tone rows: Delete changes nothing (as stock)
+            for k in range(4, 19, 2):
+                assert frames[-19 + k] == frames[-20 + k], f'{name}: Delete acted on row {k // 2}'
         if name == 'grain-row-delete':
             assert frames[-1] == frames[-2], 'grain-row-delete: Delete changed the Film Grain row'
         if name == 'scp-name':

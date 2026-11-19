@@ -2453,7 +2453,7 @@ ftab_slot:
  * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
 BW_B = 1124                     /* s16 Blacks of the active Color Profile, curve units (P) */
 BW_W = 1126                     /* s16 Whites: positive lowers the white end */
-/* P+1128 s16 Split tone amount A, P+1132 its 1544-byte table buffer (wb.s st_entry) */
+/* P+1128 s16 Split tone amount A, P+1132 its 1552-byte table buffer (wb.s st_entry) */
 .section .bw_hook,"ax"
  jmp bw_apply
 .section .bw_gate_call,"ax"
@@ -2535,7 +2535,7 @@ ROW_ITEM0 = 5354                /* items 5354 Blacks, 5356 Whites, 5358 Split to
 ST_STEP = 60                    /* table units (0..4095) per Split tone step at the extremes */
 
 ST_BUF = 1132
-ST_BUF_SIZE = 1544
+ST_BUF_SIZE = 1552               /* 3 x 512 tables + 16 bytes wb.s saves registers in */
 .section .ext5,"ax"
 /* d3 = kind (0..2 Color Profile 1..3), a2 = context. */
 bw_refresh:
@@ -2672,14 +2672,9 @@ bw_title_w:
  .long 5354-6, row_item
 .section .bw_slot5,"a"
  .long 5356-6, row_item
-.section .bw_wslot4,"a"
- .long 5354-6, row_slider_widget
-.section .bw_wslot6,"a"
- .long 5356-6, row_slider_widget
 .section .st_slot8,"a"
  .long 5358-6, row_item
-.section .st_wslot8,"a"
- .long 5358-6, row_slider_widget
+
 
 /* The slider row's style and value-label lookups (0x60e4b02c, 0x60e4b09d) know
  * only items 7, 8, 59, 616, 5376 (Shading, 11 values -5..+5), 1011 and 5374.
@@ -2737,27 +2732,6 @@ bw_kn_id:
  mov -5,a3
  mov 5,d0
  jmp knob_store
-/* call row_id,[d2],8: d0 = row item (ROW_ITEM0 + 2r) -> d0 = row r's setting
- * for the active Color Profile (Color Profile 1's in any other mode). */
-row_id:
- add -ROW_ITEM0,d0
- lsr 1,d0
- mov d0,d2
- add d0,d2
- add d0,d2
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcs row_id_cp
- clr d0
-row_id_cp:
- add d2,d0
- add d0,d0
- mov row_ids,a0
- add d0,a0
- movhu (a0),d0
- ret [d2],8
 .section .bw_knob_hook,"ax"
  jmp bw_knob
  nop
@@ -2805,3 +2779,76 @@ st_desc:
  .hword 11, 1
  .long 0x200
  .endr
+
+/* Split tone entry (v0.2.0-dev): the R/G/B curve setter 0x603e6974 is a leaf
+ * that returns with retf (MDR) and whose frame has no slot for a return
+ * address, so nothing here calls: st_ptr's check is inline. d2 and a2 are
+ * free at its entry (its callers save them). Unarmed: replay the 5 replaced
+ * bytes and continue. Armed: wb.s st_tint (section 4, fixed address) gets
+ * a2 = P, d2 = MDR and continues the setter itself. */
+.section .st_hook,"ax"
+ jmp st_entry
+.section .ext2,"ax"
+st_entry:
+ movhu (st_handle_u),d2          /* st_ptr, inline: a call would write its */
+ cmp 0,d2                        /* return address over the setter's saved a2 */
+ beq st_unarmed
+ add ST_POOL-1,d2
+ mov d2,a2
+ mov (ST_MAGIC,a2),d2
+ cmp ST_MAGIC_VALUE,d2
+ bne st_unarmed
+ mov mdr,d2
+ jmp st_tint
+st_unarmed:
+ mov a0,a2
+ inc4 a2
+ mov d1,d2
+ mov d0,d1
+ mov (a2),d0
+ jmp setter_back
+
+.section .ext6,"ax"
+/* call row_id,[d2],8: d0 = row item (ROW_ITEM0 + 2r) -> d0 = row r's setting
+ * for the active Color Profile (Color Profile 1's in any other mode). */
+row_id:
+ add -ROW_ITEM0,d0
+ lsr 1,d0
+ mov d0,d2
+ add d0,d2
+ add d0,d2
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcs row_id_cp
+ clr d0
+row_id_cp:
+ add d2,d0
+ add d0,d0
+ mov row_ids,a0
+ add d0,a0
+ movhu (a0),d0
+ ret [d2],8
+
+/* Row-widget lookup (16-slot table 0x611b7aa8, open addressing, 3 empty
+ * slots in stock): filling all of them makes every miss loop for ever, so
+ * the new rows are not entered there. Instead, at 0x60e49f45 (add -6,d1;
+ * mov 0x611b7aa8,a1: 8 bytes) the new row items go straight to the slider
+ * handler 0x60e49fdf; anything else replays the stock lookup. */
+.section .ext2,"ax"
+row_widget:
+ mov d1,d0
+ add -ROW_ITEM0,d0
+ cmp 2*(ROW_N-1),d0
+ bhi row_widget_stock
+ jmp row_slider_widget
+row_widget_stock:
+ add -6,d1
+ mov 0x611b7aa8,a1
+ jmp row_widget_back
+.section .row_widget_hook,"ax"
+ jmp row_widget
+ nop
+ nop
+ nop

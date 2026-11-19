@@ -40,10 +40,9 @@ SECTIONS {
  .bw_cell_hook 0x60e4a37a : { *(.bw_cell_hook) }
  .bw_label_hook 0x60e4b09d : { *(.bw_label_hook) }
  .bw_slot5 0x611a0ac8 : { *(.bw_slot5) }
- .bw_wslot4 0x611b7ac8 : { *(.bw_wslot4) }
- .bw_wslot6 0x611b7ad8 : { *(.bw_wslot6) }
  .st_slot8 0x611a0ad8 : { *(.st_slot8) }
- .st_wslot8 0x611b7ae8 : { *(.st_wslot8) }
+ .st_hook 0x603e6974 : { *(.st_hook) }
+ .row_widget_hook 0x60e49f45 : { *(.row_widget_hook) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
@@ -54,6 +53,9 @@ bw_resume = 0x60385fa1;
 row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
 row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
 row_slider = 0x60e3cd53;
+row_widget_back = 0x60e49f4d;   /* row-widget lookup after add -6,d1; mov table,a1 */
+setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
+st_tint = 0x60829764;           /* wb.s .st_tint (fixed in wb.ld) */
 knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
 knob_none = 0x60e4aa37;
 cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */

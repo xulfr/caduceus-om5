@@ -30,13 +30,21 @@ wb_load:
  add -904,d2
  cmp 126,d2
  bcc wb_not_profile
- /* Blacks 965..967 (hsl.s bw_ids) -> profile id - 965 */
+ /* Blacks 965..967, Split tone 971..973 (hsl.s row_ids) -> profile */
  add -61,d2
  cmp 3,d2
  bcs wb_go_bk
+ add -6,d2
+ cmp 3,d2
+ bcs wb_go_st
  jmp wb_profile
 wb_go_bk:
  jmp wb_bk
+wb_go_st:                        /* Split tone 971..973 -> profile id - 971 */
+ mov d0,d2
+ mov d1,d3
+ add -971,d0
+ jmp wb_profile_have
 wb_not_profile:
  cmp PM_ID,d0
  beq wb_enter
@@ -363,6 +371,7 @@ wb_mono_map:
  * job output O, a1 / d0 / d1 = R / G / B tables, 256 x u16, 0..4095; callers
  * 0x603e6b3e and 0x603e6f0b, both call ...,[d2,a2],8). The 5 replaced bytes
  * are mov a0,a2; inc4 a2; mov d1,d2; mov d0,d1; mov (a2),d0 (replayed).
+ * G passes through; R' and B' are built in the buffer (+0, +1024).
  * When armed and the active Color Profile's Split tone amount A (P+1128, set
  * by hsl.s bw_refresh, 0 in other modes) is non-zero and its buffer exists
  * (P+1132), tinted copies are built there and passed instead:
@@ -372,34 +381,41 @@ wb_mono_map:
  * identical values. research/OM5II-SPLIT-TONE-2026-11-19.md */
 ST_A = 1128
 ST_BUF = 1132
-.section .st_hook,"ax"
- jmp st_entry
-.section .wb_body,"ax"
-st_entry:
- mov a0,a2
- call st_ptr,[],8
- cmp 0,a0
- beq st_replay
- movhu (ST_A,a0),d2
- exth d2
- cmp 0,d2
- beq st_replay
- mov (ST_BUF,a0),a0
- cmp 0,a0
- beq st_replay
- call st_build,[d2,d3,a2,a3],20
-st_replay:
- mov a2,a0
- mov a0,a2
- inc4 a2
- mov d1,d2
- mov d0,d1
- mov (a2),d0
- jmp setter_back
-/* a0 = buffer, a1 / d0 / d1 = R / G / B, d2 = A -> a1 / d0 / d1 = tinted tables */
-st_build:
- mov d0,a2
- mov d1,a3
+ST_MAGIC = 60
+ST_MAGIC_VALUE = 0x55444143
+/* No call anywhere here: the setter returns with retf [d2,a2],8 (through
+ * MDR), and both call and mul write MDR. O, d3, MDR and G are kept in the
+ * buffer's tail (bytes 1536..1551) while the tables are built. */
+/* d0 -> 0..4095, inline. */
+.macro st_clamp n
+ cmp 0,d0
+ bge st_lo_\n\@
+ clr d0
+st_lo_\n\@:
+ cmp 4095,d0
+ ble st_hi_\n\@
+ mov 4095,d0
+st_hi_\n\@:
+.endm
+.section .st_tint,"ax"
+/* Entered from hsl.s st_entry (ext2) once armed: a2 = P, a0 = O, d2 = MDR,
+ * a1 / d0 / d1 = R / G / B. No call here (see st_entry). */
+.global st_tint
+st_tint:
+ movm [d3,a3],(sp)
+ movhu (ST_A,a2),d3
+ exth d3
+ cmp 0,d3
+ beq st_t_none
+ mov (ST_BUF,a2),a3
+ cmp 0,a3
+ beq st_t_none
+ mov a0,(1536,a3)                /* O */
+ mov d2,(1540,a3)                /* MDR */
+ mov d0,(1544,a3)                /* G passes through unchanged */
+ mov d3,d2                       /* A */
+ mov a3,a0                       /* R' out at +0, B' out at +1024 */
+ mov d1,a2                       /* B in; a1 = R in */
  clr d3
 st_loop:
  mov d3,d0
@@ -416,36 +432,34 @@ st_loop:
 st_pos:
  movhu (a1),d0
  add d1,d0
- call st_clamp,[],0
+ st_clamp r
  movhu d0,(a0)
  movhu (a2),d0
- movhu d0,(512,a0)
- movhu (a3),d0
  sub d1,d0
- call st_clamp,[],0
+ st_clamp b
  movhu d0,(1024,a0)
  add 2,a0
  add 2,a1
  add 2,a2
- add 2,a3
  inc d3
  cmp 256,d3
  bcs st_loop
  add -512,a0
- mov a0,a1
- mov a0,d0
- add 512,d0
+ mov a0,a1                       /* R' */
  mov a0,d1
- add 1024,d1
- ret [d2,d3,a2,a3],20
-st_clamp:
- cmp 0,d0
- bge st_c1
- clr d0
- retf [],0
-st_c1:
- cmp 4095,d0
- ble st_c2
- mov 4095,d0
-st_c2:
- retf [],0
+ add 1024,d1                     /* B' */
+ mov (1544,a0),d0                /* G */
+ mov (1540,a0),d2
+ mov d2,mdr
+ mov (1536,a0),a0                /* O */
+ bra st_t_out
+st_t_none:
+ mov d2,mdr
+st_t_out:
+ movm (sp),[d3,a3]
+ mov a0,a2
+ inc4 a2
+ mov d1,d2
+ mov d0,d1
+ mov (a2),d0
+ jmp setter_back

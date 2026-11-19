@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Blacks / Whites rows (v0.2.0-dev) emulator regressions on a strict decoded E148 build.
+"""Blacks / Whites / Split tone rows (v0.2.0-dev) emulator regressions on a strict decoded E148 build.
 
 Each case drives the Picture Mode screen with the firmware's own GUI. tests/bw_rows_assert.mjs then reads the six
 settings and the curve values the refresh wrote into P. Emulator only: OM-Emu develops no photos, so a pass says
@@ -16,9 +16,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 CP1 = 's1 ok ok ' + 'right ' * 8          # Picture Mode, Color Profile 1 highlighted
-BLACK, WHITE = 'down ' * 7, 'down ' * 8    # rows 8 and 9 of the Color Profile list
+BLACK, WHITE, SPLIT = 'down ' * 7, 'down ' * 8, 'down ' * 9   # rows 8, 9, 10 of the Color Profile list
 DONE = 'ok wait:500'
-TO_STRIP_FROM_BLACK = ' ok ok down down '  # reopens on Black; down twice wraps to the mode strip
+TO_STRIP_FROM_BLACK = ' ok ok down down down '  # reopens on Black; down 3 times wraps to the mode strip
 CASES = [
     ('cp1-black+2', CP1 + BLACK + 'right right ' + DONE, dict(pm=54, set=[2, 0, 0, 0, 0, 0], p=[40, 0])),
     ('cp1-white-3', CP1 + WHITE + 'left left left ' + DONE, dict(pm=54, set=[0, 0, 0, -3, 0, 0], p=[0, 60])),
@@ -29,6 +29,10 @@ CASES = [
      dict(pm=5, set=[2, 0, 0, 0, 0, 0], p=[0, 0])),
     ('back-to-cp1', CP1 + BLACK + 'right right ' + DONE + TO_STRIP_FROM_BLACK + 'left ' * 6 + DONE + ' ok ok ' +
      'right ' * 6 + DONE, dict(pm=54, set=[2, 0, 0, 0, 0, 0], p=[40, 0])),
+    ('cp1-split+3', CP1 + SPLIT + 'right right right ' + DONE, dict(pm=54, split=180, splitIds=[3, 0, 0], buf=True)),
+    ('cp3-split-2', CP1 + 'right right ' + SPLIT + 'left left ' + DONE, dict(pm=56, split=-120, splitIds=[0, 0, -2], buf=True)),
+    ('split-after-cp1', CP1 + SPLIT + 'right right right ' + DONE + ' ok ok down ' + 'left ' * 6 + DONE,
+     dict(pm=5, split=0, splitIds=[3, 0, 0])),
 ]
 
 
