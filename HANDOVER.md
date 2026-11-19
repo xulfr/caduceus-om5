@@ -53,6 +53,10 @@
   Package and test steps: see "Next camera checks" 0a.
 - **Carousel order fixed** (`cp_nd.py` `cp_grain_order_*`): 907/911/915 were in the stock reverse-order table
   `0x61197b8a`; the Color Profile carousel now reads Off, Low, Std, High as Monochrome (OM-Emu; not camera-tested).
+  It changed 3 bytes of that table in place: no free space used.
+- **Color Profile 4: not with the space left.** Its cells already hold this project's Color Profile grain (907/911/915),
+  Blacks (965..967) and split-tone tints (964, 968..975), and the code assumes three profiles throughout. It would need
+  that storage moved, new mode / UI records and more code than the ~180 scattered free bytes (heap or card route).
 
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
@@ -88,6 +92,10 @@
 
 0a. **Colour grain probe cg1 + carousel order, package
    `f7f1db5d8d2726abe35f82451965736538d0451a5d3d9e9835b8978abb862c51`** (replaces cg1-only `3836190a…9912`, never flashed)
+   Sent to the owner as a zip, 2026-11-19. Against the last flashed build (`7d611008…1c7f`) it also carries the
+   never-flashed PR #11 fixes (dev package `4f7aeb6c…4636`: Black / White via the split-tone tables, tint axes, the
+   30 s Picture Mode timeout, Blk / Wht labels), so check 0 below applies to it too. Audit against `7d611008`: all
+   edits declared, native loader bounds and resources unchanged, no change to the boot path or the mode records.
    (branch `claude/cp-grain-experiment`; restore: stock `9de5d77e…` from `restore-stock/`, OK + power).
    Touches only Color Profile still development requests with Film Grain Low/Std/High; Off = stock.
    JPEG only first (OM-3's RAW+JPEG freezes were on a different grain route; untested here). Same flat scene:
