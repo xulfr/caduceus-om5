@@ -39,12 +39,16 @@
 
 ## Colour grain experiment (`claude/cp-grain-experiment`)
 
-- Branched from `claude/wizardly-feynman-wejd65` at `4ce7194` with the Color Profile grain row restored
-  (`cp_nd.py` `CP_GRAIN = True`; package `4db51f7f…c27b`, OM-Emu `run_cp_grain.py` 6/6). That row alone gives no
-  grain on the camera: the stock grain pass is monochrome-only. Goal: find E148's development request, job key and
-  combiner selection (leads `0x603ecda1`, `0x6053138e`, `0x6036fc5c`, `0x6042394c` + 28736), then a logging probe
-  for the camera as OM-3's gl1–gl3. [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Not for merging until grain shows
-  on the camera; the carousel order (High..Off, reversed from Monochrome) is also open.
+- Branched from `claude/wizardly-feynman-wejd65` at `4ce7194` with the Color Profile grain row restored (`cp_nd.py`
+  `CP_GRAIN = True`). That row alone gave no grain on the camera (package `7d611008…1c7f`).
+- **Cause found (static, E148):** the stock code copies the grain level into a development job only for key 12
+  (MONO, `0x6041ef09`); a Color Profile still is key 11. Request fields located: grain level +1828, effect +1838,
+  context key +52; request configuration `0x6036fc58` calls the selector `0x603ecda1` at `0x6036fc5c`.
+  [Note](research/OM5II-CP-GRAIN-2026-11-18.md) (2026-11-19 later section).
+- **Probe cg1** (`firmware/om5ii/cg.s`, 81 B in ext8 + the 7-byte call at `0x6036fc5c`): OM-3's camera-proven recipe
+  (gl6/gl7): a COLOR still development request without its own effect gets grain level = effective 998 (1..3) and key
+  12 at +10 and in the context. Grain Off = stock. OM-Emu `run_cp_grain.py` 7/7 incl. request checks; not camera-tested.
+  Package and test steps: see "Next camera checks" 0a. Carousel order (High..Off) stays open until grain shows.
 
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
@@ -78,6 +82,14 @@
 
 ## Next camera checks
 
+0a. **Colour grain probe cg1, package `3836190ae8dc9c988fb5f41a5d874c07880ebe5348e7fa6e35f234e5c2389912`**
+   (branch `claude/cp-grain-experiment`; restore: stock `9de5d77e…` from `restore-stock/`, OK + power).
+   Touches only Color Profile still development requests with Film Grain Low/Std/High; Off = stock.
+   JPEG only first (OM-3's RAW+JPEG freezes were on a different grain route; untested here). Same flat scene:
+   CP1 grain Off / Low / Std / High (expect colour, grain rising), Monochrome 1 High (stock grain, control),
+   a stock mode (no grain), CP1 High + Shading ≠ 0 (expect colour, no grain: gated off). Report also: live view
+   grain or not; whether CP1 High keeps the profile's hue/saturation edits, Black / White, split tone and WB (key 12
+   dropped such settings on OM-3); any freeze, restart or missing file. Then, only if all fine, one RAW+JPEG shot.
 0. **Dev package `4f7aeb6c…4636`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
    live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
    INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
