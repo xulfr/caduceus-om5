@@ -32,6 +32,13 @@ wb_load:
  bcc wb_not_profile
  jmp wb_profile
 wb_not_profile:
+ /* Color Profile grain 1822..1824 (hsl.s): refresh like the other profile settings */
+ mov d0,d2
+ add -1822,d2
+ cmp 3,d2
+ bcc wb_np_other
+ jmp wb_bw
+wb_np_other:
  cmp PM_ID,d0
  beq wb_enter
  cmp 1578,d0
@@ -52,6 +59,13 @@ wb_original:
  jmp commit_resume
 
 .section .wb_body,"ax"
+/* Color Profile grain 1822..1824 -> profile id - 1822, then the profile commit
+ * (stock commit, then refresh of each context showing it). */
+wb_bw:
+ mov d0,d2
+ mov d1,d3
+ add -1822,d0
+ jmp wb_profile_have
 /* Replaces the first five bytes of the native commit routine. Its caller
  * already saved d2,d3,a2,a3 in a 20-byte frame. Nested commits use stock. */
 wb_commit:
@@ -274,7 +288,7 @@ wb_profile_color:
  bcc wb_profile_sectors
  /* 904+4k+p: Sharpness, Contrast, Shading (k 0..2) of profile p. p = 3 is
   * Color Profile 4's cell, which E148 lacks; v0.2.0 keeps Color Profile
-  * grain there: 907 / 911 / 915 = profile k (cp_nd.py, hsl.s). */
+  * Blacks there: 907 / 911 / 915 = profile k (hsl.s bw_ids). */
  mov d0,d1
  and 3,d0
  cmp 3,d0
@@ -341,6 +355,6 @@ wb_profile_none:
  * 1003, filter 1007, level 1012, shading 1017, tone 1021 (three per profile);
  * SET4 and 985..989, 998, 1011, 1016 are not profile settings here. */
 wb_mono_map:
- .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff
- .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff
+ .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0, 3,4,5,1, 0xff, 3,4,5,0xff
+ .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,2
  .byte 3,3,3,4,4,4,5,5,5

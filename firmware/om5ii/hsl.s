@@ -981,7 +981,7 @@ light_lut:
  *   struct +4 sharpness = 904+p  (ID 7)
  *   struct +8 = 0 (ID 59), +20 = 1 (ID 105), +24 = 0 (ID 1806)
  *   effective 916..927 = 928+12p .. 939+12p  (store 1 -> store 2)
- *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 907+4p (v0.2.0)
+ *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 1822+p (v0.2.0)
  *   effective 383 / 691 / 382 = 976+3p / 977+3p / 978+3p (store 2):
  *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
@@ -1322,7 +1322,7 @@ pm_num_keep:
  * 0x602e082f writes struct +0 -> 8, +4 -> 7, +8 -> 59, +12 -> 130,
  * +16 -> 131, +20 -> 105, +24 -> 1806):
  *   CP p:   +0 contrast 908+p, +4 sharpness 904+p, +8 0, +20 1, +24 0,
- *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 907+4p,
+ *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 1822+p,
  *           tone 976+3p.. (store 2) -> 383/691/382
  *   MONO p: +0 994+p, +4 990+p, +8 0, +12 filter 1007+p, +16 toning 1003+p,
  *           +20 1, +24 0, 916..927 = 0, 1011 = level 1012+p,
@@ -1577,7 +1577,7 @@ rt_put2:
  * part 1 of the same IDs (the WB records) is a separate cell. */
 rs_cp_table:
  .hword 0x8000,908, 0x8004,904, 0x8008,0, 0x8014,1, 0x8018,0
- .hword 1016,912, 1011,0, 998,0x4000|907, 0, 928
+ .hword 1016,912, 1011,0, 998,1822, 0, 928
 rs_mono_table:
  .hword 0x8000,994, 0x8004,990, 0x8008,0, 0x800c,1007, 0x8010,1003
  .hword 0x8014,1, 0x8018,0, 1011,1012, 1016,1017, 998,999, 0, 0
@@ -1780,10 +1780,10 @@ ui_info_out:
  * with nodes in P (P+988..1027, past the film bank). Only RAM changes; a
  * lookup before this finds nothing, as stock. a2 = P. Color Profile Shading
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
- * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
+ * Color Profile grain 1822..1824 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
 CP_NODES = 988                  /* 14 nodes: P+988..1099 (8 in cp_nd_desc, 6 in bw_desc) */
-CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
+CP_NDESC = 8                    /* 2217, 2218, 912..914, 1822..1824 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
  mov cp_nd_desc,a3
@@ -2504,9 +2504,10 @@ bw_gate_out:
  ret [d2],8
 
 /* ---- Blacks / Whites (v0.2.0-dev): settings, refresh and Picture Mode rows ----
- * Storage: 1822..1824 Blacks, 1825..1827 Whites of Color Profile 1..3 (E147
- * IDs with no E148 descriptor, default 0, found only in the stock per-mode,
- * init, reset and custom-mode copy lists, as 907). Each gets a copy of
+ * Storage (bw_ids): Blacks 907 / 911 / 915 (Color Profile 4's Sharpness,
+ * Contrast, Shading), Whites 993 / 997 / 1020 (Monochrome Profile 4's): E148
+ * has neither profile 4; no stock descriptor; default 0; signed cells (912
+ * reads -2 where 1822 read 254). Grain moved to 1822..1824. Each gets a copy of
  * Shading 1017's descriptor (11 values -5..+5), linked by cp_nd_link after
  * cp_nd_desc. The refresh tail writes the active profile's values for
  * context 0 into P: B = 20 v(Blacks), W = -20 v(Whites) (+Whites brightens),
@@ -2518,11 +2519,9 @@ bw_gate_out:
  * (& 15) -> 0x60e49fdf, the slider handler of Sharpness / Contrast / Shading.
  * All four slots are empty in stock. Records in bw_rows, found by row_find_a / _b in
  * place of the two 17-record loops over 0x611b50f8. The records are sliders
- * of kind 2 (Contrast's icon), titled with E148's own strings 2202 "Black"
- * and 2201 "White". research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md */
+ * of kind 4 as Shading's (kind 2 stepped backwards), titled with E148's own
+ * strings 2202 "Black" and 2201 "White". research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md */
 BW_NDESC = 6
-BW_ID_B = 1822
-BW_ID_W = 1825
 BW_STEP = 20
 BW_NROWS = 2
 .section .ext5,"ax"
@@ -2537,7 +2536,10 @@ bw_refresh:
  cmp 3,d3
  bcc bw_rf_put
  mov d3,d0
- add BW_ID_B,d0
+ add d0,d0
+ mov bw_ids,a0
+ add d0,a0
+ movhu (a0),d0                   /* Blacks ID of profile d3 */
  mov d0,a0
  call rt_get1,[],4
  extb d0
@@ -2545,7 +2547,10 @@ bw_refresh:
  mul d1,d0
  mov d0,d2
  mov d3,d0
- add BW_ID_W,d0
+ add d0,d0
+ mov bw_ids+6,a0
+ add d0,a0
+ movhu (a0),d0                   /* Whites ID of profile d3 */
  mov d0,a0
  call rt_get1,[],4
  extb d0
@@ -2566,10 +2571,10 @@ bw_rf_out:
 /* Row item handlers (resolver 0x60e3ccba jumps here): d0 = the setting, then
  * the slider path of Sharpness / Contrast. */
 bw_item_b:
- mov BW_ID_B,d1
+ mov bw_ids,d1
  bra bw_item
 bw_item_w:
- mov BW_ID_W,d1
+ mov bw_ids+6,d1
 bw_item:
  mov d1,(4,sp)
  mov 111,d0
@@ -2579,8 +2584,10 @@ bw_item:
  bcs bw_item_cp
  clr d0
 bw_item_cp:
- mov (4,sp),d1
- add d1,d0
+ add d0,d0
+ mov (4,sp),a0
+ add d0,a0
+ movhu (a0),d0
  jmp row_slider
 /* In place of the record loop at 0x60e49d6f: d2 = item, a3 = panel. */
 row_find_a:
@@ -2626,15 +2633,18 @@ rfb_hit:
 .section .ext8,"ax"
 .balign 4
 bw_desc:                         /* stock-format copies of 1017's descriptor */
- .irp id,1822,1823,1824,1825,1826,1827
+ .irp id,907,911,915,993,997,1020
  .hword \id, 0x80
  .long 0x6050cee0, 0
  .hword 11, 1
  .long 0x200
  .endr
-bw_rows:                         /* row records, as Contrast's (0x611b5148) */
- .long 5370, 0, 0, 0, bw_title_b, 0, 0x20000, 0, 0, 0
- .long 5372, 0, 0, 0, bw_title_w, 0, 0x20000, 0, 0, 0
+bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
+ .hword 907, 911, 915, 993, 997, 1020
+ .balign 4
+bw_rows:                         /* row records, as Shading's (0x611b5378), kind 4 */
+ .long 5370, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0
+ .long 5372, 0, 0, 0, bw_title_w, 0, 0x40000, 0, 0, 0
 bw_title_b:
  .hword 4, 2202
  .long 0x611b42ac
@@ -2656,3 +2666,30 @@ bw_title_w:
  .long 5370-6, row_slider_widget
 .section .bw_wslot6,"a"
  .long 5372-6, row_slider_widget
+
+/* The slider row's style and value-label lookups (0x60e4b02c, 0x60e4b09d) know
+ * only items 7, 8, 59, 616, 5376 (Shading, 11 values -5..+5), 1011 and 5374.
+ * Blacks / Whites use Shading's descriptor, so they take Shading's tables:
+ * d0 5370 / 5372 -> 5376, then the replaced 5 bytes (mov d1,a1; clr d1;
+ * mov d1,d3; exthu d0) and back. */
+.section .ext6,"ax"
+/* No nested call: both functions return with retf, which uses MDR. */
+.irp n,style,label
+bw_\n:
+ mov d1,a1
+ clr d1
+ mov d1,d3
+ exthu d0
+ cmp 5370,d0
+ beq bw_\n\()_sh
+ cmp 5372,d0
+ bne bw_\n\()_out
+bw_\n\()_sh:
+ mov 5376,d0
+bw_\n\()_out:
+ jmp bw_\n\()_back
+.endr
+.section .bw_style_hook,"ax"
+ jmp bw_style
+.section .bw_label_hook,"ax"
+ jmp bw_label
