@@ -40,8 +40,8 @@
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
-- **Film Grain for Color Profiles (emulator only).** Current dev package `24f243a0…a373` (grain + inert
-  Blacks/Whites; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open on the
+- **Film Grain for Color Profiles (emulator only).** Current dev package `5dc0b018…2454` (grain, Black /
+  White, Split Tone; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Open on the
   camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
 - **Blacks / Whites rows on Color Profile 1–3: built and emulator-checked** (−5..+5, per profile, live in the
   curve). [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md). Needs a camera test with the grain checks.
