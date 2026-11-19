@@ -11,6 +11,9 @@
 - **Black and White rows** on Color Profile 1–3 (−5..+5, per profile): +Black lifts the blacks, +White
   brightens the whites. Applied inside the camera's own tone curve, beside Shadows / Highlights. Emulator only:
   whether photos change is unknown until a camera test.
+- **Split Tone row** on Color Profile 1–3 (−5..+5): + tints shadows teal and highlights orange, − the
+  reverse; midtones stay. Applied to the camera's own R/G/B curves. Emulator only.
+  [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
   [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
 - Research: the camera's Art Effect converter (Soft Focus, Frame, Star Light…) is mapped for the Glow work.
   [Effects map](research/OM5II-EFFECTS-MAP-2026-11-18.md).

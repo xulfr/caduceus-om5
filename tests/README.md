@@ -69,6 +69,16 @@ Blacks/Whites written into P. Pass the gate wrapper's linked address (from `mn10
 BW_GATE=0x605af6a1 POST=$PWD/tests/bw_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh generated/strict OUT s1
 ```
 
+### Blacks / Whites / Split tone rows (v0.2.0-dev)
+
+`tests/run_bw_rows.py` drives the Black, White and Split Tone rows (9 cases: per-profile values, profile and mode
+switches) and checks the six settings, the curve values in P and the Split tone buffer. `tests/st_assert.mjs`
+calls the camera's R/G/B curve setter with test ramps (run it as `POST` with keys `s1`).
+
+```sh
+python tests/run_bw_rows.py --emu generated/om-emu --build generated/strict --out generated/bw-rows
+```
+
 ### Live ND shooting labels
 
 Run the shooting UI with the display-side reads for settings 1709–1711 supplied by the fixture.

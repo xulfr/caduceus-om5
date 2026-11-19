@@ -45,7 +45,8 @@
   camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
 - **Blacks / Whites rows on Color Profile 1–3: built and emulator-checked** (−5..+5, per profile, live in the
   curve). [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md). Needs a camera test with the grain checks.
-- Split toning is designed; Clarity is blocked. The space budget and the next steps are in [the plan](docs/V0.2.0-PLAN.md).
+- **Split Tone row on Color Profile 1–3: built and emulator-checked.** [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- Clarity is blocked on the Soft Focus weight getter. Free space is nearly gone (see [the plan](docs/V0.2.0-PLAN.md)).
 - Ghidra is set up in this cloud container (`generated/runtime`, `generated/ghidra`; lost when the container
   is reclaimed). Rebuild: tools/ghidra/README.md, about 15 minutes.
 - Codex's Ghidra tooling and findings are merged from main
