@@ -67,3 +67,19 @@ the expanded E148 1.1 main program.
 `tests/run_bw_tint.py` (7 cases, all passed on the build recorded with this note): Black / White values, OM's tone
 values untouched in Black/White, the INFO cycle back to Hi/Sh, Color Profile 2, a stock mode afterwards, and the
 tints. Screens are saved per case.
+
+## Open: Black / White labels larger than Sh / Hi (camera report 2026-11-19)
+
+Owner: "Black n" / "White n" are drawn noticeably larger than the stock "Sh ±n" / "Hi ±n". OM-Emu shows the same.
+Findings so far (emulator and static, not fixed):
+
+- `tone_text` draws through `tx_draw` (ext6): `stock_font(1)` (`0x60d51f07`) then `stock_text` (`0x60d4b7bc`). E148 has
+  one font record per language: `font_record` `0x60d52e6b` (d0 = id → table `0x61e53d7c`[language] + 74 × id); only
+  id 1 ("Olym…", size byte +66 = 50) is filled. Ids 0, 2 and 3 return no font (nothing drawn).
+- The stock Sh / Mid / Hi labels do not go through `stock_text` (traced: only Caduceus text calls it on that page).
+- Copying record 1 with +66 = 34 and building the font with `stock_font`'s body (`0x60d51f18`) gave font attributes
+  `22 00 22 00 …` but the **same-size** glyphs, and with +66 = 20 or 4 the next string ("White") came out garbled.
+  The font object (`0x6220338c`) is the same shared object either way, so its size is global and appears to be
+  cached by the glyph engine. Not safe to change on the camera; reverted.
+- Next: find how the stock label widgets (view +792 + 4k, labels 2..4 / 10..12) render their text (they may be
+  resource images or a second font path), and draw Black / White that way, or reuse the stock title labels.
