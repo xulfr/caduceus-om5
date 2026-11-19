@@ -2693,3 +2693,94 @@ bw_\n\()_out:
  jmp bw_style
 .section .bw_label_hook,"ax"
  jmp bw_label
+
+/* Slider knob (0x60e4a9d0..: item 7/8/59 read settings 7/8/59, Shading 5376
+ * reads effective 1016 with range -5..+5). Blacks / Whites read the active
+ * Color Profile's own setting, same range. Replaces cmp 5376,d0; beq at
+ * 0x60e4a9de (6 bytes). (4,sp) is the stock frame's max slot, written at
+ * knob_store; used here first to hold the setting id. In section 2 (ext6 and
+ * ext5 are full); section 2 loads before section 7's GUI code can run. */
+.section .ext2,"ax"
+bw_knob:
+ cmp 5376,d0
+ bne bw_kn_ours
+ jmp knob_shading
+bw_kn_ours:
+ cmp 5370,d0
+ beq bw_kn_b
+ cmp 5372,d0
+ beq bw_kn_w
+ jmp knob_none
+bw_kn_w:
+ mov bw_ids+6,d1
+ bra bw_kn_id
+bw_kn_b:
+ mov bw_ids,d1
+bw_kn_id:
+ mov d1,(4,sp)
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcs bw_kn_cp
+ clr d0
+bw_kn_cp:
+ add d0,d0
+ mov (4,sp),a0
+ add d0,a0
+ movhu (a0),d0
+ mov d0,(4,sp)
+ call settings_obj,[],4
+ mov (a0),a2
+ mov sp,a1
+ mov (8,a2),a2
+ add 20,a1
+ mov (4,sp),d0
+ calls (a2)
+ mov -5,a3
+ mov 5,d0
+ jmp knob_store
+.section .bw_knob_hook,"ax"
+ jmp bw_knob
+ nop
+
+/* Left-column cell value: the panel row handler Blacks / Whites share with
+ * Shading (0x60e4a34e) reads effective 1016 at 0x60e4a37a (mov 1016,d0;
+ * calls (a2): 5 bytes). For items 5370 / 5372 read the active Color
+ * Profile's own setting instead. d3 = item; a1 = (32,sp) the result slot;
+ * d2 is dead here (the stock code sets it at 0x60e4a389). */
+.section .ext2,"ax"
+bw_cell:
+ cmp 5370,d3
+ beq bw_cell_b
+ cmp 5372,d3
+ beq bw_cell_w
+ mov 1016,d0
+ calls (a2)
+ jmp cell_back
+bw_cell_w:
+ mov bw_ids+6,d2
+ bra bw_cell_id
+bw_cell_b:
+ mov bw_ids,d2
+bw_cell_id:
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcs bw_cell_cp
+ clr d0
+bw_cell_cp:
+ add d0,d0
+ add d0,d2
+ mov d2,a0
+ movhu (a0),d2
+ call settings_obj,[],4
+ mov (a0),a2
+ mov (8,a2),a2
+ mov (32,sp),a1
+ mov d2,d0
+ calls (a2)
+ jmp cell_back
+.section .bw_cell_hook,"ax"
+ jmp bw_cell

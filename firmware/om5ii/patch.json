@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "030b4b30d61d58a3f1f09e10cc02956e48ae082c51d4753cb053b604627e6bac",
+      "stored_after_sha256": "96fbc66bdaccbcb2db276f0bde637f1bdbf81fc713503370220252edbf6a0215",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "985441195675281ff5fae853bc39d5e311d1578df36bea7a40d81ce242424ad5",
+      "after_sha256": "ef3c0946c5aacce7db55135fb53b488b5b07f6076fb77b54818f97ad50833c25",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -72,7 +72,9 @@
         "bw_wslot4": "0x611b7ac8",
         "bw_wslot6": "0x611b7ad8",
         "bw_style_hook": "0x60e4b02c",
-        "bw_label_hook": "0x60e4b09d"
+        "bw_label_hook": "0x60e4b09d",
+        "bw_knob_hook": "0x60e4a9de",
+        "bw_cell_hook": "0x60e4a37a"
       }
     },
     {
@@ -207,9 +209,9 @@
       "component": "0x100",
       "name": "ext2",
       "address": "0x605af4b0",
-      "bytes": 530,
-      "before_sha256": "3ec3b539e189b768dea8561fe47a9959be35f7a2547517709880923f61d1b442",
-      "after_sha256": "923b2bbef6675b7df5cde0a64887e0d6a45c79e9131b00b72e8aba1a0adf643f"
+      "bytes": 711,
+      "before_sha256": "70d5f6a9bba20042a7158f5afa8ebd217bae05b1668b750f39091040bce913a8",
+      "after_sha256": "9fc0cd1176443a4bcff6969b31fefd75a065b68178e3f900c09f071fbe78e86d"
     },
     {
       "component": "0x100",
@@ -1202,6 +1204,22 @@
       "bytes": 8,
       "before_sha256": "180b56075ad3e7b784832eb86fafe9b0f61467dbb1c7beb2d1a5bc20de7ef5b1",
       "after_sha256": "a1e340713153ddcf8ad319365fc3ebc594a92194d3ed1c646f729a9cc3759df9"
+    },
+    {
+      "component": "0x100",
+      "name": "bw_knob_hook",
+      "address": "0x60e4a9de",
+      "bytes": 6,
+      "before_sha256": "c3fcf53266cdcc98fc3db75126f93bbf893dfda9d794898af3221852ddaf25e9",
+      "after_sha256": "71432035adefec7f655e5ce2804f1046bcae3547e2d91c313efccc18f45d3b76"
+    },
+    {
+      "component": "0x100",
+      "name": "bw_cell_hook",
+      "address": "0x60e4a37a",
+      "bytes": 5,
+      "before_sha256": "a98e66a1ec4a51e157e5cb2e278f803b842b14cb140855c06879720eb3563a26",
+      "after_sha256": "b943714013e429d247e77b18cab90bfdfe41e2a3e0c5c24cc4e310818ba17aed"
     }
   ],
   "data_edits": [
@@ -1773,7 +1791,7 @@
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "e54f69fac01d551ad2dbd6a5d233a27bf7f5aeeea6a46e146419b556641d6e33",
+    "sha256": "8aa8f33f37e62af00056154aa31a60a9b084a55456da345c6d507ef59fb85614",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },

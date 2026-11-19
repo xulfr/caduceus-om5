@@ -36,6 +36,8 @@ SECTIONS {
  .rfb_hook 0x60e4a1a4 : { *(.rfb_hook) }
  .bw_slot4 0x611a0b38 : { *(.bw_slot4) }
  .bw_style_hook 0x60e4b02c : { *(.bw_style_hook) }
+ .bw_knob_hook 0x60e4a9de : { *(.bw_knob_hook) }
+ .bw_cell_hook 0x60e4a37a : { *(.bw_cell_hook) }
  .bw_label_hook 0x60e4b09d : { *(.bw_label_hook) }
  .bw_slot5 0x611a0b48 : { *(.bw_slot5) }
  .bw_wslot4 0x611b7ac8 : { *(.bw_wslot4) }
@@ -50,6 +52,11 @@ bw_resume = 0x60385fa1;
 row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
 row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
 row_slider = 0x60e3cd53;
+knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
+knob_none = 0x60e4aa37;
+cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */
+knob_store = 0x60e4aa35;        /* slider knob: store max d0 at (4,sp), min in a3 */
+settings_obj = 0x608eedd3;      /* -> a0 = settings object (vtable +8: value getter) */
 bw_style_back = 0x60e4b031;     /* slider style lookup after its first 5 bytes */
 bw_label_back = 0x60e4b0a2;     /* slider value-label lookup after its first 5 bytes */        /* resolver: d0 = setting -> slider row (Sharpness / Contrast path) */
 rfa_back = 0x60e49d87;          /* after the record loop at 0x60e49d6f */

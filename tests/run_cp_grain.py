@@ -2,7 +2,7 @@
 """Color Profile grain (v0.2.0) emulator regressions on a strict decoded E148 build.
 
 Each case drives the Picture Mode screen with the firmware's own GUI, then tests/cp_grain_assert.mjs reads the grain
-cells 907 / 911 / 915 and effective setting 998 through OM's getters. Emulator only: OM-Emu has no image pipeline,
+cells 1822 / 1823 / 1824 and effective setting 998 through OM's getters. Emulator only: OM-Emu has no image pipeline,
 so a pass does not show grain in a photo, and nothing here is a camera result.
 
     python tests/run_cp_grain.py --emu OM_EMU_DIR --build generated/strict --out generated/cp-grain
