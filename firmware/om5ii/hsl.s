@@ -179,6 +179,17 @@ hsl_container:
  clr d0
 container_axis:
  movbu d0,(ST_AXIS,a0)
+ /* A tint is one colour: arriving on a tint axis with "all" selected
+  * (parent +122 = 0), switch to one colour with OM's own INFO. */
+ cmp 3,d0
+ bcs container_refresh
+ movhu (122,a2),d0
+ cmp 0,d0
+ bne container_refresh
+ mov (4,sp),a0
+ mov 0x9014,d0
+ calls stock_container
+container_refresh:
  call refresh_children,[d2,d3,a2,a3],24
  mov (124,a2),a0
  mov 0x900c,d0
@@ -200,27 +211,9 @@ container_restore:
  mov 0x9016,d0
 container_stock:
  jmp stock_container
-/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
- * the tone curve's point). Stock runs it but restarts the screen's timeout
- * only for other commands. Run stock, then count a consumed INFO as activity
- * on the custom pages (section 10, armed only). Same frame use as
- * hsl_delete_action: (0,sp) stays free for the nested calls. */
+/* INFO: section 2 (container_info2), for space. */
 container_info:
- add -12,sp
- mov a0,(4,sp)
- calls stock_container
- mov d0,(8,sp)
- cmp 1,d0
- bne info_done
- call st_ptr,[],8
- cmp 0,a0
- beq info_done
- mov (4,sp),a0
- call ui_info_activity,[d2,d3,a2,a3],24
-info_done:
- mov (8,sp),d0
- add 12,sp
- rets
+ jmp container_info2
 
 /* The native value label (stock "Vivid +n", 0x60e4ad08..0x60e4ae5e) reads the
  * selected sector's stored profile cell (IDs 928-975) through the settings
@@ -1785,7 +1778,7 @@ ui_activity:
  cmp 1,d0
  bne ui_act_out
  mov 500,d0
- mov 8000,d1
+ mov 30000,d1                    /* Picture Mode's idle time (pm_timeout.py), 8000 in stock */
  call ui_timer,[d2,d3],12
 ui_act_out:
  ret [d2,d3],12
@@ -2531,6 +2524,67 @@ ftab_col:
 /* filter value 0..8 -> slot */
 ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
+
+.section .ext2,"ax"
+/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
+ * the tone curve's point). Stock runs it but restarts the screen's timeout
+ * only for other commands. Run stock, then count a consumed INFO as activity
+ * on the custom pages (section 10, armed only). Same frame use as
+ * hsl_delete_action: (0,sp) stays free for the nested calls. On a tint axis
+ * of the colour wheel with one colour selected, INFO is consumed and does
+ * nothing: a tint has one colour, and "all" wrote every colour in turn
+ * (camera report 2026-11-19). From "all", INFO still leaves it. */
+container_info2:
+ add -12,sp
+ mov a0,(4,sp)
+ mov d0,(8,sp)
+ call info_tint,[a2],8
+ cmp 0,d0
+ bne info_kept
+ mov (8,sp),d0
+ mov (4,sp),a0
+ calls stock_container
+ mov d0,(8,sp)
+ cmp 1,d0
+ bne info_done
+ call st_ptr,[],8
+ cmp 0,a0
+ beq info_done
+ mov (4,sp),a0
+ call ui_info_activity,[d2,d3,a2,a3],24
+ bra info_done
+info_kept:
+ mov d0,(8,sp)
+info_done:
+ mov (8,sp),d0
+ add 12,sp
+ rets
+
+/* a0 = the container -> d0 = 1 when INFO must not switch to "all": armed,
+ * colour wheel parent (13 children), tint axis (3..5), one colour selected.
+ * Preserves d1, a1-a3. call info_tint,[a2],8 */
+info_tint:
+ mov (76,a0),a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq it_no
+ movbu (ST_AXIS,a0),d0
+ cmp 3,d0
+ bcs it_no
+ cmp 0,a2
+ beq it_no
+ movhu (120,a2),d0
+ cmp 13,d0
+ bne it_no
+ movhu (122,a2),d0
+ cmp 0,d0
+ beq it_out
+ mov 1,d0
+ bra it_out
+it_no:
+ clr d0
+it_out:
+ ret [a2],8
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
  * Blacks / Whites are added to the split-tone delta tables (tn_tables, ext3), so
