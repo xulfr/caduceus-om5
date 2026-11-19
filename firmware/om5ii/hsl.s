@@ -19,7 +19,7 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_SIZE = 1104                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1064 before Blacks/Whites */
+ST_SIZE = 1136                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1064 / 1104 before Blacks/Whites / Split tone */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -1782,7 +1782,7 @@ ui_info_out:
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
  * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988                  /* 14 nodes: P+988..1099 (8 in cp_nd_desc, 6 in bw_desc) */
+CP_NODES = 988                  /* 17 nodes: P+988..1123 (8 cp_nd_desc, 6 bw_desc, 3 st_desc) */
 CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
@@ -1823,6 +1823,10 @@ cp_nd_next:
  mov bw_desc,a3                  /* then the Blacks / Whites descriptors (ext8) */
 cp_nd_more:
  cmp CP_NDESC+BW_NDESC,d3
+ bne cp_nd_more2
+ mov st_desc,a3                  /* then Split tone's (ext10) */
+cp_nd_more2:
+ cmp CP_NDESC+BW_NDESC+3,d3
  bcs cp_nd_one
  ret [d2,d3,a2,a3],24
 
@@ -2447,8 +2451,9 @@ ftab_slot:
  * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
  * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
  * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
-BW_B = 1100                     /* s16 Blacks of the active Color Profile, curve units (P) */
-BW_W = 1102                     /* s16 Whites: positive lowers the white end */
+BW_B = 1124                     /* s16 Blacks of the active Color Profile, curve units (P) */
+BW_W = 1126                     /* s16 Whites: positive lowers the white end */
+/* P+1128 s16 Split tone amount A, P+1132 its 1544-byte table buffer (wb.s st_entry) */
 .section .bw_hook,"ax"
  jmp bw_apply
 .section .bw_gate_call,"ax"
@@ -2524,10 +2529,13 @@ bw_gate_out:
  * strings 2202 "Black" and 2201 "White". research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md */
 BW_NDESC = 6
 BW_STEP = 20
-BW_NROWS = 2
-ROW_N = 2                       /* rows: Blacks, Whites */
-ROW_ITEM0 = 5354                /* items 5354 Blacks, 5356 Whites (keys on slots 4, 6) */
-ST_STEP = 40
+BW_NROWS = 3
+ROW_N = 3                       /* rows: Blacks, Whites, Split tone */
+ROW_ITEM0 = 5354                /* items 5354 Blacks, 5356 Whites, 5358 Split tone (keys on slots 4, 6, 8) */
+ST_STEP = 60                    /* table units (0..4095) per Split tone step at the extremes */
+
+ST_BUF = 1132
+ST_BUF_SIZE = 1544
 .section .ext5,"ax"
 /* d3 = kind (0..2 Color Profile 1..3), a2 = context. */
 bw_refresh:
@@ -2567,6 +2575,16 @@ bw_rf_put:
  inc d2
  cmp ROW_N,d2
  bcs bw_rf_loop
+ /* Split tone set and no buffer yet: allocate it (settings task, as P) */
+ movhu (BW_B+4,a3),d0
+ cmp 0,d0
+ beq bw_rf_out
+ mov (ST_BUF,a3),d0
+ cmp 0,d0
+ bne bw_rf_out
+ mov ST_BUF_SIZE,d0
+ call malloc,[],4
+ mov a0,(ST_BUF,a3)
 bw_rf_out:
  ret [d2,d3,a2,a3],20
 bw_rf_mul:                       /* curve units per step: Blacks, Whites (+ brightens), Split tone */
@@ -2631,11 +2649,12 @@ bw_desc:                         /* stock-format copies of 1017's descriptor */
  .long 0x200
  .endr
 row_ids:                         /* Blacks of Color Profile 1..3, then Whites */
- .hword 965, 966, 967, 993, 997, 1020
+ .hword 965, 966, 967, 993, 997, 1020, 971, 972, 973
  .balign 4
 bw_rows:                         /* row records, as Shading's (0x611b5378), kind 4 */
  .long 5354, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0
  .long 5356, 0, 0, 0, bw_title_w, 0, 0x40000, 0, 0, 0
+ .long 5358, 0, 0, 0, st_title, 0, 0x40000, 0, 0, 0
 bw_title_b:
  .hword 4, 2202
  .long 0x611b42ac
@@ -2657,6 +2676,10 @@ bw_title_w:
  .long 5354-6, row_slider_widget
 .section .bw_wslot6,"a"
  .long 5356-6, row_slider_widget
+.section .st_slot8,"a"
+ .long 5358-6, row_item
+.section .st_wslot8,"a"
+ .long 5358-6, row_slider_widget
 
 /* The slider row's style and value-label lookups (0x60e4b02c, 0x60e4b09d) know
  * only items 7, 8, 59, 616, 5376 (Shading, 11 values -5..+5), 1011 and 5374.
@@ -2766,3 +2789,19 @@ bw_cell_stock:
  jmp cell_back
 .section .bw_cell_hook,"ax"
  jmp bw_cell
+
+/* ---- Split tone (v0.2.0-dev) ----
+ * Row item 5358 (slot 8 in every row table), storage 971 / 972 / 973 (Color
+ * Profile 4's colour-sector cells, part 0; default 0), -5..+5 like Blacks /
+ * Whites. The refresh writes A = 60 v into P+1128 and allocates the table
+ * buffer; wb.s st_entry tints the R/G/B curve tables with it. Title: string
+ * 3838 (an internal name never shown) overridden by films.s fl_str. */
+.section .ext10,"ax"
+.balign 4
+st_desc:
+ .irp id,971,972,973
+ .hword \id, 0x80
+ .long 0x6050cee0, 0
+ .hword 11, 1
+ .long 0x200
+ .endr

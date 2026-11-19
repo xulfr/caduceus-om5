@@ -357,3 +357,95 @@ wb_mono_map:
  .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0, 3,4,5,1, 0xff, 3,4,5,0xff
  .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,2
  .byte 3,3,3,4,4,4,5,5,5
+
+/* ---- Split tone (v0.2.0-dev): tint the photo's R/G/B curve tables ----
+ * Hooks the entry of E148's three-pointer curve setter 0x603e6974 (a0 = the
+ * job output O, a1 / d0 / d1 = R / G / B tables, 256 x u16, 0..4095; callers
+ * 0x603e6b3e and 0x603e6f0b, both call ...,[d2,a2],8). The 5 replaced bytes
+ * are mov a0,a2; inc4 a2; mov d1,d2; mov d0,d1; mov (a2),d0 (replayed).
+ * When armed and the active Color Profile's Split tone amount A (P+1128, set
+ * by hsl.s bw_refresh, 0 in other modes) is non-zero and its buffer exists
+ * (P+1132), tinted copies are built there and passed instead:
+ *   u = i - 128, d = A u |u| / 2^14, R' = R + d, G' = G, B' = B - d (0..4095)
+ * +A: teal shadows, orange highlights; -A the reverse; the middle unchanged.
+ * The buffer is uncached heap memory owned by Caduceus; concurrent jobs write
+ * identical values. research/OM5II-SPLIT-TONE-2026-11-19.md */
+ST_A = 1128
+ST_BUF = 1132
+.section .st_hook,"ax"
+ jmp st_entry
+.section .wb_body,"ax"
+st_entry:
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq st_replay
+ movhu (ST_A,a0),d2
+ exth d2
+ cmp 0,d2
+ beq st_replay
+ mov (ST_BUF,a0),a0
+ cmp 0,a0
+ beq st_replay
+ call st_build,[d2,d3,a2,a3],20
+st_replay:
+ mov a2,a0
+ mov a0,a2
+ inc4 a2
+ mov d1,d2
+ mov d0,d1
+ mov (a2),d0
+ jmp setter_back
+/* a0 = buffer, a1 / d0 / d1 = R / G / B, d2 = A -> a1 / d0 / d1 = tinted tables */
+st_build:
+ mov d0,a2
+ mov d1,a3
+ clr d3
+st_loop:
+ mov d3,d0
+ add -128,d0
+ mov d0,d1
+ mul d0,d1
+ mul d2,d1
+ asr 14,d1
+ cmp 0,d0
+ bge st_pos
+ mov d1,d0
+ clr d1
+ sub d0,d1
+st_pos:
+ movhu (a1),d0
+ add d1,d0
+ call st_clamp,[],0
+ movhu d0,(a0)
+ movhu (a2),d0
+ movhu d0,(512,a0)
+ movhu (a3),d0
+ sub d1,d0
+ call st_clamp,[],0
+ movhu d0,(1024,a0)
+ add 2,a0
+ add 2,a1
+ add 2,a2
+ add 2,a3
+ inc d3
+ cmp 256,d3
+ bcs st_loop
+ add -512,a0
+ mov a0,a1
+ mov a0,d0
+ add 512,d0
+ mov a0,d1
+ add 1024,d1
+ ret [d2,d3,a2,a3],20
+st_clamp:
+ cmp 0,d0
+ bge st_c1
+ clr d0
+ retf [],0
+st_c1:
+ cmp 4095,d0
+ ble st_c2
+ mov 4095,d0
+st_c2:
+ retf [],0

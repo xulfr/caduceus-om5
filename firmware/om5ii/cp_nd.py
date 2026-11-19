@@ -115,7 +115,7 @@ def edits(img):
     stock_rows = (0x6f, 0x14fe, 0x14ff, 0x1500, 7, 8)
     assert struct.unpack('<6I', R(0x6119a0f0, 24)) == stock_rows
     assert struct.unpack('<8I', R(0x6119a0d0, 32))[6] == 0x1501
-    rows = stock_rows + (0x1501, 5354, 5356)   # + Film Grain, Blacks, Whites (hsl.s bw_rows)
+    rows = stock_rows + (0x1501, 5354, 5356, 5358)   # + Film Grain, Blacks, Whites (hsl.s bw_rows)
     assert ROWS_LO <= ROWS and ROWS + 4 * len(rows) <= ROWS_HI
     out['cp_grain_rows'] = (ROWS, struct.pack('<%dI' % len(rows), *rows))
     # mov imm32,a3 (fc df) then mov 6,d0 (80 06); the Monochrome case beside it is mov 8,d0
@@ -128,7 +128,7 @@ def edits(img):
     # in the first grain table 0x611a02f8, unreferenced since cp_grain_lookup_a/_b (only those two loads used it).
     ed_stock = (0x14fe, 0x14ff, 0x1500, 7, 8)
     assert struct.unpack('<5I', R(0x6119fefc, 20)) == ed_stock
-    ed = ed_stock + (5354, 5356)
+    ed = ed_stock + (5354, 5356, 5358)
     out['cp_bw_editor_list'] = (0x611a02f8, struct.pack('<%dI' % len(ed), *ed))
     # Blacks / Whites rows: every 32-slot item dispatch {u32 item - 6, u32 handler} (keyed & 31) that handles
     # Shading's slider (item 5376, key 5370) gets the same handler for 5354 / 5356 (keys 5348 / 5350, slots 4 /
@@ -136,8 +136,8 @@ def edits(img):
     for table in (0x611a0618, 0x611a0718, 0x611a0818, 0x611a0918, 0x611b79a8, 0x611b7b28):
         ents = list(struct.iter_unpack('<II', R(table, 256)))
         handler = [h for k, h in ents if k == 5370]
-        assert len(handler) == 1 and ents[4][0] == 0 and ents[6][0] == 0, hex(table)
-        for item, slot in ((5354, 4), (5356, 6)):
+        assert len(handler) == 1 and ents[4][0] == 0 and ents[6][0] == 0 and ents[8][0] == 0, hex(table)
+        for item, slot in ((5354, 4), (5356, 6), (5358, 8)):
             out['bw_disp_%x_%d' % (table, slot)] = (table + 8 * slot, struct.pack('<II', item - 6, handler[0]))
     for mode, at in ((54, 0x6119ff30), (55, 0x6119ff38), (56, 0x6119ff40)):
         assert struct.unpack('<HHI', R(at, 8)) == (mode, 5, 0x6119fefc)

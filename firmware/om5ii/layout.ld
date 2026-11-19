@@ -42,6 +42,8 @@ SECTIONS {
  .bw_slot5 0x611a0ac8 : { *(.bw_slot5) }
  .bw_wslot4 0x611b7ac8 : { *(.bw_wslot4) }
  .bw_wslot6 0x611b7ad8 : { *(.bw_wslot6) }
+ .st_slot8 0x611a0ad8 : { *(.st_slot8) }
+ .st_wslot8 0x611b7ae8 : { *(.st_wslot8) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
