@@ -16,7 +16,15 @@
 > E148 leads for a real implementation: the Art Effect converter `0x6042394c` tests `a3 + 28736`, the field the OM-3
 > converter uses for its monochrome grain/filter route ([effects map](OM5II-EFFECTS-MAP-2026-11-18.md)); 998's only
 > direct references are its setting descriptors (`0x608623a2`) and a logger (`0x6072c992`). The E148 development
-> request, its job key and the combiner selector are not located yet. Owner decision pending: drop the Color Profile
+> request, its job key and the combiner selector are not located yet.
+>
+> Signature match of OM-3 (E147 1.1, same image base `0x60021020`) addresses against E148 (2026-11-19; masked call
+> and 32-bit immediate operands; unique matches only): stage selector `0x6052cf39` → **`0x603ecda1`** (48 bytes),
+> grain gains `0x60667dc2` → **`0x6053138e`** (48 bytes), development-request hook site `0x604955f1` →
+> `0x6036fc5c` (24 bytes only: candidate). No match for combiner 33 `0x60505142`, the MONO grain gate `0x604b3f28`,
+> the work-list builder, the Grainy Film handler or the Art converter (whose E148 address `0x6042394c` is known:
+> the bodies differ by struct offsets). Next step for a real implementation: Ghidra cross-references from these
+> anchors, then a logging probe on the camera as OM-3's gl1–gl3 (OM-Emu has no image pipeline). Owner decision pending: drop the Color Profile
 > grain row until then, or keep it while the pipeline work is done.
 
 Static analysis and OM-Emu only, 2026-11-18. **Not camera-tested.** Addresses are runtime addresses of the

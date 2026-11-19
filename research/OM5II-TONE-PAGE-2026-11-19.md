@@ -83,3 +83,9 @@ Findings so far (emulator and static, not fixed):
   cached by the glyph engine. Not safe to change on the camera; reverted.
 - Next: find how the stock label widgets (view +792 + 4k, labels 2..4 / 10..12) render their text (they may be
   resource images or a second font path), and draw Black / White that way, or reuse the stock title labels.
+- Follow-up (2026-11-19): the stock title and value labels are widgets (vtable `0x60fdfab0`) 30 px high (the hint,
+  label 16, 50 px), with no text attached (image labels; their field +0x48 is 37, the hint's 15). Writing 0, 1, 3 or 4
+  instead of 2 to the paint context's +52 before `stock_text` changes nothing. With one font record and a glyph cache
+  that ignores size, OM's text path draws one size only; smaller text would need the stock label images (none spell
+  Black / White) or glyphs of our own (no space). Options for the owner: keep the size; shorter words ("Blk" /
+  "Wht"); or keep the stock value images (±n, small) and draw only the word.

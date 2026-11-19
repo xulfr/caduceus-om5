@@ -44,16 +44,16 @@
   works (live view and JPEG). Black / White: UI only, no effect in pictures. Colour grain: no grain at any level,
   carousel order reversed. "All" on a tint axis changed a seemingly random colour. Black / White labels larger than
   Sh / Hi. [Report](research/OM5II-V020DEV-CAMERA-2026-11-19.md).
-- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `e0f5b658…3bea`, emulator only, never flashed):
+- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `27ad9db3…5c2b`, emulator only, never flashed):
   - Black / White now go into the split-tone R/G/B delta tables (the route the camera showed working); the
     brightness-curve hooks are removed. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
   - Tint axes stay on one colour: arriving with "all" switches back, INFO there does nothing.
-  - Picture Mode stays open 30 s after the last key or dial (8 stock timer arms + Caduceus's own re-arm;
-    `firmware/om5ii/pm_timeout.py`). Touch not covered.
+  - Picture Mode stays open 30 s after the last key, dial or tap (9 stock timer arms + Caduceus's own re-arm;
+    `firmware/om5ii/pm_timeout.py`; OM-Emu `tap:X,Y` in tools/dev/sess.mjs).
 - **Open:** colour grain needs real image-pipeline work (stock grain is monochrome-only; OM-3 needed a texture
   pass over many camera rounds): owner to decide whether to drop the row meanwhile.
   [Note](research/OM5II-CP-GRAIN-2026-11-18.md). Black / White label size: OM has one shared font object;
-  resizing it garbles text, so not fixed. [Tone page note](research/OM5II-TONE-PAGE-2026-11-19.md#open-black--white-labels-larger-than-sh--hi-camera-report-2026-11-19).
+  resizing it garbles text, and the stock labels are images: one text size only; owner to pick an option. [Tone page note](research/OM5II-TONE-PAGE-2026-11-19.md#open-black--white-labels-larger-than-sh--hi-camera-report-2026-11-19).
 - Black / White on the tone page: INFO steps Hi/Sh → Black/White → Mid on Color Profile 1–3; −7..+7 per profile.
   [Tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md). Split tone: trash steps on to Shadow / Midtone /
   Highlight Tint; one of 12 colours, strength 1..5. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
@@ -70,10 +70,10 @@
 
 ## Next camera checks
 
-0. **Dev package `e0f5b658…3bea`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
+0. **Dev package `27ad9db3…5c2b`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
    live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
    INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
-   Mode stays open about 30 s after the last key or dial, on the strip, tone page and colour wheel; other menus and
+   Mode stays open about 30 s after the last key, dial or tap, on the strip, tone page and colour wheel; other menus and
    the super control panel still close after 8 s. Then: Reset, C1–C5 and power-off keep / clear values as expected.
 
 1. Capture per-step filter and CP results with the installed package SHA-256.
