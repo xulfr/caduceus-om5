@@ -981,7 +981,7 @@ light_lut:
  *   struct +4 sharpness = 904+p  (ID 7)
  *   struct +8 = 0 (ID 59), +20 = 1 (ID 105), +24 = 0 (ID 1806)
  *   effective 916..927 = 928+12p .. 939+12p  (store 1 -> store 2)
- *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 1822+p (v0.2.0)
+ *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 907+4p (v0.2.0)
  *   effective 383 / 691 / 382 = 976+3p / 977+3p / 978+3p (store 2):
  *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
@@ -1322,7 +1322,7 @@ pm_num_keep:
  * 0x602e082f writes struct +0 -> 8, +4 -> 7, +8 -> 59, +12 -> 130,
  * +16 -> 131, +20 -> 105, +24 -> 1806):
  *   CP p:   +0 contrast 908+p, +4 sharpness 904+p, +8 0, +20 1, +24 0,
- *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 1822+p,
+ *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 907+4p,
  *           tone 976+3p.. (store 2) -> 383/691/382
  *   MONO p: +0 994+p, +4 990+p, +8 0, +12 filter 1007+p, +16 toning 1003+p,
  *           +20 1, +24 0, 916..927 = 0, 1011 = level 1012+p,
@@ -1577,7 +1577,7 @@ rt_put2:
  * part 1 of the same IDs (the WB records) is a separate cell. */
 rs_cp_table:
  .hword 0x8000,908, 0x8004,904, 0x8008,0, 0x8014,1, 0x8018,0
- .hword 1016,912, 1011,0, 998,1822, 0, 928
+ .hword 1016,912, 1011,0, 998,0x4000|907, 0, 928
 rs_mono_table:
  .hword 0x8000,994, 0x8004,990, 0x8008,0, 0x800c,1007, 0x8010,1003
  .hword 0x8014,1, 0x8018,0, 1011,1012, 1016,1017, 998,999, 0, 0
@@ -1780,10 +1780,10 @@ ui_info_out:
  * with nodes in P (P+988..1027, past the film bank). Only RAM changes; a
  * lookup before this finds nothing, as stock. a2 = P. Color Profile Shading
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
- * Color Profile grain 1822..1824 (v0.2.0) gets copies of 999's.
+ * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
 CP_NODES = 988                  /* 14 nodes: P+988..1099 (8 in cp_nd_desc, 6 in bw_desc) */
-CP_NDESC = 8                    /* 2217, 2218, 912..914, 1822..1824 (cp_nd.py) */
+CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
 .global cp_nd_link
 cp_nd_link:
  mov cp_nd_desc,a3
@@ -2504,10 +2504,11 @@ bw_gate_out:
  ret [d2],8
 
 /* ---- Blacks / Whites (v0.2.0-dev): settings, refresh and Picture Mode rows ----
- * Storage (bw_ids): Blacks 907 / 911 / 915 (Color Profile 4's Sharpness,
- * Contrast, Shading), Whites 993 / 997 / 1020 (Monochrome Profile 4's): E148
- * has neither profile 4; no stock descriptor; default 0; signed cells (912
- * reads -2 where 1822 read 254). Grain moved to 1822..1824. Each gets a copy of
+ * Storage (bw_ids): Blacks 965 / 966 / 967 (Color Profile 4's colour-sector
+ * cells, part 0; part 1 is the tone save), Whites 993 / 997 / 1020
+ * (Monochrome Profile 4's Sharpness, Contrast, Shading): E148 has neither
+ * profile 4; no stock descriptor; default 0; read back signed through the UI
+ * (1822 read -2 as 254 and broke the grain carousel). Each gets a copy of
  * Shading 1017's descriptor (11 values -5..+5), linked by cp_nd_link after
  * cp_nd_desc. The refresh tail writes the active profile's values for
  * context 0 into P: B = 20 v(Blacks), W = -20 v(Whites) (+Whites brightens),
@@ -2633,14 +2634,14 @@ rfb_hit:
 .section .ext8,"ax"
 .balign 4
 bw_desc:                         /* stock-format copies of 1017's descriptor */
- .irp id,907,911,915,993,997,1020
+ .irp id,965,966,967,993,997,1020
  .hword \id, 0x80
  .long 0x6050cee0, 0
  .hword 11, 1
  .long 0x200
  .endr
 bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
- .hword 907, 911, 915, 993, 997, 1020
+ .hword 965, 966, 967, 993, 997, 1020
  .balign 4
 bw_rows:                         /* row records, as Shading's (0x611b5378), kind 4 */
  .long 5370, 0, 0, 0, bw_title_b, 0, 0x40000, 0, 0, 0

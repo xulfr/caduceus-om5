@@ -30,10 +30,10 @@ Color Profile grain (v0.2.0, emulator and static evidence, 2026-11-18):
  * Row item 0x1501 resolves to its setting through 0x60e3d0f5 (dispatch 0x611a0a98, key 0x1501 - 6): the
    setting 111 value is looked up in {u32 mode, u32 id} table 0x611a02f8 with 4 entries 57..59, 65 -> 999..1002.
    A second copy of that lookup (0x60e4b32e, table 0x611b5ad0, 4 entries) serves the same IDs.
- * The grain value is stored in 1822 / 1823 / 1824 (since the Blacks / Whites rows; first 907 / 911 / 915, which Blacks now uses);
+ * The grain value is stored in 907 / 911 / 915 (Color Profile 4's Sharpness, Contrast and Shading value cells;
    E148 has no Color Profile 4, no stock descriptor exists for them, and their part 1 (WB records) is separate).
-   Each gets a copy of 999's descriptor (4 values, list 0x6050ced8). hsl.s writes effective 998 = 1822 + p.
- 6. cp_grain_table   0x604f25a8: 57..59, 65 -> 999..1002 as stock, then 54..56 -> 1822, 1823, 1824 (7 x 8 bytes).
+   Each gets a copy of 999's descriptor (4 values, list 0x6050ced8). hsl.s writes effective 998 = 907 + 4p.
+ 6. cp_grain_table   0x604f25a8: 57..59, 65 -> 999..1002 as stock, then 54..56 -> 907, 911, 915 (7 x 8 bytes).
  7. cp_grain_rows    0x604ef064: the Color Profile row list with 0x1501 (grain) and, since the Blacks / Whites
     rows, 5370 / 5372 appended (9 x 4 bytes); in the tail of
     111's old record table that color_profiles.py frees and does not fill.
@@ -61,7 +61,7 @@ FREE_LO, FREE_HI = 0x604f24d8, 0x604f25e0
 DESC_2216, DESC_TABLE, DESC_N = 0x60515630, 0x6050dad4, 1589
 DESC_1017, SHADING = 0x60512868, (912, 913, 914)
 DESC_2228, VALUES_2228, NEW_VALUES = 0x60515694, 0x6050da8e, 0x604f2590
-DESC_999, GRAIN = 0x605127f0, (1822, 1823, 1824)
+DESC_999, GRAIN = 0x605127f0, (907, 911, 915)
 GRAIN_TABLE, ROWS = 0x604f25a8, 0x604ef064
 ROWS_LO, ROWS_HI = 0x604ef064, 0x604ef120  # 111's old record table tail (color_profiles.py OLD_REC + 41 x 64)
 CP_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17)
