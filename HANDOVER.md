@@ -2,6 +2,8 @@
 
 ## Camera baseline
 
+- **v0.2.0-alpha1, OM-5 Mark II 1.1**: the owner reports the candidate from c3bc45c works perfectly (20 November). See [release notes and package checksum](releases/v0.2.0-alpha1/README.md).
+
 - Alpha11 booted on the owner’s OM-5 Mark II (E148, stock 1.1). The owner confirmed
   the ND32/64 CP carousel icons and that Monochrome Color Filter stays open and
   accepts dial changes. The stock filter page has a blank centre.
@@ -93,7 +95,7 @@
 
 ## Next camera checks
 
-- **E148 1.1 candidate `c3bc45c`, emulator only**. Verify the SHA-256 of **the file on the card** before flashing:
+- **E148 1.1 alpha1 `c3bc45c`, owner reports overall success**. Verify the SHA-256 of **the file on the card** before flashing:
   `2b3fd53ce24433edb662036a29e1f4ea3988c61f9a15d681f0998ebe7b4a21e6`.
   The owner confirmed `9b14e1ce…95c9` was never flashed.
 - Candidate validation: `check.py full` passed (48 host tests passed, one E144-only skip, strict build,
