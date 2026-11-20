@@ -11,8 +11,8 @@ About 15 minutes.
 
 ## 1. Make the card files
 
-1. Download this project: on GitHub, **Code › Download ZIP**, and unzip it.
-2. Open a terminal in the unzipped folder and run `python3 patch.py --release v0.1.0-alpha12`.
+1. Download and unzip the **Source code (zip)** from the [v0.2.0-alpha1 release](https://github.com/xulfr/caduceus-om5/releases/tag/v0.2.0-alpha1).
+2. Open a terminal in the unzipped folder and run `python3 patch.py`.
    The double-click scripts use the newest release.
 3. It displays an experimental firmware warning and asks you to type `UNTESTED`. Then it downloads OM's official firmware 1.1
    from OM's server (90 MB), checks it, adds Caduceus and checks the result against this release's checksum.

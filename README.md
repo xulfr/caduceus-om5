@@ -13,10 +13,8 @@
 </p>
 
 > [!CAUTION]
-> ### Alpha12 is the current experimental build
-> The installer defaults to **v0.1.0-alpha12**. It runs on the owner's OM-5 Mark II, and the owner reports that it
-> fixes the last known defect, the Monochrome Color Filter graphic. That is one camera, and the owner gave no
-> step-by-step record. [Alpha12 release notes](releases/v0.1.0-alpha12/README.md).
+> ### v0.2.0-alpha1 is the current experimental build
+> The owner reports overall success on an OM-5 Mark II running stock firmware 1.1. [Release notes and checksum](releases/v0.2.0-alpha1/README.md).
 > Five earlier development builds failed on that camera (4–15 November 2026). Each time, OM's own firmware was put
 > back from the card. The installer refuses alpha1–alpha7. Future recovery remains uncertain.
 > **Installing it can leave a camera unable to start.** Read [Safety](docs/SAFETY.md) before anything else.
@@ -91,8 +89,8 @@ Read [Safety](docs/SAFETY.md) first. Full steps, with what to expect at each one
 In short:
 
 1. Check the camera is an **OM-5 Mark II** on firmware **1.1** (Menu › Setup › Firmware), and charge the battery.
-2. On this page, **Code › Download ZIP**, then unzip it. You need [Python 3](https://www.python.org/downloads/).
-3. In the unzipped folder, run `python3 patch.py --release v0.1.0-alpha12`. Type `UNTESTED` when prompted.
+2. Download **Source code (zip)** from the [v0.2.0-alpha1 release](https://github.com/xulfr/caduceus-om5/releases/tag/v0.2.0-alpha1) and unzip it. You need [Python 3](https://www.python.org/downloads/).
+3. In the unzipped folder, run `python3 patch.py`. Type `UNTESTED` when prompted.
    The installer downloads OM's official firmware, applies Caduceus, verifies the package and creates `card`.
 4. Copy `DCOLYMP` and `OM5MOD` from `card` to the top of the SD card. **Keep `card/restore`**: it is OM's own
    firmware, to go back.
