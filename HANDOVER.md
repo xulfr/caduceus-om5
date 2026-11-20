@@ -39,6 +39,9 @@
 
 ## Colour grain experiment (`claude/cp-grain-experiment`)
 
+- **Camera, 2026-11-20: package `f7f1db5d…2c51` boot-loops** on the owner's OM-5 Mark II; stock restore worked.
+  Not yet known whether cg1 / the carousel edit or the bundled PR #11 fixes cause it. Next: flash dev package
+  `4f7aeb6c…4636` (no cg1) to separate them. [Report](research/OM5II-CG1-CAMERA-2026-11-20.md).
 - Branched from `claude/wizardly-feynman-wejd65` at `4ce7194` with the Color Profile grain row restored (`cp_nd.py`
   `CP_GRAIN = True`). That row alone gave no grain on the camera (package `7d611008…1c7f`).
 - **Cause found (static, E148):** the stock code copies the grain level into a development job only for key 12
@@ -90,7 +93,7 @@
 
 ## Next camera checks
 
-0a. **Colour grain probe cg1 + carousel order, package
+0a. **FAILED 2026-11-20: boot loop** (see the colour grain section). Kept for the record. Colour grain probe cg1 + carousel order, package
    `f7f1db5d8d2726abe35f82451965736538d0451a5d3d9e9835b8978abb862c51`** (replaces cg1-only `3836190a…9912`, never flashed)
    Sent to the owner as a zip, 2026-11-19. Against the last flashed build (`7d611008…1c7f`) it also carries the
    never-flashed PR #11 fixes (dev package `4f7aeb6c…4636`: Black / White via the split-tone tables, tint axes, the
@@ -104,7 +107,7 @@
    grain or not; whether CP1 High keeps the profile's hue/saturation edits, Black / White, split tone and WB (key 12
    dropped such settings on OM-3); any freeze, restart or missing file; the grain carousel reads Off, Low, Std, High.
    Then, only if all fine, one RAW+JPEG shot.
-0. **Dev package `4f7aeb6c…4636`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
+0. **Dev package `4f7aeb6c…4636`** (next to flash; first check: does it boot? record the SHA-256). Black / White −7 / +7 visibly change
    live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
    INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
    Mode stays open about 30 s after the last key, dial or tap, on the strip, tone page and colour wheel; other menus and

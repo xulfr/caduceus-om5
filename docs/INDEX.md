@@ -18,6 +18,7 @@
 - [OM-5 II alpha9 camera report](../research/OM5II-ALPHA9-CAMERA-2026-11-16.md)
 - [Alpha10 camera report](../research/OM5II-ALPHA10-CAMERA-2026-11-17.md)
 - [Alpha11 camera report](../research/OM5II-ALPHA11-CAMERA-2026-11-16.md)
+- [cg1 colour grain camera report (boot loop)](../research/OM5II-CG1-CAMERA-2026-11-20.md)
 - [Original OM-5 pre-alpha 1 camera report (failed to start)](../research/OM5I-PREALPHA1-CAMERA-2026-11-17.md)
 - [Monochrome colour filter page and CP "any item" test (alpha10)](../research/OM5II-MONO-FILTER-CP-2026-11-17.md)
 - [Film Grain for Color Profiles: first version, why it showed no grain, pipeline leads (removed; experiment branch)](../research/OM5II-CP-GRAIN-2026-11-18.md)
