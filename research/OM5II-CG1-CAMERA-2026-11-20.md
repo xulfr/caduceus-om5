@@ -23,8 +23,11 @@ No grain, carousel or PR #11 feature check was possible.
   the call at `0x6036fc5c`), the carousel reverse-order table edit (`0x61197b8a`, 3 bytes), and the never-flashed
   PR #11 fixes (dev package `4f7aeb6c…4636`: Black / White via split-tone tables, tint axes, 30 s Picture Mode timeout
   with 9 timer arms + re-arm, Blk / Wht labels, heap-built descriptors and first use of the section 3 / 9 FF tails).
-- Hypothesis (unresolved): the boot loop comes from the PR #11 changes rather than cg1, since cg1 only runs on a
-  still development request and should not be reached during startup. Not yet distinguished.
+- ~~Hypothesis: the boot loop comes from the PR #11 changes rather than cg1.~~ **Refuted the same day:** dev package
+  `4f7aeb6c…4636` (the same source without cg1 and the carousel edit) boots and works on the owner's camera
+  ([report on `claude/wizardly-feynman-wejd65`](https://github.com/xulfr/caduceus-om5/blob/claude/wizardly-feynman-wejd65/research/OM5II-DEV4F7A-CAMERA-2026-11-20.md)).
+  So cg1 (hook at `0x6036fc5c`, ext8 `0x613f2ec8..`) or the 3-byte carousel table edit `0x61197b8a` causes it.
+  Owner: colour grain shelved.
 - The emulator suite (20/20) and build audit passed on this source on 2026-11-19; they did not catch this failure.
 
 ## Next step
