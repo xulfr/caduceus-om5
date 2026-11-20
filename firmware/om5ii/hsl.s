@@ -29,7 +29,6 @@ ST_BUF = 1180                   /* split-tone buffer: 3 x 512 output tables, 16 
 TINT_T = 1184                   /* 9 s16: tint of zone z (shadows, midtones, highlights), channel c (R, G, B) */
 ST_BUF_SIZE = 3088
 CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descriptors (cad_build) */
-TT_BUF = 1504                   /* 24: tone_text's value label */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -2596,9 +2595,9 @@ it_out:
  * state is the stock Hi/Sh state with P+ST_TM = 1: the page's Shadows and
  * Highlights children then read and write Blacks and Whites instead
  * (tone_alias in ui_read / ui_write), so OM's own dials, value labels and
- * Reset work on them. The "Sh" / "Hi" title labels are hidden and "Black" /
- * "White" drawn in their place; in Hi/Sh the hint ("Mid INFO") is replaced by
- * one naming the Black/White state. The state lasts until INFO leaves it or
+ * Reset work on them. The "Sh" / "Hi" title images become "Bl" / "Wh" (OM's
+ * glyphs, new resource images); in Hi/Sh the hint ("Mid INFO") reads
+ * "Bl/Wh INFO". The state lasts until INFO leaves it or
  * power-off, like OM's own Hi/Sh / Mid choice (setting 2189).
  * Storage: Blacks 965 / 966 / 967, Whites 993 / 997 / 1020 (unused profile-4
  * cells, default 0), -7..+7 with a copy of tone 976's descriptor.
@@ -3113,12 +3112,21 @@ trf_next:
  ret [d2,d3,a2,a3],24
 
 .section .ext9,"ax"
-/* a0 = the tone page (child 2) -> its view; a2 = the view: in the
- * Black/White state the "Sh" / "Hi" titles and values (labels 2..4, 10..12)
- * are hidden (tone_text draws Black / White) and the hint (label 16, "Mid
- * INFO") shown; in Hi/Sh the hint is hidden (tone_text names Black/White).
- * Other cases are OM's. Runs at each layout (pg_tone).
- * call tone_labels,[d2,d3,a2,a3],24 */
+/* a0 = the tone page (child 2) -> its view; a2 = the view. The title and
+ * hint labels follow the state: Black/White (Color Profile, P+ST_TM = 1):
+ * titles "Bl" / "Wh" (IMG_BL / IMG_WH, OM's glyphs) instead of "Sh" / "Hi";
+ * OM's value labels (sign, digit) get Blacks / Whites (tl_val). Hi/Sh on a Color Profile: the hint is OM's "Mid INFO" with
+ * "Mid" left blank (IMG_HINT), tone_text writes "Bl/Wh" there. Otherwise
+ * (Mid, other modes) OM's images. Each label's image slot 0 is set through
+ * OM's label_img (no-op when unchanged); OM's own update never resets it, so
+ * every state writes all three. Runs at each layout (pg_tone) and after OM's
+ * view update (tv_upd). call tone_labels,[d2,d3,a2,a3],24 */
+IMG_BL = 0x3e80
+IMG_WH = 0x3e81
+IMG_HINT = 0x3e82
+IMG_SH = 0x1078                  /* label ids: OM's tone view records (0x610d5aa8 ..) */
+IMG_HI = 0x1077
+IMG_MIDINFO = 0x3f7f
 tone_labels:
  mov (36,a0),a2
 tone_labels_v:
@@ -3132,124 +3140,129 @@ tone_labels_v:
  call stock_get,[],4
  add -54,d0
  cmp 3,d0
- bcc tl_out
- mov 1,d2
+ bcs tl_cp
+ clr d3                          /* other modes: OM's images */
+ bra tl_set
+tl_cp:
+ mov d0,(4,sp)                   /* profile 0..2 */
  cmp 0,d3
- bne tl_bw
+ bne tl_set                      /* 1: Black/White */
  mov 2189,d0
  call stock_get,[],4
+ mov 2,d3                        /* Hi/Sh: our hint */
  cmp 1,d0
- beq tl_out                      /* Mid: OM's hint (Hi/Sh) */
- clr d2
- bra tl_hint
-tl_bw:
- mov tl_labels,a3
-tl_hide:
- movbu (a3),d0
- asl2 d0
- add 792,d0
- mov a2,a0
- add d0,a0
- mov (a0),a0
- clr d0
- call set_visible,[d2,d3,a2],16
- inc a3
- cmp tl_labels+6,a3
- bne tl_hide
-tl_hint:
- mov (856,a2),a0
- mov d2,d0
- call set_visible,[d2,d3,a2],16
- mov a2,a0                       /* repaint the view where labels went */
+ bne tl_set
+ clr d3                          /* Mid: OM's */
+tl_set:                          /* d3: 0 OM, 1 Black/White, 2 Hi/Sh */
+ mov IMG_SH,d1
+ cmp 1,d3
+ bne tl_t1
+ mov IMG_BL,d1
+tl_t1:
+ mov 800,d0                      /* label 2 */
+ call tl_img,[],8
+ mov IMG_HI,d1
+ cmp 1,d3
+ bne tl_t2
+ mov IMG_WH,d1
+tl_t2:
+ mov 832,d0                      /* label 10 */
+ call tl_img,[],8
+ mov IMG_MIDINFO,d1
+ cmp 2,d3
+ bne tl_t3
+ mov IMG_HINT,d1
+tl_t3:
+ mov 856,d0                      /* label 16, the hint */
+ call tl_img,[],8
+ cmp 1,d3
+ bne tl_inval
+ mov (4,sp),d2                   /* Black/White: OM's view shows its data model's */
+ add d2,d2                       /* (976.., not aliased) Sh / Hi values; show */
+ add bw_ids,d2                   /* Blacks / Whites with the same images */
+ mov d2,a0
+ movhu (a0),d0
+ mov 804,d1                      /* labels 3 / 4 */
+ call tl_val,[d2,d3],16
+ mov d2,a0
+ movhu (6,a0),d0
+ mov 836,d1                      /* labels 11 / 12 */
+ call tl_val,[d2,d3],16
+tl_inval:
+ mov a2,a0                       /* repaint the view (tone_text) */
  mov 0,a1
  mov 1,d0
  call ui_invalidate,[],4
 tl_out:
  ret [d2,d3,a2,a3],24
-tl_labels:                       /* view labels (at +792 + 4k) */
- .byte 2, 3, 4, 10, 11, 12
-/* a2 = paint context: "Black n" / "White n" in the Black/White state, the
- * hint "Black/White" in Hi/Sh. call tone_text,[d2,d3,a2,a3],48 */
+/* a2 = the view, d0 = label offset (792 + 4k), d1 = image id: slot 0.
+ * Keeps d3, a2. call tl_img,[],8 */
+tl_img:
+ mov a2,a0
+ add d0,a0
+ mov (a0),a0
+ cmp 0,a0
+ beq tli_out
+ clr d0
+ call label_img,[d2,a2],12
+tli_out:
+ ret [],8
+/* a2 = the view, d0 = setting, d1 = its sign label's offset (the digit
+ * label follows): OM's image indices (0x60df89bd): sign 0 for 0, 1 for +,
+ * 2 for -; digit |v|. call tl_val,[d2,d3],16 */
+tl_val:
+ mov d1,d3
+ call stock_get,[],4
+ extb d0
+ mov d0,d2
+ clr d0
+ cmp 0,d2
+ beq tlv_s
+ mov 1,d0
+ cmp 0,d2
+ bgt tlv_s
+ mov 2,d0
+tlv_s:
+ mov a2,a0
+ add d3,a0
+ mov (a0),a0
+ call label_index,[d2,a2],12
+ mov d2,d0
+ cmp 0,d0
+ bge tlv_d
+ not d0
+ inc d0
+tlv_d:
+ mov a2,a0
+ add d3,a0
+ mov (4,a0),a0
+ call label_index,[d2,a2],12
+ ret [d2,d3],16
+/* a2 = paint context: "Bl/Wh" in the hint's blank part (IMG_HINT) in the
+ * Hi/Sh state of a Color Profile. call tone_text,[d2,d3,a2,a3],48 */
 tone_text:
  call st_ptr,[],8
  cmp 0,a0
  beq tt_out
  movbu (ST_TM,a0),d3
+ cmp 0,d3
+ bne tt_out
  mov 111,d0
  call stock_get,[],4
  add -54,d0
  cmp 3,d0
  bcc tt_out
- mov d0,d2
- add d0,d2
- add bw_ids,d2                   /* d2 -> the profile's Blacks id */
- cmp 0,d3
- beq tt_hint
- mov d2,(4,sp)
- mov d2,a0
- movhu (a0),d1
- mov text_black,a1
- mov 395,d0
- call tt_value,[d2,d3,a2,a3],24
- mov (4,sp),a0
- movhu (6,a0),d1
- mov text_white,a1
- mov 600,d0
- call tt_value,[d2,d3,a2,a3],24
- bra tt_out
-tt_hint:
  mov 2189,d0
  call stock_get,[],4
  cmp 1,d0
  beq tt_out
  mov text_bw,a1
- mov 270,d0
+ mov 290,d0                      /* the blank 62 px of IMG_HINT start at 296 */
  mov 426,d1
- mov 180,d2
+ mov 68,d2
  call tx_draw,[d2,d3,a2,a3],44
 tt_out:
  ret [d2,d3,a2,a3],48
-/* a1 = name, d0 = x, d1 = setting: "name +n" (P's label buffer), box
- * 110 wide at y 84. call tt_value,[d2,d3,a2,a3],24 */
-tt_value:
- mov d0,d3
- mov a1,a3
- mov d1,d0
- call stock_get,[],4
- mov d0,d2
- call st_ptr,[],8
- add TT_BUF,a0
- mov a0,a1
-tt_copy:
- movhu (a3),d0
- add 2,a3
- movhu d0,(a0)
- add 2,a0
- cmp 0,d0
- bne tt_copy
- mov ' ',d0
- movhu d0,(-2,a0)
- mov '+',d0
- cmp 0,d2
- bge tt_pos
- mov '-',d0
- not d2
- inc d2
-tt_pos:
- beq tt_digit
- movhu d0,(a0)
- add 2,a0
-tt_digit:
- mov d2,d0
- add '0',d0
- movhu d0,(a0)
- clr d0
- movhu d0,(2,a0)
- mov d3,d0
- mov 84,d1
- mov 110,d2
- call tx_draw,[d2,d3,a2,a3],44
- ret [d2,d3,a2,a3],24
 
 .section .ext6,"ax"
 /* a2 = paint context, a1 = UTF-16 text, d0 = x, d1 = y, d2 = width: the text
@@ -3289,18 +3302,10 @@ tx_restore:
  mov (20,sp),d0
  mov d0,(76,a2)
  ret [d2,d3,a2,a3],44
-.section .ext3,"a"
-.balign 2
-text_black:
- .short 'B','l','k',0             /* short: OM's one text size is larger than the Sh / Hi images (owner, 2026-11-19) */
-.section .ext9,"ax"
-.balign 2
-text_white:
- .short 'W','h','t',0
 .section .ext8,"ax"
 .balign 2
-text_bw:
- .short 'B','l','a','c','k','/','W','h','i','t','e',0
+text_bw:                         /* the hint; titles are images (owner, 2026-11-20) */
+ .short 'B','l','/','W','h',0
 
 .section .ext6,"ax"
 .balign 2

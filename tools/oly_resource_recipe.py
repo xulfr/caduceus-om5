@@ -4,11 +4,13 @@
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN TARGET=SOURCE [...]
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --artwork ANCHOR=TARGET [...]
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --sprite TARGET=SOURCE:X0,Y0,X1,Y1 [...]
+    python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --strips 'TARGET=[{"source": ...}, ...]'
 
 TARGET=SOURCE points the placeholder TARGET at stock image SOURCE (resource_aliases). --artwork ANCHOR=TARGET
 adds TARGET to the ids of the artwork sprite that already lists ANCHOR, so TARGET shows the same bitmap.
 --sprite TARGET=SOURCE:X0,Y0,X1,Y1 adds a new artwork sprite for TARGET cropped from stock image SOURCE (appended
-to record 37 like the other sprites).
+to record 37 like the other sprites). --strips TARGET=JSON does the same with a list of strips in the patch.json
+artwork form (source, optional crop, width and pad_left), joined left to right, e.g. glyphs from several images.
 
 The record-0 stream is re-encoded from the current recipe's own stream (oly_compress._repack with split
 matches), so only the sequences around each changed pointer word differ. The recipe window is the span of
@@ -67,6 +69,7 @@ def main():
     p.add_argument('patch'); p.add_argument('--stock', required=True); p.add_argument('alias', nargs='*')
     p.add_argument('--artwork', action='append', default=[], metavar='ANCHOR=TARGET')
     p.add_argument('--sprite', action='append', default=[], metavar='TARGET=SOURCE:X0,Y0,X1,Y1')
+    p.add_argument('--strips', action='append', default=[], metavar='TARGET=JSON')
     a = p.parse_args()
     spec_path = Path(a.patch) / 'patch.json'
     spec = json.loads(spec_path.read_text())
@@ -79,12 +82,18 @@ def main():
     for item in a.sprite:
         target, rest = item.split('=')
         source, box = rest.split(':')
-        spr.append((int(target, 16), int(source, 16), [int(v) for v in box.split(',')]))
+        spr.append((int(target, 16), [{'source': f'{int(source, 16):#x}', 'crop': [int(v) for v in box.split(',')]}]))
+    for item in a.strips:
+        target, rest = item.split('=', 1)
+        strips = json.loads(rest)
+        if not isinstance(strips, list) or not strips or any('source' not in st for st in strips):
+            sys.exit('--strips needs a non-empty JSON list of strips with a source')
+        spr.append((int(target, 16), strips))
     if not extra and not art and not spr:
         sys.exit('nothing to add')
     sprites = group.get('artwork', {}).get('sprites', [])
     listed = {int(i, 16) for sp in sprites for i in sp['ids']}
-    new = [t for t, _ in extra] + [t for _, t in art] + [t for t, _, _ in spr]
+    new = [t for t, _ in extra] + [t for _, t in art] + [t for t, _ in spr]
     if len(set(new)) != len(new) or set(new) & ({t for t, _ in aliases} | listed):
         sys.exit('alias already present')
     import copy
@@ -113,11 +122,10 @@ def main():
         sprite['ids'].append(f'{target:#x}')
     if spr:
         group.setdefault('artwork', {}).setdefault('sprites', [])
-        for target, source, box in spr:
+        for target, strips in spr:
             if struct.unpack_from('<I', data, table + 4 * target)[0] != placeholder:
                 sys.exit(f'{target:#x} is not a placeholder')
-            group['artwork']['sprites'].append({'ids': [f'{target:#x}'],
-                                                'strips': [{'source': f'{source:#x}', 'crop': box}]})
+            group['artwork']['sprites'].append({'ids': [f'{target:#x}'], 'strips': strips})
         # The new sprites' pointers: build the whole block with the new artwork (record 37 re-encoded from the
         # stock stream) and read them back.
         free = copy.deepcopy(group['artwork'])
@@ -126,7 +134,7 @@ def main():
         first = struct.unpack_from('<I', built)[0]
         icons = _append_artwork(built, first - 2016, bytes(stock_decoded), load, table, free)
         built = bytes(built)
-        for target, _, _ in spr:
+        for target, _ in spr:
             struct.pack_into('<I', data, table + 4 * target, icons[target])
         # Record 37's recipe: keep the current stream (stock sequences and the earlier artwork) and add the new
         # sprites' bytes, then take the window from the first sequence that differs from stock to the end.
