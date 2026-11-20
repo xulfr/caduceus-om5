@@ -19,7 +19,7 @@ ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
 ST_LABEL = 16
-ST_SIZE = 1528                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows */
+ST_SIZE = 1544                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows, 1528 before gs_hook's table */
 /* v0.2.0-dev fields of P (after the 23 descriptor nodes at P+988..1171): */
 BW_B = 1172                     /* s16 Blacks of the active Color Profile, curve units */
 BW_W = 1174                     /* s16 Whites: positive lowers the white end */
@@ -29,6 +29,8 @@ ST_BUF = 1180                   /* split-tone buffer: 3 x 512 output tables, 16 
 TINT_T = 1184                   /* 9 s16: tint of zone z (shadows, midtones, highlights), channel c (R, G, B) */
 ST_BUF_SIZE = 3088
 CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descriptors (cad_build) */
+GS_GEN = 1504                   /* u32: +1 at each rebuild of the Black / White and tint tables */
+GS_TAB = 1508                   /* 4 x {gamma cache, GS_GEN it last saw} (gs_hook) */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -2660,6 +2662,9 @@ bw_rf_put:
  cmp 2,d2
  bcs bw_rf_loop
  call tint_refresh,[d2,d3,a2,a3],32
+ mov (GS_GEN,a3),d0              /* tables rebuilt: each gamma cache misses once (gs_hook) */
+ inc d0
+ mov d0,(GS_GEN,a3)
 bw_rf_out:
  ret [d2,d3,a2,a3],20
 
@@ -3311,6 +3316,62 @@ text_bw:                         /* the hint; titles are images (owner, 2026-11-
 .balign 2
 text_switch:
  .short 'S','w','i','t','c','h',' ','@','A','0','3','4','@',0
+
+/* Live view (owner, 2026-11-20: Black / White changed live view only after a
+ * half-press). E148's gamma stage 0x603e69ae keeps a cache record per
+ * pipeline (d3 = (R+1484) + 5736: the selected R/G/B table pointers and a
+ * descriptor) and on a hit skips the curve setter, so the hardware keeps its
+ * curves. OM's own tone values change the selected tables (a miss); Black /
+ * White and the tints change only P's delta tables, so live view kept hitting.
+ * gs_hook replaces cmp 0,d3; beq 0x603e6aa3; mov (56,sp),a0 at 0x603e6a3b:
+ * once armed, a cache that has not seen the current GS_GEN (bw_refresh adds 1
+ * after each table rebuild) takes the stock miss path once (as with d3 = 0,
+ * the cache is then refilled). No call: d0, d1, a0, a1 are free here (the
+ * stage reloads them); d2 (= 1) and d3 are kept. In section 8, which loads
+ * first after section 1 (section 2 has no room). */
+.section .gs_hook,"ax"
+ jmp gs_entry
+ nop
+.section .ext8,"ax"
+gs_entry:
+ cmp 0,d3
+ beq gs_miss
+ movhu (st_handle_u),d0
+ cmp 0,d0
+ beq gs_go
+ add ST_POOL-1,d0
+ mov d0,a0
+ mov (ST_MAGIC,a0),d1
+ cmp ST_MAGIC_VALUE,d1
+ bne gs_go
+ mov (GS_GEN,a0),d1
+ mov a0,a1
+ add GS_TAB+32,a1                /* end of the table */
+ add GS_TAB,a0
+gs_find:
+ mov (a0),d0
+ cmp d3,d0
+ beq gs_found
+ cmp 0,d0
+ beq gs_new
+ add 8,a0
+ cmp a1,a0
+ bne gs_find
+ add -8,a0                       /* full: reuse the last entry */
+gs_new:
+ mov d3,(a0)
+ bra gs_seen
+gs_found:
+ mov (4,a0),d0
+ cmp d1,d0
+ beq gs_go
+gs_seen:
+ mov d1,(4,a0)
+gs_miss:
+ jmp gs_miss_back
+gs_go:
+ mov (56,sp),a0
+ jmp gs_back
 
 /* Split tone entry: the R/G/B curve setter 0x603e6974 is a leaf that returns
  * with retf (MDR) and whose frame has no slot for a return address, so

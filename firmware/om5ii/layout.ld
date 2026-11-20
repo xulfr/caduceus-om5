@@ -31,6 +31,7 @@ SECTIONS {
  .hook_str 0x60d52ed5 : { *(.hook_str) }
  .ext10 0x6169c820 : { *(.ext10) }
  .st_hook 0x603e6974 : { *(.st_hook) }
+ .gs_hook 0x603e6a3b : { *(.gs_hook) }
  .tone_info_ptr 0x61210790 : { *(.tone_info_ptr) }
  .tone_info_ptr2 0x612107c8 : { *(.tone_info_ptr2) }
  .tone_info_ptr3 0x61210800 : { *(.tone_info_ptr3) }
@@ -47,6 +48,8 @@ row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
 row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
 row_slider = 0x60e3cd53;
 row_widget_back = 0x60e49f4d;   /* row-widget lookup after add -6,d1; mov table,a1 */
+gs_back = 0x603e6a41;          /* gamma stage after the replaced cache test (gs_hook) */
+gs_miss_back = 0x603e6aa3;     /* gamma stage: the cache-miss path */
 setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
 tone_info_stock = 0x60e9e8ff;   /* tone editor (type 0x1531) INFO handler, entered by calls */
 tone_view_stock = 0x60df862e;   /* the tone view's label update (a0 = view) */

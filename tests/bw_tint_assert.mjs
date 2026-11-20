@@ -25,6 +25,8 @@ export default async function (g) {
   if (want.tone3) assert.deepEqual(got.tone.slice(0, 3), want.tone3, 'Color Profile 1 tone values 976..978');
   for (const [id, v] of Object.entries(want.tint ?? {})) assert.equal(got.tint[id], v, `tint cell ${id}`);
   if (want.stFlag !== undefined) assert.equal(got.st, want.stFlag, 'split-tone flag in P');
-  if (want.st) await (await import(pathToFileURL(path.resolve(path.dirname(new URL(import.meta.url).pathname), 'st_assert.mjs')).href)).default(g);
+  const here = path.dirname(new URL(import.meta.url).pathname);
+  if (want.st) await (await import(pathToFileURL(path.resolve(here, 'st_assert.mjs')).href)).default(g);
+  else if (want.gs) await (await import(pathToFileURL(path.resolve(here, 'gs_assert.mjs')).href)).default(g);
   else console.log('ASSERTIONS passed');
 }

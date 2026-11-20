@@ -40,10 +40,28 @@ CASES = [
     ('cp1-all-to-tint', CP1 + WHEEL + 'info ' + TINT + 'main+3 ' + DONE, dict(pm=54, tint={968: 0x30}, stFlag=1, st=True)),
     # INFO on a tint axis does not select "all".
     ('cp1-tint-info', CP1 + WHEEL + TINT + 'info main+3 ' + DONE, dict(pm=54, tint={968: 0x30}, stFlag=1, st=True)),
+    # Live view (owner 2026-11-20): Black / White changes must reach live view; gs_hook makes each gamma cache miss
+    # once after a table rebuild. tests/gs_assert.mjs runs the hook's code from gs_entry (see there).
+    # Same keys without the value changes: GS_GEN from refreshes alone (arming, mode changes), the baseline.
+    ('cp1-gs-baseline', CP1 + TONE + 'info ' + DONE, dict(pm=54, gs=True)),
+    ('cp1-bw-gamma-cache', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], gs=True, gs_above='cp1-gs-baseline')),
+    # Tints too (owner 2026-11-20: tints also changed live view only after a half-press).
+    ('cp1-wheel-gs-baseline', CP1 + WHEEL + TINT + DONE, dict(pm=54, gs=True)),
+    ('cp1-tint-gamma-cache', CP1 + WHEEL + TINT + 'main+3 ' + DONE,
+     dict(pm=54, tint={968: 0x30}, gs=True, gs_above='cp1-wheel-gs-baseline')),
     ('stock-after-tint', CP1 + WHEEL + TINT + 'main+3 ' + DONE + ' ok ok up ' + 'left ' * 6 + DONE,
      dict(pm=5, tint={968: 0x30}, stFlag=0)),
 ]
 
+
+
+def gs_entry(build):
+    """gs_entry's address: the target of the jmp gs_hook put at 0x603e6a3b, read from the decoded build."""
+    main = (build / 'decoded' / '0100.bin').read_bytes()
+    at = 0x603e6a3b - 0x60021020
+    if main[at] != 0xdc:
+        raise SystemExit('no jmp at the gamma cache test 0x603e6a3b (gs_hook)')
+    return hex((0x603e6a3b + int.from_bytes(main[at + 1:at + 5], 'little', signed=True)) & 0xffffffff)
 
 
 def main():
@@ -54,13 +72,18 @@ def main():
     ap.add_argument('--case', action='append')
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
-    results, failed = [], []
+    results, failed, gs_seen = [], [], {}
     for name, keys, want in CASES:
         if a.case and name not in a.case:
             continue
         folder = a.out.resolve() / name
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tools/dev/mount.mjs'),
                    POST=str(ROOT / 'tests/bw_tint_assert.mjs'), OM5_BW_EXPECT=json.dumps(want))
+        if want.get('gs'):
+            above = gs_seen.get(want.get('gs_above'))
+            if want.get('gs_above') and above is None:
+                raise SystemExit(f'{name}: run {want["gs_above"]} first')
+            env.update(OM5_GS_ENTRY=gs_entry(a.build), OM5_GS_MIN=str(above + 1 if above is not None else 1))
         command = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()),
                    str(a.build.resolve() / 'decoded/0100.bin'), str(a.build.resolve() / 'decoded/0101.bin'),
                    str(folder / 'screens'), keys, '--ready']
@@ -69,6 +92,9 @@ def main():
         folder.mkdir(parents=True, exist_ok=True)
         (folder / 'session.log').write_text(log, encoding='utf-8')
         got = [line[len('BW TINT '):] for line in log.splitlines() if line.startswith('BW TINT ')]
+        gen = [int(line.split()[-1]) for line in log.splitlines() if line.startswith('GS_GEN after the session ')]
+        if gen:
+            gs_seen[name] = gen[-1]
         ok = run.returncode == 0 and 'ASSERTIONS passed' in log and bool(got)
         results.append(dict(case=name, passed=ok, expected=want, observed=json.loads(got[-1]) if got else None))
         print(f'{name}: {"passed" if ok else "FAILED"}' + ('' if ok else f' {got[-1] if got else ""} (see {folder}/session.log)'), flush=True)

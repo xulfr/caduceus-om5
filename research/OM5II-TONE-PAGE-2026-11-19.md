@@ -89,3 +89,19 @@ Findings so far (emulator and static, not fixed):
   that ignores size, OM's text path draws one size only; smaller text would need the stock label images (none spell
   Black / White) or glyphs of our own (no space). Options for the owner: keep the size; shorter words ("Blk" /
   "Wht"); or keep the stock value images (±n, small) and draw only the word.
+
+## 2026-11-20: labels redone (owner, package `4f7aeb6c`: labels too large, hint text overflowed)
+
+- Titles: new resource images composed from OM's glyphs (`tools/oly_resource_recipe.py --strips`): `0x3e80` "Bl"
+  (B from "WB Auto" `0x2bde`, l from "Color" `0x1078`), `0x3e81` "Wh" (W from `0x2bde`, h from "Sh" `0x1077`), 24 px
+  like "Sh" / "Hi". `tone_labels` sets slot 0 of title labels 2 / 10 through OM's `label_img` `0x60f04d5e` (a0
+  label, d0 slot, d1 id; slots at label +172) and restores OM's in every other state; OM's own update never resets it.
+- Image id convention: the label ids (OM's records at `0x610d5aa8..` and `label_img`) are this note's image index + 1
+  as rendered by `oly_ui_bitmap` dumps: Sh = `0x1078`, Hi = `0x1077`, Mid INFO = `0x3f7f`. The new sprites use the
+  recipe tool's ids directly (`0x3e80..0x3e82` rendered correctly). Restoring with the dump's index gave "Hi" for
+  "Sh" and "Color Select INFO" for the hint (emulator).
+- Values: OM's view copies its numbers from GUI data model 17 (`0x60d42f19`, view +864), which reads OM's tone
+  values, not the alias. `tl_val` sets the sign (label 3 / 11: 0 for 0, 1 for +, 2 for −) and digit (4 / 12: |v|)
+  indices like `0x60df89bd` after each update (`label_index` `0x60f04d34`).
+- Hint: `0x3e82` = OM's "Mid INFO" (`0x3f7e` crop 58..124) with 62 blank columns (bitmaps are at most 128 wide);
+  `tone_text` writes "Bl/Wh" there in the Hi/Sh state.

@@ -40,6 +40,14 @@
 ## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
+- **Camera, 2026-11-20, dev package `4f7aeb6c…4636`: boots and works** (owner). Black / White work in pictures but,
+  like the tints, reach live view only after a half-press; labels still too large, hint text overflowed; "all" on a
+  tint axis still selectable but only one colour moves. The same source plus cg1 (`f7f1db5d…2c51`) boot-looped, so
+  cg1 / its carousel edit caused that. **Owner: colour grain shelved; this branch is the base for the next alpha.**
+  [Report](research/OM5II-DEV4F7A-CAMERA-2026-11-20.md), cg1 report on `claude/cp-grain-experiment`.
+- **Fixes since (emulator only, not flashed):** Bl / Wh title images from OM's glyphs + OM's own ±n images + "Bl/Wh
+  INFO" hint ([tone page note](research/OM5II-TONE-PAGE-2026-11-19.md)); live view: `gs_hook` makes each gamma-stage
+  cache miss once after Black / White or tint tables change ([note](research/OM5II-LIVEVIEW-GAMMA-CACHE-2026-11-20.md)).
 - **Camera, 2026-11-19, package `7d611008…1c7f`** (the earlier `…8c7f` was a typo): boots and works. Split tone
   works (live view and JPEG). Black / White: UI only, no effect in pictures. Colour grain: no grain at any level,
   carousel order reversed. "All" on a tint axis changed a seemingly random colour. Black / White labels larger than
@@ -50,7 +58,7 @@
   - Tint axes stay on one colour: arriving with "all" switches back, INFO there does nothing.
   - Picture Mode stays open 30 s after the last key, dial or tap (9 stock timer arms + Caduceus's own re-arm;
     `firmware/om5ii/pm_timeout.py`; OM-Emu `tap:X,Y` in tools/dev/sess.mjs).
-  - Black / White labelled Blk / Wht (OM's text has one size, larger than the stock Sh / Hi images).
+  - Black / White labelled Blk / Wht (superseded 2026-11-20 by Bl / Wh images).
   - **Color Profile grain removed** (owner): it showed no grain on the camera; stock grain is monochrome-only.
     Image-pipeline work continues on `claude/cp-grain-experiment`. [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
 - Black / White on the tone page: INFO steps Hi/Sh → Black/White → Mid on Color Profile 1–3; −7..+7 per profile.
@@ -69,7 +77,13 @@
 
 ## Next camera checks
 
-0. **Dev package `4f7aeb6c…4636`** (once flashed; record the SHA-256). Black / White −7 / +7 visibly change
+00. **Dev package `0565540a52e09e483573bf59e1d4a62946db944a6364a9a605c4ee8b4a94de73`** (branch
+   `claude/wizardly-feynman-wejd65`; `4f7aeb6c` + labels + live-view fix; new: hook at `0x603e6a3b` in the gamma stage,
+   ext8 code, resource images `0x3e80..0x3e82`, P 1544 bytes). Boots? Then: Black / White and each tint change live
+   view **without** a half-press (also back to 0, and leaving to a stock mode clears the tint at once); tone page shows
+   "Bl ±n" / "Wh ±n" at the size of Sh / Hi and "Bl/Wh INFO" fits its frame; Sh / Hi / Mid unchanged; no slowdown or
+   flicker in live view. `check.py full` passed (base emulator suite 19/19, build audit), `run_bw_tint.py` 13/13.
+0. **Dev package `4f7aeb6c…4636`** (flashed 2026-11-20: boots; see the report). Black / White −7 / +7 visibly change
    live view and JPEGs (both ends; no colour cast) and nothing at 0, alone and together with a tint. Colour wheel:
    INFO on a tint axis stays on one colour; "all" on Saturation then trash to a tint returns to one colour. Picture
    Mode stays open about 30 s after the last key, dial or tap, on the strip, tone page and colour wheel; other menus and
