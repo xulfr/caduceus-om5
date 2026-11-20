@@ -26,10 +26,10 @@ OM's own Sh / Mid / Hi update live view at once. [Camera report](OM5II-DEV4F7A-C
   The per-pipeline cache suggests live view runs the stage repeatedly; that is what makes a forced miss enough
   (camera test).
 
-## Fix (built)
+## Initial fix (package 0565540a)
 
 - `gs_hook` at `0x603e6a3b` (6 bytes: `cmp 0,d3; beq 0x603e6aa3; mov (56,sp),a0` → `jmp gs_entry; nop`), code in
-  ext8 (section 8 loads right after section 1; section 2 had 19 bytes free). No call; uses d0, d1, a0, a1 (reloaded by
+  ext8 (section 2 had 19 bytes free). The choice relied on an incorrect section-load order. No call; uses d0, d1, a0, a1 (reloaded by
   the stage), keeps d2 / d3 / sp.
 - `bw_refresh` adds 1 to `P+1504` (`GS_GEN`) after each table rebuild (every Color Profile refresh of context 0, and
   the refresh that clears the tables in other modes).
@@ -44,3 +44,10 @@ OM's own Sh / Mid / Hi update live view at once. [Camera report](OM5II-DEV4F7A-C
 
 Live view on the camera; whether more than four gamma caches exist (then the fifth and later share one entry and
 miss more often: extra recomputes, no wrong output); cost of one recompute per cache after each profile refresh.
+
+
+## Startup follow-up (emulator only)
+
+With section-ready mask 3 and no state handle, the original hook enters section 8 even for a null cache.
+Candidate `c3bc45c` keeps the initial checks and stock exits in section 2 and enters section 8 only when armed
+and all ten ready bits are set. [Exact-build comparison and trace](OM5II-DEV0565-CAMERA-2026-11-20.md#startup-comparison-and-wheel-fix-2026-11-20-emulator-only).

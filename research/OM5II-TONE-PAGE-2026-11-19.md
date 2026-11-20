@@ -49,9 +49,10 @@ the expanded E148 1.1 main program.
 
 ## Space and load order
 
-- Code reachable from the GUI before arming must sit in a section that loads before section 7: the loader runs
-  sections **1, 8, 2, 3, 4, 5, 6, 7, 9, 10** ([brick-risk table](OM5II-BRICK-RISK.md)). `tone_info` is in ext2,
-  `tv_upd` in ext3, `ui_alias` in ext5; they enter ext9 / ext10 code only after `st_ptr` says armed.
+- The loader submits sections 1 through 10 in order. In this build `tone_info` was in ext2,
+  `tv_upd` in ext3 and `ui_alias` in ext5. Candidate `c3bc45c` moves the tone-view gate into the callers'
+  own section 7 so unarmed GUI execution stays out of section 3.
+  [Startup trace](OM5II-DEV0565-CAMERA-2026-11-20.md#startup-comparison-and-wheel-fix-2026-11-20-emulator-only).
 - New this build: the FF tails of **section 3** (`0x60621e80..0x60622000`, `ext3`) and **section 9**
   (`0x615ee5c8..0x615ee800`, `ext9`). Section 9's tail start is named by the constructor-table walker at
   `0x601ae8d8` with a count of 0 (the same pattern as section 4's tail, which wb.s has used since alpha builds).
