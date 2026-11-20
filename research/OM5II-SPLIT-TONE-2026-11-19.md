@@ -1,5 +1,9 @@
 # OM-5 Mark II 1.1 (E148): Split tone on Color Profiles (v0.2.0-dev)
 
+> **2026-11-20:** deltas are now looked up by the output level `c[i] >> 4`, not the table index (the tables are
+> indexed by linear input; Highlight Tint showed nothing on the camera), and `st_tint` is at `0x6082976c`.
+> [Report and fix](OM5II-DEV0565-CAMERA-2026-11-20.md).
+
 Static analysis (objdump, Codex's Ghidra findings) and OM-Emu, 2026-11-19. **Not camera-tested.** OM-Emu
 develops no photos, so the checks call the camera's own curve setter on test tables.
 

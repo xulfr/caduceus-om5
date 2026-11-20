@@ -1,40 +1,41 @@
 /* OM-5 Mark II 1.1 (E148, build 1100) HSL editor and builder overlay, ported
  * from the OM-3 patch. NOT tested on a camera; exercised in OM-Emu only.
  * Code and state live in the FF tails inside the loaded extents of sections 2,
- * 6, 7 and 8. E148 loads all ten sections once at boot (8 before 2) and never clears their
+ * 6, 7 and 8. E148 submits sections 1 through 10 at boot and never clears their
  * completion bits (finalizer 0x600464d0, bits 0xa26e2694). See README.md. */
 /* Runtime state is NOT kept in the loaded image. Stock E148 makes no absolute
  * store into it, and the 8 November camera failure began at the first such
  * stores this patch made (research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md).
- * State lives in a 1040-byte heap block "P" (stock malloc, class-1 pool,
+ * State lives in a 1544-byte heap block "P" (stock malloc, class-1 pool,
  * uncached alias), allocated once on the first shutter half-press after boot.
  * Its handle is the padding halfword after the HLS event manager's task id
  * (.bss, zero at power-on). Until then every hook behaves as stock.
  *   P+0 axis (0 saturation, 1 hue, 2 lightness)   P+4 colour editor object
  *   P+8 reset-in-progress flag                    P+12 WB commit busy flag
- *   P+16..55 axis label text (UTF-16)             P+56 unused (was: repaint flag)
+ *   P+16..59 reserved (former text buffer and repaint flag)
  *   P+64.. reserved (Caduceus) */
 ST_AXIS = 0
 ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
-ST_LABEL = 16
-ST_SIZE = 1528                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows */
+ST_SIZE = 1544                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows, 1528 before gs_hook's table */
 /* v0.2.0-dev fields of P (after the 23 descriptor nodes at P+988..1171): */
 BW_B = 1172                     /* s16 Blacks of the active Color Profile, curve units */
 BW_W = 1174                     /* s16 Whites: positive lowers the white end */
 ST_A = 1176                     /* s16: 1 while the split-tone delta tables are valid (wb.s st_tint) */
 ST_TM = 1178                    /* byte: 1 = the tone page's Black / White state */
+ST_HINT = 1179                  /* byte: 1 = the tone hint shows IMG_HINT, tone_text writes Bl/Wh */
 ST_BUF = 1180                   /* split-tone buffer: 3 x 512 output tables, 16 bytes, 3 x 512 deltas */
 TINT_T = 1184                   /* 9 s16: tint of zone z (shadows, midtones, highlights), channel c (R, G, B) */
 ST_BUF_SIZE = 3088
 CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descriptors (cad_build) */
-TT_BUF = 1504                   /* 24: tone_text's value label */
+GS_GEN = 1504                   /* u32: +1 at each rebuild of the Black / White and tint tables */
+GS_TAB = 1508                   /* 4 x {gamma cache, GS_GEN it last saw} (gs_hook) */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
-/* INFO keeps its native individual/all role. Delete (trash) switches axis:
+/* On the colour wheel INFO switches groups and Delete switches axis:
  * the colour-direct screen forwards its native 0x9016 command to the focused
  * widget, and the colour page container consumes it for the colour editor. */
 .section .delete_pointer,"a"
@@ -140,15 +141,22 @@ delete_stock:
  jmp stock_delete_action
 
 /* Colour page container command method (vtable entry 0). Stock forwards INFO
- * to its focused child but drops 0x9016. Consume 0x9016 only when that child
+ * to its focused child but drops 0x9016. Handle either key only when that child
  * is the 13-child colour editor whose cursor is a colour-selection setting. */
 hsl_container:
  cmp 0x9014,d0
- beq container_info
+ beq container_check
  cmp 0x9016,d0
  bne container_stock
- add -4,sp
- mov a0,(sp)
+container_check:
+ add -16,sp
+ mov d0,(4,sp)
+ mov a1,(8,sp)
+ mov a0,(12,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ beq container_restore
+ mov (12,sp),a0
  mov (76,a0),a0
  cmp 0,a0
  beq container_restore
@@ -162,10 +170,12 @@ hsl_container:
  sub 2197,d0
  cmp 8,d0
  bcc container_restore
- mov (sp),a1                     /* the container */
- add 4,sp
+ mov (4,sp),d0
+ mov (12,sp),a1                     /* the container */
+ add 16,sp
  movm [d2,d3,a2,a3],(sp)
  add -8,sp
+ mov d0,d3
  mov a1,(4,sp)
  mov a0,a2
  call st_ptr,[],8
@@ -173,12 +183,17 @@ hsl_container:
  beq container_unarmed
  mov a2,(ST_EDITOR,a0)
  movbu (ST_AXIS,a0),d0
- inc d0
- cmp 6,d0                        /* Saturation, Hue, Lightness, Shadow / Midtone / Highlight tint */
- bcs container_axis
- clr d0
+ calls wheel_next_axis
 container_axis:
  movbu d0,(ST_AXIS,a0)
+ /* If stock left the wheel on All, restore individual editing with its INFO. */
+ movhu (122,a2),d0
+ cmp 0,d0
+ bne container_refresh
+ mov (4,sp),a0
+ mov 0x9014,d0
+ calls stock_container
+container_refresh:
  call refresh_children,[d2,d3,a2,a3],24
  mov (124,a2),a0
  mov 0x900c,d0
@@ -195,32 +210,17 @@ container_unarmed:
  mov 1,d0
  ret [d2,d3,a2,a3],24
 container_restore:
- mov (sp),a0
- add 4,sp
- mov 0x9016,d0
+ mov (12,sp),a0
+ mov (4,sp),d0
+ mov (8,sp),a1
+ add 16,sp
+ cmp 0x9014,d0
+ beq container_info
 container_stock:
  jmp stock_container
-/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
- * the tone curve's point). Stock runs it but restarts the screen's timeout
- * only for other commands. Run stock, then count a consumed INFO as activity
- * on the custom pages (section 10, armed only). Same frame use as
- * hsl_delete_action: (0,sp) stays free for the nested calls. */
+/* INFO: section 2 (container_info2), for space. */
 container_info:
- add -12,sp
- mov a0,(4,sp)
- calls stock_container
- mov d0,(8,sp)
- cmp 1,d0
- bne info_done
- call st_ptr,[],8
- cmp 0,a0
- beq info_done
- mov (4,sp),a0
- call ui_info_activity,[d2,d3,a2,a3],24
-info_done:
- mov (8,sp),d0
- add 12,sp
- rets
+ jmp container_info2
 
 /* The native value label (stock "Vivid +n", 0x60e4ad08..0x60e4ae5e) reads the
  * selected sector's stored profile cell (IDs 928-975) through the settings
@@ -332,22 +332,17 @@ refresh_done:
  * Context layout is based on the matching OM-3 draw API, not PEN-F addresses. */
 paint_axis:
  movm [d2,d3,a2,a3],(sp)
- add -24,sp
- mov a0,a2
- mov a1,(20,sp)
+ add -20,sp
+ mov a0,a2                       /* view */
+ mov a1,(8,sp)
  call stock_paint,[a2,a3],16
- mov (20,sp),a1
- add -40,sp
- mov a1,(20,sp)
- mov d0,(16,sp)
- cmp 0,a1
- beq paint_done
+ mov d0,(12,sp)
  call st_ptr,[],8
  cmp 0,a0
  beq paint_done
- add ST_LABEL,a0
- mov a0,(56,sp)
- mov (20,sp),a1
+ mov (8,sp),a1
+ cmp 0,a1
+ beq paint_done
  movhu (4,a1),d0
  cmp 2,d0
  bne paint_done
@@ -358,94 +353,64 @@ paint_axis:
  cmp 0,a1
  beq paint_done
  movhu (8,a1),d0
- add 24,d0
- mov d0,(24,sp)
- /* Draw with the caller's paint context in place. stock_font only sets its
-  * font at +76 (0x60d51fa2) and the style below changes +52; both are put
-  * back afterwards. (OM-3 copied 684 bytes of context to the stack.) */
- movhu (52,a3),d0
- mov d0,(48,sp)
- mov (76,a3),d0
- mov d0,(52,sp)
- mov a3,a0
- mov 1,d0
- call stock_font,[a2],8
+ add -76,d0
+ mov d0,(16,sp)
+ movbu (ST_AXIS,a0),d3
+ /* Wheel label 11 (at +836) sits above frame 10. Replace the displayed
+  * slot's bitmap with the same INFO-only image the tone page uses. */
+ mov (836,a2),a0
  cmp 0,a0
- beq paint_restore
- mov a0,(32,sp)
- mov 2,d0
- movhu d0,(52,a3)
- mov (24,sp),d0
- add -100,d0
- movhu d0,(40,sp)
- add 199,d0
- movhu d0,(44,sp)
- mov 16,d0
- movhu d0,(42,sp)
- mov 47,d0
- movhu d0,(46,sp)
- mov (56,sp),a0
- call make_axis_label,[d2,d3,a2,a3],24
- mov (56,sp),d1
- mov a3,a0
- mov sp,a1
- add 40,a1
- mov text_style,d0
- call stock_text,[d2,d3,a2,a3],16
- mov (24,sp),d0
- add -100,d0
- movhu d0,(40,sp)
- add 199,d0
- movhu d0,(44,sp)
- mov 50,d0
- movhu d0,(42,sp)
- mov 81,d0
- movhu d0,(46,sp)
- mov text_switch,d1
- mov a3,a0
- mov sp,a1
- add 40,a1
- mov text_style,d0
- call stock_text,[d2,d3,a2,a3],16
- mov (32,sp),a0
- call stock_font_release,[],4
-paint_restore:
- mov a3,a0
- call gfx_wheel,[d2,d3,a2,a3],48
- mov (48,sp),d0
- movhu d0,(52,a3)
- mov (52,sp),d0
- mov d0,(76,a3)
-paint_done:
- mov (16,sp),d0
- add 64,sp
- ret [d2,d3,a2,a3],16
-
-/* Axis title: Saturation / Hue / Lightness. The selected value is shown by
- * the native value label, which follows the active axis. */
-make_axis_label:
- mov a0,a2
- call st_axis,[],12
- mov d0,d3
+ beq paint_title
+ movbu (132,a0),d0
+ mov IMG_HINT,d1
+ call label_img,[d2,a2],12
+paint_title:
+ mov a2,(4,sp)
+ mov a3,a2                       /* tx_draw's context */
  mov text_saturation,a1
-label_skip:                      /* the axis' name is the d3-th of the list */
- cmp 0,d3
- beq label_copy
+ mov d3,d2
+label_skip:
+ cmp 0,d2
+ beq paint_axis_name
 label_skip_ch:
  movhu (a1),d0
  add 2,a1
  cmp 0,d0
  bne label_skip_ch
- add -1,d3
+ add -1,d2
  bra label_skip
-label_copy:
- movhu (a1),d0
- movhu d0,(a2)
- add 2,a1
- add 2,a2
- cmp 0,d0
- bne label_copy
- ret [d2,d3,a2,a3],24
+paint_axis_name:
+ mov (16,sp),d0
+ mov 16,d1
+ mov 199,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ mov text_switch,a1
+ mov (16,sp),d0
+ mov 50,d1
+ call tx_draw,[d2,d3,a2,a3],44
+ mov text_tint,a1
+ cmp 3,d3
+ bcs paint_hint
+ mov text_hsl,a1
+paint_hint:
+ mov 290,d0
+ mov 426,d1
+ mov 68,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ mov a3,a0
+ call gfx_wheel,[d2,d3,a2,a3],48
+ mov (4,sp),a2
+ call wheel_swatch,[d2,d3,a2,a3],28
+paint_done:
+ mov (12,sp),d0
+ add 20,sp
+ ret [d2,d3,a2,a3],16
+
+.balign 2
+text_tint:
+ .short 'T','i','n','t',0
+text_hsl:
+ .short 'H','S','L',0
 .balign 4
 text_style:
  .long 10,15,15
@@ -1023,7 +988,7 @@ light_lut:
  *   struct +4 sharpness = 904+p  (ID 7)
  *   struct +8 = 0 (ID 59), +20 = 1 (ID 105), +24 = 0 (ID 1806)
  *   effective 916..927 = 928+12p .. 939+12p  (store 1 -> store 2)
- *   effective 1016 = shading 912+p, 1011 = 0, 998 = grain 907+4p (v0.2.0)
+ *   effective 1016 = shading 912+p, 1011 = 0, 998 = 0 (Color Profile grain removed 2026-11-19)
  *   effective 383 / 691 / 382 = 976+3p / 977+3p / 978+3p (store 2):
  *   Highlights / Midtones / Shadows (checked against the tone page, alpha5)
  * Other picture modes get E147's zeros for the extra IDs, written only after a
@@ -1375,7 +1340,7 @@ pm_num_keep:
  * 0x602e082f writes struct +0 -> 8, +4 -> 7, +8 -> 59, +12 -> 130,
  * +16 -> 131, +20 -> 105, +24 -> 1806):
  *   CP p:   +0 contrast 908+p, +4 sharpness 904+p, +8 0, +20 1, +24 0,
- *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 907+4p,
+ *           916..927 = 928+12p.., 1016 = 912+p, 1011 = 0, 998 = 0,
  *           tone 976+3p.. (store 2) -> 383/691/382
  *   MONO p: +0 994+p, +4 990+p, +8 0, +12 filter 1007+p, +16 toning 1003+p,
  *           +20 1, +24 0, 916..927 = 0, 1011 = level 1012+p,
@@ -1515,11 +1480,6 @@ rt_tab_loop:
  cmp 2,d0
  bcs rt_tab_value
  call rt_p,[],4
- btst 0x4000,d0
- beq rt_tab_p
- and 0x3fff,d0
- asl2 d1
-rt_tab_p:
  add d1,d0
  mov d0,a0
  call rt_get1,[],4
@@ -1622,7 +1582,7 @@ rt_put2:
  ret [],4
 .align 2
 /* {dst, src}: dst 0x80nn = refresh struct +nn, else an ID; src 0/1 = that
- * value, src | 0x4000 = (src & 0x3fff) + 4p, else src + p (store 1). Then 0,
+ * value, else src + p (store 1). Then 0,
  * then the 916..927 source (0 = zeros).
  * Color Profile grain (v0.2.0) is stored in the value (part 0) cells of
  * Color Profile 4's Sharpness, Contrast and Shading, 907 / 911 / 915: E148
@@ -1630,7 +1590,7 @@ rt_put2:
  * part 1 of the same IDs (the WB records) is a separate cell. */
 rs_cp_table:
  .hword 0x8000,908, 0x8004,904, 0x8008,0, 0x8014,1, 0x8018,0
- .hword 1016,912, 1011,0, 998,0x4000|907, 0, 928
+ .hword 1016,912, 1011,0, 998,0, 0, 928
 rs_mono_table:
  .hword 0x8000,994, 0x8004,990, 0x8008,0, 0x800c,1007, 0x8010,1003
  .hword 0x8014,1, 0x8018,0, 1011,1012, 1016,1017, 998,999, 0, 0
@@ -1785,7 +1745,7 @@ ui_activity:
  cmp 1,d0
  bne ui_act_out
  mov 500,d0
- mov 8000,d1
+ mov 30000,d1                    /* Picture Mode's idle time (pm_timeout.py), 8000 in stock */
  call ui_timer,[d2,d3],12
 ui_act_out:
  ret [d2,d3],12
@@ -1835,8 +1795,8 @@ ui_info_out:
  * 912..914 has no descriptor either; it gets copies of 1017's (same list).
  * Color Profile grain 907 / 911 / 915 (v0.2.0) gets copies of 999's.
  * call cp_nd_link,[d2,d3,a2,a3],24 */
-CP_NODES = 988                  /* 23 nodes: P+988..1171 (8 cp_nd_desc, 15 cad_desc) */
-CP_NDESC = 8                    /* 2217, 2218, 912..914, 907, 911, 915 (cp_nd.py) */
+CP_NODES = 988                  /* 20 of 23 nodes: P+988..1171 (5 cp_nd_desc, 15 cad_desc) */
+CP_NDESC = 5                    /* 2217, 2218, 912..914 (cp_nd.py; 907, 911, 915 with CP_GRAIN) */
 .global cp_nd_link
 cp_nd_link:
  mov cp_nd_desc,a3
@@ -2532,74 +2492,54 @@ ftab_col:
 ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
 
-/* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
- * E148's tone-curve modifier 0x60385f08 (one caller, 0x603e86f0) bends the
- * photo's own copy of the 256-entry brightness table (O+0xa34). Its second
- * spline takes 8 y values (0..1023) copied from 0x6052ea08 to (124,sp); stock
- * adds Shadows to point 1 and Highlights to point 6 at 0x60385f9c. bw_apply
- * runs there first: point 0 += B, point 1 (130) += 7B/8, point 7 -= W,
- * point 6 (832) -= 13W/16, with B (Blacks, P+BW_B) and W (Whites, P+BW_W) in
- * curve units. The middle cluster (473..477) stays: a levels map of all 8
- * points moved middle grey 514 -> 482 in the emulator. Both 0 (the
- * default, and always when not armed): nothing changes. Uses d0, d1, a0
- * only; the stock code reloads all four after bw_resume. No calls except
- * st_ptr, which reads the state handle through RAM for other CPUs.
- * The modifier only runs when the gate 0x60385b9c sees a non-zero tone
- * value; bw_gate (from 0x603e86a8) also opens it when B or W is non-zero.
- * Emulator: tests/bw_assert.mjs calls 0x60385f08 itself. research/OM5II-BLACKS-WHITES-2026-11-18.md */
-.section .bw_hook,"ax"
- jmp bw_apply
-.section .bw_gate_call,"ax"
- call bw_gate,[d2],8
 .section .ext2,"ax"
-bw_apply:
+/* INFO outside the colour wheel keeps OM's action and activity timer. */
+container_info2:
+ add -12,sp
+ mov a0,(4,sp)
+ calls stock_container
+ mov d0,(8,sp)
+ cmp 1,d0
+ bne info_done
  call st_ptr,[],8
  cmp 0,a0
- beq bw_replay
- mov (BW_B,a0),d0                /* B | W << 16 */
- cmp 0,d0
- beq bw_replay
- movhu (BW_B,a0),d1
- exth d1                         /* d1 = B */
- movhu (124,sp),d0
- add d1,d0
- movhu d0,(124,sp)               /* point 0 (0) += B */
- mov d1,d0
- asr 3,d0
- sub d0,d1
- movhu (126,sp),d0
- add d1,d0
- movhu d0,(126,sp)               /* point 1 (130) += 7B/8 */
- movhu (BW_W,a0),d1
- exth d1                         /* d1 = W */
- movhu (138,sp),d0
- sub d1,d0
- movhu d0,(138,sp)               /* point 7 (1023) -= W */
- mov 13,d0
- mul d0,d1
- asr 4,d1
- movhu (136,sp),d0
- sub d1,d0
- movhu d0,(136,sp)               /* point 6 (832) -= 13W/16 */
-bw_replay:
- mov (20,sp),a0
- movhu (126,sp),d1
- jmp bw_resume
-/* call bw_gate,[d2],8 in place of call 0x60385b9c,[],0: a0 = the tone
- * values; d0 = 1 when the modifier should run. */
-bw_gate:
- call tone_gate,[],0
- cmp 0,d0
- bne bw_gate_out
- call st_ptr,[],8
- cmp 0,a0
- beq bw_gate_out
- mov (BW_B,a0),d0
- cmp 0,d0
- beq bw_gate_out
- mov 1,d0
-bw_gate_out:
- ret [d2],8
+ beq info_done
+ mov (4,sp),a0
+ call ui_info_activity,[d2,d3,a2,a3],24
+info_done:
+ mov (8,sp),d0
+ add 12,sp
+ rets
+
+.section .ext8,"ax"
+/* d0 = axis, d3 = key. INFO pairs Saturation/Shadow, Hue/Midtone,
+ * Lightness/Highlight. Delete wraps at the end of each group. Armed only. */
+wheel_next_axis:
+ cmp 0x9014,d3
+ beq wheel_group
+ inc d0
+ cmp 3,d0
+ beq wheel_wrap
+ cmp 6,d0
+ bne wheel_axis_done
+wheel_wrap:
+ add -3,d0
+ rets
+wheel_group:
+ cmp 3,d0
+ bcc wheel_wrap
+ add 3,d0
+wheel_axis_done:
+ rets
+
+/* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
+ * Blacks / Whites are added to the split-tone delta tables (tn_tables, ext3), so
+ * they reach photos and live view through the R/G/B curve setter (wb.s st_tint),
+ * the route the camera showed working for split tone (2026-11-19). The first
+ * version bent E148's brightness curve (modifier 0x60385f08, hooks at
+ * 0x60385f9c and 0x603e86a8): the UI worked but the camera showed no effect in
+ * live view or photos, so those hooks are gone.
+ * research/OM5II-BLACKS-WHITES-2026-11-18.md, OM5II-V020DEV-CAMERA-2026-11-19.md */
 
 /* ---- Black / White and split tone (v0.2.0-dev): settings, refresh, UI ----
  * Black / White live on the tone page (no sidebar rows since 2026-11-19).
@@ -2607,9 +2547,9 @@ bw_gate_out:
  * state is the stock Hi/Sh state with P+ST_TM = 1: the page's Shadows and
  * Highlights children then read and write Blacks and Whites instead
  * (tone_alias in ui_read / ui_write), so OM's own dials, value labels and
- * Reset work on them. The "Sh" / "Hi" title labels are hidden and "Black" /
- * "White" drawn in their place; in Hi/Sh the hint ("Mid INFO") is replaced by
- * one naming the Black/White state. The state lasts until INFO leaves it or
+ * Reset work on them. The "Sh" / "Hi" title images become "Bl" / "Wh" (OM's
+ * glyphs, new resource images); in Hi/Sh the hint ("Mid INFO") reads
+ * "Bl/Wh INFO". The state lasts until INFO leaves it or
  * power-off, like OM's own Hi/Sh / Mid choice (setting 2189).
  * Storage: Blacks 965 / 966 / 967, Whites 993 / 997 / 1020 (unused profile-4
  * cells, default 0), -7..+7 with a copy of tone 976's descriptor.
@@ -2672,6 +2612,9 @@ bw_rf_put:
  cmp 2,d2
  bcs bw_rf_loop
  call tint_refresh,[d2,d3,a2,a3],32
+ mov (GS_GEN,a3),d0              /* tables rebuilt: each gamma cache misses once (gs_hook) */
+ inc d0
+ mov d0,(GS_GEN,a3)
 bw_rf_out:
  ret [d2,d3,a2,a3],20
 
@@ -2726,12 +2669,12 @@ CAD_NDESC = 15
 /* The tone view's own label update 0x60df862e (a0 = the view; called at
  * 0x60df85f3 and 0x60df8626, each followed by ret [a2],8) shows OM's labels
  * again after each change; both calls jump here: OM's update, then, once
- * armed, tone_labels_v. Section 3 loads before the GUI. */
+ * armed, tone_labels_v. Both stock call sites and the gate are in section 7. */
 .section .tv_call1,"ax"
  jmp tv_upd
 .section .tv_call2,"ax"
  jmp tv_upd
-.section .ext3,"a"
+.section .ext7,"ax"
 tv_upd:
  call tone_view_stock,[d2,d3,a2,a3],48
  call tv_after,[d2,d3,a2,a3],24
@@ -2745,6 +2688,8 @@ tv_after:                        /* a2 = the view; d0 kept */
 tva_out:
  mov (4,sp),d0
  ret [d2,d3,a2,a3],24
+.section .ext3,"a"
+.balign 2
 bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
  .hword 965, 966, 967, 993, 997, 1020
 tint_ids:                        /* zone z of Color Profile p: 3z + p (shadows, midtones, highlights) */
@@ -2831,6 +2776,8 @@ tn_ok:
  cmp 3,d2
  bcs tn_zone
  mov (4,sp),d0
+ mov (BW_B,a3),d1                /* Blacks | Whites << 16 */
+ or d1,d0
  cmp 0,d0
  beq tn_out
  mov (ST_BUF,a3),a2
@@ -2843,11 +2790,35 @@ tn_ok:
  cmp 0,a2
  beq tn_out
 tn_build:
+ jmp tn_tables                     /* ext3: the delta tables */
+tn_out:
+ ret [d2,d3,a2,a3],32
+
+
+.section .ext3,"a"
+/* tint_refresh (ext8) continues here, in its own frame, once a tint or Black /
+ * White is set: a2 = the buffer, a3 = P. For table index i (u = i - 128, w =
+ * u * u) and channel c: delta_c[i] = (w * T[edge][c] + (16384 - w) *
+ * T[mid][c]) >> 14 - (X * u) >> 5, X = Blacks (P+BW_B) for u < 0, Whites
+ * (P+BW_W) from the middle up; i.e. Blacks lift the black end by 4 * B (0..4095
+ * units) fading linearly to 0 at the middle, Whites move the white end by -4 * W.
+ * The same delta goes to R, G and B, so Black / White leave the colour alone. */
+tn_tables:
  add 1552,a2
  clr d3
 tn_i:
  mov d3,d0
  add -128,d0
+ mov a3,a0                       /* Blacks below the middle, Whites above */
+ cmp 0,d0
+ blt tn_bw
+ add 2,a0
+tn_bw:
+ movhu (BW_B,a0),d1
+ exth d1
+ mul d0,d1
+ asr 5,d1
+ mov d1,(12,sp)                  /* X * u / 32: X * 4 * (-u) / 128, subtracted below */
  mov d0,d1
  mul d0,d1
  mov d1,(8,sp)
@@ -2872,6 +2843,8 @@ tn_c:
  mov (4,sp),d1
  add d1,d0
  asr 14,d0
+ mov (12,sp),d1
+ sub d1,d0
  movhu d0,(a2)
  add 2,a0
  add 2,a1
@@ -2886,7 +2859,6 @@ tn_c:
  bcs tn_i
  mov 1,d0
  movhu d0,(ST_A,a3)
-tn_out:
  ret [d2,d3,a2,a3],32
 
 .section .ext5,"ax"
@@ -3097,12 +3069,21 @@ trf_next:
  ret [d2,d3,a2,a3],24
 
 .section .ext9,"ax"
-/* a0 = the tone page (child 2) -> its view; a2 = the view: in the
- * Black/White state the "Sh" / "Hi" titles and values (labels 2..4, 10..12)
- * are hidden (tone_text draws Black / White) and the hint (label 16, "Mid
- * INFO") shown; in Hi/Sh the hint is hidden (tone_text names Black/White).
- * Other cases are OM's. Runs at each layout (pg_tone).
- * call tone_labels,[d2,d3,a2,a3],24 */
+/* a0 = the tone page (child 2) -> its view; a2 = the view. The title and
+ * hint labels follow the state: Black/White (Color Profile, P+ST_TM = 1):
+ * titles "Bl" / "Wh" (IMG_BL / IMG_WH, OM's glyphs) instead of "Sh" / "Hi";
+ * OM's value labels (sign, digit) get Blacks / Whites (tl_val). Hi/Sh on a Color Profile: the hint is OM's "Mid INFO" with
+ * "Mid" left blank (IMG_HINT), tone_text writes "Bl/Wh" there. Otherwise
+ * (Mid, other modes) OM's images. Each label's image slot 0 is set through
+ * OM's label_img (no-op when unchanged); OM's own update never resets it, so
+ * every state writes all three. Runs at each layout (pg_tone) and after OM's
+ * view update (tv_upd). call tone_labels,[d2,d3,a2,a3],24 */
+IMG_BL = 0x3e80
+IMG_WH = 0x3e81
+IMG_HINT = 0x3e82
+IMG_SH = 0x1078                  /* label ids: OM's tone view records (0x610d5aa8 ..) */
+IMG_HI = 0x1077
+IMG_MIDINFO = 0x3f7f
 tone_labels:
  mov (36,a0),a2
 tone_labels_v:
@@ -3116,124 +3097,179 @@ tone_labels_v:
  call stock_get,[],4
  add -54,d0
  cmp 3,d0
- bcc tl_out
- mov 1,d2
+ bcs tl_cp
+ clr d3                          /* other modes: OM's images */
+ bra tl_set
+tl_cp:
+ mov d0,(4,sp)                   /* profile 0..2 */
  cmp 0,d3
- bne tl_bw
- mov 2189,d0
- call stock_get,[],4
- cmp 1,d0
- beq tl_out                      /* Mid: OM's hint (Hi/Sh) */
- clr d2
- bra tl_hint
-tl_bw:
- mov tl_labels,a3
-tl_hide:
- movbu (a3),d0
- asl2 d0
- add 792,d0
- mov a2,a0
- add d0,a0
- mov (a0),a0
+ bne tl_set                      /* 1: Black/White */
+ mov 2,d3                        /* Hi/Sh: our hint. Which hint OM shows */
+ mov (856,a2),a0                 /* (label 16's index: 0 "Mid INFO", 1 "Hi/Sh */
+ cmp 0,a0                        /* INFO") decides, not setting 2189: on the */
+ beq tl_set                      /* camera Bl/Wh was drawn over "Hi/Sh INFO" */
+ movbu (132,a0),d0
+ cmp 0,d0
+ beq tl_set
+ clr d3                          /* Mid: OM's */
+tl_set:                          /* d3: 0 OM, 1 Black/White, 2 Hi/Sh */
+ call st_ptr,[],8
  clr d0
- call set_visible,[d2,d3,a2],16
- inc a3
- cmp tl_labels+6,a3
- bne tl_hide
-tl_hint:
- mov (856,a2),a0
- mov d2,d0
- call set_visible,[d2,d3,a2],16
- mov a2,a0                       /* repaint the view where labels went */
+ cmp 2,d3
+ bne tl_h0
+ mov 1,d0
+tl_h0:
+ movbu d0,(ST_HINT,a0)           /* for tone_text */
+ mov IMG_SH,d1
+ cmp 1,d3
+ bne tl_t1
+ mov IMG_BL,d1
+tl_t1:
+ mov 800,d0                      /* label 2 */
+ call tl_img,[],8
+ mov IMG_HI,d1
+ cmp 1,d3
+ bne tl_t2
+ mov IMG_WH,d1
+tl_t2:
+ mov 832,d0                      /* label 10 */
+ call tl_img,[],8
+ mov IMG_MIDINFO,d1
+ cmp 2,d3
+ bne tl_t3
+ mov IMG_HINT,d1
+tl_t3:
+ mov 856,d0                      /* label 16, the hint */
+ call tl_img,[],8
+ cmp 1,d3
+ bne tl_inval
+ mov (4,sp),d2                   /* Black/White: OM's view shows its data model's */
+ add d2,d2                       /* (976.., not aliased) Sh / Hi values; show */
+ add bw_ids,d2                   /* Blacks / Whites with the same images */
+ mov d2,a0
+ movhu (a0),d0
+ mov 804,d1                      /* labels 3 / 4 */
+ call tl_val,[d2,d3],16
+ mov d2,a0
+ movhu (6,a0),d0
+ mov 836,d1                      /* labels 11 / 12 */
+ call tl_val,[d2,d3],16
+tl_inval:
+ mov a2,a0                       /* repaint the view (tone_text) */
  mov 0,a1
  mov 1,d0
  call ui_invalidate,[],4
 tl_out:
  ret [d2,d3,a2,a3],24
-tl_labels:                       /* view labels (at +792 + 4k) */
- .byte 2, 3, 4, 10, 11, 12
-/* a2 = paint context: "Black n" / "White n" in the Black/White state, the
- * hint "Black/White" in Hi/Sh. call tone_text,[d2,d3,a2,a3],48 */
-tone_text:
- call st_ptr,[],8
+/* a2 = the view, d0 = label offset (792 + 4k), d1 = image id: slot 0.
+ * Keeps d3, a2. call tl_img,[],8 */
+tl_img:
+ mov a2,a0
+ add d0,a0
+ mov (a0),a0
  cmp 0,a0
- beq tt_out
- movbu (ST_TM,a0),d3
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcc tt_out
- mov d0,d2
- add d0,d2
- add bw_ids,d2                   /* d2 -> the profile's Blacks id */
- cmp 0,d3
- beq tt_hint
- mov d2,(4,sp)
- mov d2,a0
- movhu (a0),d1
- mov text_black,a1
- mov 395,d0
- call tt_value,[d2,d3,a2,a3],24
- mov (4,sp),a0
- movhu (6,a0),d1
- mov text_white,a1
- mov 600,d0
- call tt_value,[d2,d3,a2,a3],24
- bra tt_out
-tt_hint:
- mov 2189,d0
- call stock_get,[],4
- cmp 1,d0
- beq tt_out
- mov text_bw,a1
- mov 270,d0
- mov 426,d1
- mov 180,d2
- call tx_draw,[d2,d3,a2,a3],44
-tt_out:
- ret [d2,d3,a2,a3],48
-/* a1 = name, d0 = x, d1 = setting: "name +n" (P's label buffer), box
- * 110 wide at y 84. call tt_value,[d2,d3,a2,a3],24 */
-tt_value:
- mov d0,d3
- mov a1,a3
- mov d1,d0
- call stock_get,[],4
- mov d0,d2
- call st_ptr,[],8
- add TT_BUF,a0
- mov a0,a1
-tt_copy:
- movhu (a3),d0
- add 2,a3
- movhu d0,(a0)
- add 2,a0
- cmp 0,d0
- bne tt_copy
- mov ' ',d0
- movhu d0,(-2,a0)
- mov '+',d0
- cmp 0,d2
- bge tt_pos
- mov '-',d0
- not d2
- inc d2
-tt_pos:
- beq tt_digit
- movhu d0,(a0)
- add 2,a0
-tt_digit:
- mov d2,d0
- add '0',d0
- movhu d0,(a0)
+ beq tli_out
  clr d0
- movhu d0,(2,a0)
+ call label_img,[d2,a2],12
+tli_out:
+ ret [],8
+/* a2 = the colour view, a3 = its paint context (from paint_axis, armed, after
+ * gfx_wheel). OM's selected-colour swatch (view label 4, +808) has 8 images
+ * for the OM-1 / OM-3 wheel: 7 colours and "All" (slot 7). With E148's 12
+ * colours it repeated every second colour (owner, 2026-11-20). Its colour
+ * slots 0..6 get the blank IMG_BLANK (OM never resets them; label_img does
+ * nothing when unchanged) and the selected colour's swatch is drawn here, as
+ * OM's: frame in palette 7, 22 x 22 at (586, 90), fill 20 x 20 in the wheel's
+ * colour (gtab_col). "All" stays OM's. call wheel_swatch,[d2,d3,a2,a3],28 */
+IMG_BLANK = 0x3e83
+wheel_swatch:
+ mov (808,a2),a2                 /* not 0: paint_axis checked it */
+ clr d3
+ws_loop:
+ mov a2,a0
  mov d3,d0
- mov 84,d1
- mov 110,d2
- call tx_draw,[d2,d3,a2,a3],44
- ret [d2,d3,a2,a3],24
+ mov IMG_BLANK,d1
+ call label_img,[d2,a2],12
+ inc d3
+ cmp 7,d3
+ bcs ws_loop
+ws_draw:
+ mov (scr_obj),a0                /* the colour editor, as gfx_wheel finds it */
+ cmp 0,a0
+ beq ws_out
+ mov (a0),a0
+ cmp 0,a0
+ beq ws_out
+ mov (76,a0),a0
+ cmp 0,a0
+ beq ws_out
+ movhu (120,a0),d0
+ cmp 13,d0
+ bne ws_out
+ movhu (122,a0),d0               /* 1..12, 0 = all */
+ add -1,d0
+ cmp 12,d0
+ bcc ws_out
+ mov gtab_col,a0
+ add d0,a0
+ movbu (a0),d0
+ mov d0,(4,sp)
+ mov a3,a2                       /* gfx_bar's context */
+ mov 7,d0                        /* frame */
+ clr d1
+ call ws_box,[d2,d3,a2,a3],28
+ mov (4,sp),d0                   /* fill, 1 px in */
+ mov 1,d1
+ call ws_box,[d2,d3,a2,a3],28
+ws_out:
+ ret [d2,d3,a2,a3],28
+/* a2 = context, d0 = colour, d1 = inset k: block (586 + k, 90 + k), 22 - 2k
+ * square. call ws_box,[d2,d3,a2,a3],28 */
+ws_box:
+ mov d1,d2
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 22,d3
+ sub d2,d3
+ sub d2,d3
+ mov 586,d0
+ add d2,d0
+ mov 90,d1
+ add d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
+/* a2 = the view, d0 = setting, d1 = its sign label's offset (the digit
+ * label follows): OM's image indices (0x60df89bd): sign 0 for 0, 1 for +,
+ * 2 for -; digit |v|. call tl_val,[d2,d3],16 */
+tl_val:
+ mov d1,d3
+ call stock_get,[],4
+ extb d0
+ mov d0,d2
+ clr d0
+ cmp 0,d2
+ beq tlv_s
+ mov 1,d0
+ cmp 0,d2
+ bgt tlv_s
+ mov 2,d0
+tlv_s:
+ mov a2,a0
+ add d3,a0
+ mov (a0),a0
+ call label_index,[d2,a2],12
+ mov d2,d0
+ cmp 0,d0
+ bge tlv_d
+ not d0
+ inc d0
+tlv_d:
+ mov a2,a0
+ add d3,a0
+ mov (4,a0),a0
+ call label_index,[d2,a2],12
+ ret [d2,d3],16
 
 .section .ext6,"ax"
 /* a2 = paint context, a1 = UTF-16 text, d0 = x, d1 = y, d2 = width: the text
@@ -3274,22 +3310,96 @@ tx_restore:
  mov d0,(76,a2)
  ret [d2,d3,a2,a3],44
 .section .ext3,"a"
-.balign 2
-text_black:
- .short 'B','l','a','c','k',0
-.section .ext9,"ax"
-.balign 2
-text_white:
- .short 'W','h','i','t','e',0
+/* a2 = paint context: "Bl/Wh" in the hint's blank part while tone_labels
+ * shows IMG_HINT (P+ST_HINT). call tone_text,[d2,d3,a2,a3],48 */
+tone_text:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tt_out
+ movbu (ST_HINT,a0),d0           /* tone_labels put IMG_HINT in the label */
+ cmp 0,d0
+ beq tt_out
+ mov text_bw,a1
+ mov 290,d0                      /* the blank 62 px of IMG_HINT start at 296 */
+ mov 426,d1
+ mov 68,d2
+ call tx_draw,[d2,d3,a2,a3],44
+tt_out:
+ ret [d2,d3,a2,a3],48
 .section .ext8,"ax"
 .balign 2
-text_bw:
- .short 'B','l','a','c','k','/','W','h','i','t','e',0
+text_bw:                         /* the hint; titles are images (owner, 2026-11-20) */
+ .short 'B','l','/','W','h',0
 
 .section .ext6,"ax"
 .balign 2
 text_switch:
  .short 'S','w','i','t','c','h',' ','@','A','0','3','4','@',0
+
+/* Live view (owner, 2026-11-20: Black / White changed live view only after a
+ * half-press). E148's gamma stage 0x603e69ae keeps a cache record per
+ * pipeline (d3 = (R+1484) + 5736: the selected R/G/B table pointers and a
+ * descriptor) and on a hit skips the curve setter, so the hardware keeps its
+ * curves. OM's own tone values change the selected tables (a miss); Black /
+ * White and the tints change only P's delta tables, so live view kept hitting.
+ * gs_hook replaces cmp 0,d3; beq 0x603e6aa3; mov (56,sp),a0 at 0x603e6a3b:
+ * once armed, a cache that has not seen the current GS_GEN (bw_refresh adds 1
+ * after each table rebuild) takes the stock miss path once (as with d3 = 0,
+ * the cache is then refilled). Registers d0, d1, a0, a1 are free here (the
+ * stage reloads them); d2 (= 1) and d3 are kept. The gate and both stock
+ * exits live with the gamma stage in section 2. */
+.section .gs_hook,"ax"
+ jmp gs_entry
+ nop
+.section .ext2,"ax"
+gs_entry:
+ cmp 0,d3
+ beq gs_stock_miss
+ mov (loaded_bits),d0
+ and 1023,d0
+ cmp 1023,d0
+ bne gs_stock_go
+ add -4,sp                       /* private call slot; preserve the stage's frame */
+ call st_ptr,[],8
+ add 4,sp
+ cmp 0,a0
+ beq gs_stock_go
+ jmp gs_cache
+gs_stock_miss:
+ jmp gs_miss_back
+gs_stock_go:
+ mov (56,sp),a0
+ jmp gs_back
+.section .ext8,"ax"
+gs_cache:
+ mov (GS_GEN,a0),d1
+ mov a0,a1
+ add GS_TAB+32,a1                /* end of the table */
+ add GS_TAB,a0
+gs_find:
+ mov (a0),d0
+ cmp d3,d0
+ beq gs_found
+ cmp 0,d0
+ beq gs_new
+ add 8,a0
+ cmp a1,a0
+ bne gs_find
+ add -8,a0                       /* full: reuse the last entry */
+gs_new:
+ mov d3,(a0)
+ bra gs_seen
+gs_found:
+ mov (4,a0),d0
+ cmp d1,d0
+ beq gs_go
+gs_seen:
+ mov d1,(4,a0)
+gs_miss:
+ jmp gs_miss_back
+gs_go:
+ mov (56,sp),a0
+ jmp gs_back
 
 /* Split tone entry: the R/G/B curve setter 0x603e6974 is a leaf that returns
  * with retf (MDR) and whose frame has no slot for a return address, so
@@ -3301,6 +3411,10 @@ text_switch:
  jmp st_entry
 .section .ext2,"ax"
 st_entry:
+ mov (loaded_bits),d2
+ and 1023,d2
+ cmp 1023,d2
+ bne st_unarmed
  movhu (st_handle_u),d2          /* st_ptr, inline: a call would write its */
  cmp 0,d2                        /* return address over the setter's saved a2 */
  beq st_unarmed

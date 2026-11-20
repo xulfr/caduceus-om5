@@ -2,6 +2,8 @@
 
 ## Camera baseline
 
+- **v0.2.0-alpha1, OM-5 Mark II 1.1**: the owner reports the candidate from c3bc45c works perfectly (20 November). See [release notes and package checksum](releases/v0.2.0-alpha1/README.md).
+
 - Alpha11 booted on the owner’s OM-5 Mark II (E148, stock 1.1). The owner confirmed
   the ND32/64 CP carousel icons and that Monochrome Color Filter stays open and
   accepts dial changes. The stock filter page has a blank centre.
@@ -37,38 +39,74 @@
   from the card. The alpha2 donor's startup defect and the transplant itself are both possible causes.
   [Report](research/OM5I-PREALPHA1-CAMERA-2026-11-17.md).
 
-## v0.2.0 development (`claude/sharp-cray-0up4d3`)
+## v0.2.0 development (`claude/sharp-cray-0up4d3`, fixes on `claude/wizardly-feynman-wejd65`)
 
 - Plan: [docs/V0.2.0-PLAN.md](docs/V0.2.0-PLAN.md).
-- **Film Grain for Color Profiles (emulator only).** Current dev package `7d611008…8c7f` (grain, Black/White on the
-  tone page, split tone on the colour wheel; not a release, never flashed). [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
-  Open on the camera: grain in colour JPEGs; Reset turns it Off; C1..C5 keep it.
-- **Black / White on the tone page** (owner request 2026-11-19; the sidebar rows are gone): INFO steps Hi/Sh →
-  Black/White → Mid on Color Profile 1–3; −7..+7 per profile. Emulator-checked.
-  [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md), [tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md).
-- **Split tone on the colour wheel** (owner request: midtones too, any colour; the teal/orange row is gone): trash
-  steps on to Shadow / Midtone / Highlight Tint; each tint is one of the 12 colours, strength 1..5. Emulator-checked.
-  [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
-- Emulator on `7d611008…`: `run_emulator.py` 20/20, `run_bw_tint.py` 7/7, `run_cp_grain.py` 6/6, `bw_assert.mjs` pass.
-- Space is used up again (about 30 bytes left in the tails). This build also uses the FF tails of sections 3 and 9
-  for the first time; the 15 new descriptors are built in the heap at arming.
+- **Camera, 2026-11-20, dev package `4f7aeb6c…4636`: boots and works** (owner). Black / White work in pictures but,
+  like the tints, reach live view only after a half-press; labels still too large, hint text overflowed; "all" on a
+  tint axis still selectable but only one colour moves. The same source plus cg1 (`f7f1db5d…2c51`) boot-looped after an unchecked card copy;
+  its cause is uncertain. **Owner: colour grain shelved; this branch is the base for the next alpha.**
+  [Report](research/OM5II-DEV4F7A-CAMERA-2026-11-20.md), cg1 report on `claude/cp-grain-experiment`.
+- **Camera, 2026-11-20, package `0565540a…de73`: works** (labels, live view). The first flash attempt failed (file on
+  the card not SHA-checked; suspected copy corruption, unconfirmed); the second, after a SHA-256 check, worked. The cg1
+  boot loop was also flashed unchecked, so its cause is not certain. Remaining: Highlight Tint showed nothing; the
+  colour wheel's selected-colour swatch changed every second colour; "Bl/Wh" drawn over OM's "Hi/Sh INFO".
+  [Report and fixes](research/OM5II-DEV0565-CAMERA-2026-11-20.md) (dev package `9b14e1ce…95c9`, not flashed).
+- **Fixes since (emulator only, not flashed):** Bl / Wh title images from OM's glyphs + OM's own ±n images + "Bl/Wh
+  INFO" hint ([tone page note](research/OM5II-TONE-PAGE-2026-11-19.md)); live view: `gs_hook` makes each gamma-stage
+  cache miss once after Black / White or tint tables change ([note](research/OM5II-LIVEVIEW-GAMMA-CACHE-2026-11-20.md)).
+- **Camera, 2026-11-19, package `7d611008…1c7f`** (the earlier `…8c7f` was a typo): boots and works. Split tone
+  works (live view and JPEG). Black / White: UI only, no effect in pictures. Colour grain: no grain at any level,
+  carousel order reversed. "All" on a tint axis changed a seemingly random colour. Black / White labels larger than
+  Sh / Hi. [Report](research/OM5II-V020DEV-CAMERA-2026-11-19.md).
+- **Fixes on `claude/wizardly-feynman-wejd65`** (dev package `4f7aeb6c…4636`, owner flash reported above):
+  - Black / White now go into the split-tone R/G/B delta tables (the route the camera showed working); the
+    brightness-curve hooks are removed. [Note](research/OM5II-BLACKS-WHITES-2026-11-18.md).
+  - That build kept tint axes on one colour. The current INFO group switch supersedes its INFO handling.
+  - Picture Mode stays open 30 s after the last key, dial or tap (9 stock timer arms + Caduceus's own re-arm;
+    `firmware/om5ii/pm_timeout.py`; OM-Emu `tap:X,Y` in tools/dev/sess.mjs).
+  - Black / White labelled Blk / Wht (superseded 2026-11-20 by Bl / Wh images).
+  - **Color Profile grain removed** (owner): it showed no grain on the camera; stock grain is monochrome-only.
+    Image-pipeline work continues on `claude/cp-grain-experiment`. [Note](research/OM5II-CP-GRAIN-2026-11-18.md).
+- Black / White on the tone page: INFO steps Hi/Sh → Black/White → Mid on Color Profile 1–3; −7..+7 per profile.
+  [Tone page internals](research/OM5II-TONE-PAGE-2026-11-19.md). Split tone: INFO enters Tint and trash cycles Shadow / Midtone /
+  Highlight Tint; one of 12 colours, strength 1..5. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- At `c3bc45c` the linker leaves 15 bytes in ext2 before the WB gate, 16 in ext7, and 18 in ext8 before the WB helper.
+  The build also uses the FF tails of sections 3 and 9. The 15 new descriptors are built in the heap at arming.
 - Clarity is blocked on the Soft Focus weight getter. Free space is nearly gone (see [the plan](docs/V0.2.0-PLAN.md)).
-- Ghidra is set up in this cloud container (`generated/runtime`, `generated/ghidra`; lost when the container
-  is reclaimed). Rebuild: tools/ghidra/README.md, about 15 minutes.
+- Ghidra is not set up in the current container; rebuild per tools/ghidra/README.md (about 15 minutes). OM-Emu
+  `xulfr/om-emu` branch `fix/e148-ipi-stride` (`bdb3347`) and binutils 2.42 rebuild as in docs/OM5_PREALPHA.md.
 - Codex's Ghidra tooling and findings are merged from main
   ([findings](research/OM5II-GHIDRA-FINDINGS-2026-11-18.md)). The stock reset, init and custom-mode copy lists
-  include 907/911/915, which grain uses; all default to 0 (= Off).
+  include 907/911/915 (used by the removed Color Profile grain); all default to 0.
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
+## Current priorities (owner, 2026-11-20)
+
+1. **Intermittent boot loop on `0565540a`**. Power cycling recovers it. The old gamma hook demonstrably entered
+   section 8 before checking readiness. The candidate keeps the unarmed gamma path in section 2 and the tone-view
+   gate in section 7. The cause of the physical reset remains unconfirmed.
+   [Comparison and boot evidence](research/OM5II-DEV0565-CAMERA-2026-11-20.md#startup-comparison-and-wheel-fix-2026-11-20-emulator-only).
+2. Wheel INFO now switches HSL ↔ Tint, preserving axis position. Trash cycles within the active group.
+   The hint names the destination group. Emulator only.
+3. Colour grain is shelved. The separate split-tone row is abandoned. Keep this work on
+   `claude/wizardly-feynman-wejd65`. Main is the alpha12 donor for the original OM-5.
+
 ## Next camera checks
 
-0. **v0.2.0-dev build** (once the owner flashes it; record the package SHA-256). Boot and half-press first (new code
-   in sections 3 and 9). On Color Profile 1, 2 and 3: Film Grain Off/Low/Std/High; tone page INFO cycle and Black /
-   White −7 / 0 / +7 (labels, curve graphic, JPEG); colour wheel Shadow / Midtone / Highlight Tint on a few colours at
-   strength 1 and 5. Look for a visible change in JPEGs and live view, nothing at 0, no slowdown or restart. Then:
-   the values survive power-off, Reset sets them to 0 / none, C1–C5 keep them, and other picture modes are
-   unaffected.
+- **E148 1.1 alpha1 `c3bc45c`, owner reports overall success**. Verify the SHA-256 of **the file on the card** before flashing:
+  `2b3fd53ce24433edb662036a29e1f4ea3988c61f9a15d681f0998ebe7b4a21e6`.
+  The owner confirmed `9b14e1ce…95c9` was never flashed.
+- Candidate validation: `check.py full` passed (48 host tests passed, one E144-only skip, strict build,
+  19/19 emulator cases and build audit). Tone/tint 14/14, page graphics 11/11, startup fault injection
+  and the no-half-press PC trace passed. Firmware behaviour is emulator only.
+- Record successful and failed starts, the mode at shutdown, and any power-cycle recovery. Check live view
+  after Black / White and tint edits and after clearing them. Record whether a half-press was needed.
+- On the wheel, check the INFO label in both groups, all three trash positions in each, and the 12-colour
+  swatch. Check Highlight Tint on a bright subject and the Bl/Wh hint on the tone page.
+- Prior checks still open include Black / White in JPEGs at both limits and zero, the 30-second Picture Mode
+  timeout versus 8 seconds elsewhere, and persistence across Reset, C1–C5 and power-off.
 
 1. Capture per-step filter and CP results with the installed package SHA-256.
    [Checklist](docs/FIRST_FLASH.md#alpha12-camera-checks).
@@ -90,7 +128,7 @@
   allocation `0x60023818`, free entry `0x6002384a`; the existing linker comment's
   `0x6002385f` is an interior instruction. A pinned Ghidra import/xref smoke test
   passed; full auto-analysis is complete, heap runtime validation remains pending.
-  This branch changes no firmware, installer or release files.
+  Those allocator findings came from a read-only investigation.
 
 - Official E148 1.1 SHA-256 starts `9de5d77e`. Use GNU `mn10300-elf` tools and
   OM-Emu `xulfr/om-emu` branch `fix/e148-ipi-stride`, commit

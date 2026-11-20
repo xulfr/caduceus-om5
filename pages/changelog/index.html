@@ -23,25 +23,22 @@
 <div class="lead">
 <h1 id="changelog">Changelog</h1>
 </div>
-<nav class="toc" aria-label="On this page"><a href="#unreleased-v020-dev-film-grain-for-color-profiles-2026-11-18-emulator-only">Unreleased — v0.2.0-dev: Film Grain for Color Profiles (2026-11-18, emulator only)</a><a href="#camera-result-original-om-5-2026-11-17">Camera result — original OM-5, 2026-11-17</a><a href="#unreleased-original-om-5-builder-on-the-alpha12-donor-2026-11-16">Unreleased — original OM-5 builder on the alpha12 donor (2026-11-16)</a><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha12-owner-camera-checks-complete">v0.1.0-alpha12 (owner camera checks complete)</a><a href="#v010-alpha11-boot-and-both-alpha10-fixes-confirmed">v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)</a><a href="#v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
+<nav class="toc" aria-label="On this page"><a href="#unreleased-v020-dev-2026-11-19-emulator-only">Unreleased — v0.2.0-dev (2026-11-19, emulator only)</a><a href="#camera-result-original-om-5-2026-11-17">Camera result — original OM-5, 2026-11-17</a><a href="#unreleased-original-om-5-builder-on-the-alpha12-donor-2026-11-16">Unreleased — original OM-5 builder on the alpha12 donor (2026-11-16)</a><a href="#camera-result-2026-11-15">Camera result — 2026-11-15</a><a href="#v010-alpha12-owner-camera-checks-complete">v0.1.0-alpha12 (owner camera checks complete)</a><a href="#v010-alpha11-boot-and-both-alpha10-fixes-confirmed">v0.1.0-alpha11 (boot and both alpha10 fixes confirmed)</a><a href="#v010-alpha10-2026-11-17-booted-filter-page-restarted-the-camera">v0.1.0-alpha10 — 2026-11-17 (booted, filter page restarted the camera)</a><a href="#v010-alpha9-2026-11-16-booted-on-the-owners-camera">v0.1.0-alpha9 — 2026-11-16 (booted on the owner's camera)</a><a href="#v010-alpha8-2026-11-15-boot-confirmed-on-camera">v0.1.0-alpha8 — 2026-11-15 (boot confirmed on camera)</a><a href="#v010-alpha7-2026-11-15-blocked">v0.1.0-alpha7 — 2026-11-15 (blocked)</a><a href="#v010-alpha6-2026-11-15-boot-loop-on-a-camera">v0.1.0-alpha6 — 2026-11-15 (boot loop on a camera)</a><a href="#v010-alpha5-2026-11-15">v0.1.0-alpha5 — 2026-11-15</a><a href="#v010-alpha4-2026-11-15">v0.1.0-alpha4 — 2026-11-15</a><a href="#v010-alpha3-2026-11-15">v0.1.0-alpha3 — 2026-11-15</a><a href="#om-5-pre-alpha-1-2026-11-14">OM-5 pre-alpha 1 — 2026-11-14</a><a href="#earlier-unreleased-2026-11-14">Earlier unreleased — 2026-11-14</a><a href="#v010-alpha2-2026-11-14">v0.1.0-alpha2 — 2026-11-14</a><a href="#development-before-alpha2-2026-11-14">Development before alpha2 — 2026-11-14</a><a href="#v010-alpha1-2026-11-14">v0.1.0-alpha1 — 2026-11-14</a></nav>
 <section class="card">
-<h2 id="unreleased-v020-dev-film-grain-for-color-profiles-2026-11-18-emulator-only">Unreleased — v0.2.0-dev: Film Grain for Color Profiles (2026-11-18, emulator only)</h2>
+<h2 id="unreleased-v020-dev-2026-11-19-emulator-only">Unreleased — v0.2.0-dev (2026-11-19, emulator only)</h2>
 <ul>
-<li>Color Profile 1–3 gain the <strong>Film Grain Effect</strong> row (Off / Low / Std / High), as in the Monochrome Profiles.
-  Each profile keeps its own setting, and the camera's grain setting follows the active Color Profile.</li>
-<li>Emulator only: 6/6 cases in <code>tests/run_cp_grain.py</code>. Not built as a release, not camera-tested. Whether the camera
-  draws grain in colour photos is unknown until tested. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-CP-GRAIN-2026-11-18.md">Research note</a>.</li>
-<li>The trash button no longer steps looks from the grain row, and the look name no longer replaces its title
-  (both found in the emulator; regression case <code>grain-row-delete</code>).</li>
-<li><strong>Black and White on the tone curve page</strong> of Color Profile 1–3 (−7..+7, per profile): INFO now steps
-  Hi/Sh → Black/White → Mid. In Black/White the two dials set Black (+ lifts the blacks) and White (+ brightens the
-  whites), and the curve graphic shows them. Replaces the separate Black and White rows. Emulator only: whether photos
-  change is unknown until a camera test.
+<li><strong>Black and White on the tone curve page</strong> of Color Profile 1–3 (−7..+7, per profile, labelled Blk / Wht): INFO
+  steps Hi/Sh → Black/White → Mid. + lifts the blacks, + brightens the whites. Now applied through the camera's
+  R/G/B curves (the split-tone route): the first build's tone-curve hook showed no effect on the camera.
   <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-BLACKS-WHITES-2026-11-18.md">Note</a>.</li>
-<li><strong>Split toning on the colour wheel</strong> of Color Profile 1–3: three more axes on the trash button (Shadow
-  Tint, Midtone Tint, Highlight Tint). On each, pick any of the wheel's twelve colours and give it a strength 1..5.
-  Applied to the camera's own R/G/B curves. Replaces the teal/orange Split Tone row. Emulator only.
-  <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-SPLIT-TONE-2026-11-19.md">Note</a>.</li>
+<li><strong>Split toning on the colour wheel</strong> of Color Profile 1–3: Shadow, Midtone and Highlight Tint on the trash button;
+  any of the twelve colours, strength 1..5. Works on the camera (live view and JPEGs). A tint is one colour: "all"
+  is no longer offered on the tint axes. <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-SPLIT-TONE-2026-11-19.md">Note</a>.</li>
+<li><strong>Picture Mode stays open 30 s</strong> after the last key, dial or tap (was 8 s).</li>
+<li><strong>Film Grain for Color Profiles removed</strong>: the camera showed no grain in colour pictures (its grain pass is
+  monochrome-only). Work continues on the experiment branch <code>claude/cp-grain-experiment</code>.
+  <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-CP-GRAIN-2026-11-18.md">Note</a>. Monochrome Film Grain is unchanged, and the trash button still does
+  not step looks from its row.</li>
 <li>Research: the camera's Art Effect converter (Soft Focus, Frame, Star Light…) is mapped for the Glow work.
   <a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-EFFECTS-MAP-2026-11-18.md">Effects map</a>.</li>
 </ul>

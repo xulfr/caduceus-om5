@@ -30,9 +30,8 @@ SECTIONS {
  .ext5 0x60845a00 : { *(.ext5) }
  .hook_str 0x60d52ed5 : { *(.hook_str) }
  .ext10 0x6169c820 : { *(.ext10) }
- .bw_hook 0x60385f9c : { *(.bw_hook) }
- .bw_gate_call 0x603e86a8 : { *(.bw_gate_call) }
  .st_hook 0x603e6974 : { *(.st_hook) }
+ .gs_hook 0x603e6a3b : { *(.gs_hook) }
  .tone_info_ptr 0x61210790 : { *(.tone_info_ptr) }
  .tone_info_ptr2 0x612107c8 : { *(.tone_info_ptr2) }
  .tone_info_ptr3 0x61210800 : { *(.tone_info_ptr3) }
@@ -45,16 +44,16 @@ screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 label_resume = 0x60e4adf3;
-tone_gate = 0x60385b9c;          /* any of five tone values non-zero -> d0 = 1; call [],0 / retf */
-bw_resume = 0x60385fa1;
 row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
 row_slider_widget = 0x60e49fdf; /* row-widget handler of the slider rows (table 0x611b7aa8) */
 row_slider = 0x60e3cd53;
 row_widget_back = 0x60e49f4d;   /* row-widget lookup after add -6,d1; mov table,a1 */
+gs_back = 0x603e6a41;          /* gamma stage after the replaced cache test (gs_hook) */
+gs_miss_back = 0x603e6aa3;     /* gamma stage: the cache-miss path */
 setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
 tone_info_stock = 0x60e9e8ff;   /* tone editor (type 0x1531) INFO handler, entered by calls */
 tone_view_stock = 0x60df862e;   /* the tone view's label update (a0 = view) */
-st_tint = 0x60829774;           /* wb.s .st_tint (fixed in wb.ld) */
+st_tint = 0x6082976c;           /* wb.s .st_tint (fixed in wb.ld) */
 knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
 knob_none = 0x60e4aa37;
 cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */
@@ -85,6 +84,8 @@ direct_layout = 0x60f05251;
 direct_ret = 0x60dad5fc;
 child_get = 0x60dad302;
 set_visible = 0x60f04d10;
+label_index = 0x60f04d34; /* a0 label, d0 image index: show it; call ...,[d2,a2],12 */
+label_img = 0x60f04d5e;   /* a0 label, d0 slot, d1 image id: set and repaint; call ...,[d2,a2],12 */
 refresh_get = 0x602d2fc2;
 refresh_set = 0x602d2fdb;
 raw_get = 0x602f4c5b;
@@ -101,7 +102,7 @@ st_handle = 0x6218c2fe;
 st_handle_u = 0xa218c2fe;   /* the same halfword in RAM, past any CPU's cache */
 hls_tid = 0x6218c2fc;
 ST_POOL = 0xa1e27d80;      /* class-1 heap pool 0xa1e27d80..0xa1e32ac0 (free wrapper 0x6002384a; see research/OM5II-HEAP-ALLOCATOR-2026-11-18.md on codex/space-map-tooling) */
-ST_HANDLE_MAX = 43329;     /* pool span 44352 - block 1024 + 1 */
+ST_HANDLE_MAX = 42241;     /* last class-1 block: 20 strides of 2112 bytes + 1 */
 trig = 0x602f0cc2;
 trig_resume = 0x602f0b9a;
 get_tid = 0x600317b4;

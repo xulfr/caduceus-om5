@@ -1,5 +1,15 @@
 # OM-5 Mark II 1.1 (E148): Blacks / Whites in the tone curve (v0.2.0-dev)
 
+> **2026-11-19 update.** Camera (package `7d611008…1c7f`): the tone-page UI works, but Black / White had **no visible
+> effect** in live view or photos ([report](OM5II-V020DEV-CAMERA-2026-11-19.md)), while split tone through the R/G/B
+> curve setter did. The brightness-curve hooks below (`bw_hook`, `bw_gate_call`) are removed. Black / White are now
+> added to the split-tone delta tables (hsl.s `tn_tables`, in section 3's tail): for table index i (u = i − 128),
+> every channel gets −(X·u) >> 5 with X = P+1172 (20 × Blacks) below the middle and P+1174 (−20 × Whites) from it up,
+> so ±1 step moves the black or white end by 80 of 4095, fading linearly to 0 at the middle. ST_A is set when a tint
+> or Black / White is non-zero. Emulator: `run_bw_tint.py` 7/7 with `st_assert.mjs` checking those tables and the
+> setter's output. Why the modifier route showed nothing is not known (hypothesis: that stage is not used, or is
+> replaced, for Color Profile captures and live view). The sections below describe the first version.
+
 Static analysis (GNU objdump, with Codex's Ghidra findings) and OM-Emu direct calls, 2026-11-18.
 **Not camera-tested.** OM-Emu does not develop photos. The checks call the camera's own curve function on a
 test table, so they test the table maths, not a picture.

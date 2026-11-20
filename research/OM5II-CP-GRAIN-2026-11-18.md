@@ -1,5 +1,36 @@
 # OM-5 Mark II 1.1 (E148): Film Grain for Color Profiles (v0.2.0-dev)
 
+> **2026-11-19: no grain on the camera.** Package `7d611008…1c7f`: the row and its values work, but **no grain is
+> visible at any level** in colour pictures, and the carousel reads High, Std, Low, Off where Monochrome reads Off,
+> Low, Std, High ([camera report](OM5II-V020DEV-CAMERA-2026-11-19.md); the order is reproduced in OM-Emu).
+>
+> Why (inference from the OM-3 project's camera work on E147, the closest body; not traced on E148): the stock grain
+> pass runs only for monochrome development jobs. On OM-3, a colour development request needed its job key changed
+> from 11 (COLOR) to 12 plus the grain level at request +1751 to get any grain, and key 12 then dropped other colour
+> settings (Blacks/Whites, white-balance shifts, noise reduction) until the tone gate was patched. Their shipped colour
+> grain is a texture pass on a work list (hooks on the work-list builder and combiner 1), reached after many camera
+> rounds with freezes and restarts (Frame, Pin Hole on the conversion pass, Shading's getter during capture,
+> RAW+JPEG). Source: androidfanman/caduceus-om3 `research/NOTES.md` at `e32363a`, sections gl1–gl10, gt1–gt4,
+> ft1–ft9, rc1–rc2c, rj1. Effective 998 alone therefore cannot give colour grain on E148.
+>
+> E148 leads for a real implementation: the Art Effect converter `0x6042394c` tests `a3 + 28736`, the field the OM-3
+> converter uses for its monochrome grain/filter route ([effects map](OM5II-EFFECTS-MAP-2026-11-18.md)); 998's only
+> direct references are its setting descriptors (`0x608623a2`) and a logger (`0x6072c992`). The E148 development
+> request, its job key and the combiner selector are not located yet.
+>
+> Signature match of OM-3 (E147 1.1, same image base `0x60021020`) addresses against E148 (2026-11-19; masked call
+> and 32-bit immediate operands; unique matches only): stage selector `0x6052cf39` → **`0x603ecda1`** (48 bytes),
+> grain gains `0x60667dc2` → **`0x6053138e`** (48 bytes), development-request hook site `0x604955f1` →
+> `0x6036fc5c` (24 bytes only: candidate). No match for combiner 33 `0x60505142`, the MONO grain gate `0x604b3f28`,
+> the work-list builder, the Grainy Film handler or the Art converter (whose E148 address `0x6042394c` is known:
+> the bodies differ by struct offsets). Next step for a real implementation: Ghidra cross-references from these
+> anchors, then a logging probe on the camera as OM-3's gl1–gl3 (OM-Emu has no image pipeline).
+>
+> **Removed from the v0.2.0-dev build** (owner, 2026-11-19): `cp_nd.py` `CP_GRAIN = False` drops the row, lookup
+> and descriptor edits; the refresh writes 998 = 0 for Color Profiles again (no `0x4000` stride), `CP_NDESC` = 5,
+> and wb.s no longer maps 907 / 911 / 915. The trash-button fix on the grain row stays (Monochrome has the row).
+> The experiment continues on `claude/cp-grain-experiment`.
+
 Static analysis and OM-Emu only, 2026-11-18. **Not camera-tested.** Addresses are runtime addresses of the
 expanded main program. OM-Emu `bdb33470`, GNU binutils 2.42 `mn10300-elf`.
 

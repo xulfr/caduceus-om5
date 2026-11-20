@@ -49,9 +49,10 @@ the expanded E148 1.1 main program.
 
 ## Space and load order
 
-- Code reachable from the GUI before arming must sit in a section that loads before section 7: the loader runs
-  sections **1, 8, 2, 3, 4, 5, 6, 7, 9, 10** ([brick-risk table](OM5II-BRICK-RISK.md)). `tone_info` is in ext2,
-  `tv_upd` in ext3, `ui_alias` in ext5; they enter ext9 / ext10 code only after `st_ptr` says armed.
+- The loader submits sections 1 through 10 in order. In this build `tone_info` was in ext2,
+  `tv_upd` in ext3 and `ui_alias` in ext5. Candidate `c3bc45c` moves the tone-view gate into the callers'
+  own section 7 so unarmed GUI execution stays out of section 3.
+  [Startup trace](OM5II-DEV0565-CAMERA-2026-11-20.md#startup-comparison-and-wheel-fix-2026-11-20-emulator-only).
 - New this build: the FF tails of **section 3** (`0x60621e80..0x60622000`, `ext3`) and **section 9**
   (`0x615ee5c8..0x615ee800`, `ext9`). Section 9's tail start is named by the constructor-table walker at
   `0x601ae8d8` with a count of 0 (the same pattern as section 4's tail, which wb.s has used since alpha builds).
@@ -67,3 +68,41 @@ the expanded E148 1.1 main program.
 `tests/run_bw_tint.py` (7 cases, all passed on the build recorded with this note): Black / White values, OM's tone
 values untouched in Black/White, the INFO cycle back to Hi/Sh, Color Profile 2, a stock mode afterwards, and the
 tints. Screens are saved per case.
+
+## Open: Black / White labels larger than Sh / Hi (camera report 2026-11-19)
+
+Owner: "Black n" / "White n" are drawn noticeably larger than the stock "Sh ±n" / "Hi ±n". OM-Emu shows the same.
+Findings so far (emulator and static, not fixed):
+
+- `tone_text` draws through `tx_draw` (ext6): `stock_font(1)` (`0x60d51f07`) then `stock_text` (`0x60d4b7bc`). E148 has
+  one font record per language: `font_record` `0x60d52e6b` (d0 = id → table `0x61e53d7c`[language] + 74 × id); only
+  id 1 ("Olym…", size byte +66 = 50) is filled. Ids 0, 2 and 3 return no font (nothing drawn).
+- The stock Sh / Mid / Hi labels do not go through `stock_text` (traced: only Caduceus text calls it on that page).
+- Copying record 1 with +66 = 34 and building the font with `stock_font`'s body (`0x60d51f18`) gave font attributes
+  `22 00 22 00 …` but the **same-size** glyphs, and with +66 = 20 or 4 the next string ("White") came out garbled.
+  The font object (`0x6220338c`) is the same shared object either way, so its size is global and appears to be
+  cached by the glyph engine. Not safe to change on the camera; reverted.
+- Next: find how the stock label widgets (view +792 + 4k, labels 2..4 / 10..12) render their text (they may be
+  resource images or a second font path), and draw Black / White that way, or reuse the stock title labels.
+- Follow-up (2026-11-19): the stock title and value labels are widgets (vtable `0x60fdfab0`) 30 px high (the hint,
+  label 16, 50 px), with no text attached (image labels; their field +0x48 is 37, the hint's 15). Writing 0, 1, 3 or 4
+  instead of 2 to the paint context's +52 before `stock_text` changes nothing. With one font record and a glyph cache
+  that ignores size, OM's text path draws one size only; smaller text would need the stock label images (none spell
+  Black / White) or glyphs of our own (no space). Options for the owner: keep the size; shorter words ("Blk" /
+  "Wht"); or keep the stock value images (±n, small) and draw only the word.
+
+## 2026-11-20: labels redone (owner, package `4f7aeb6c`: labels too large, hint text overflowed)
+
+- Titles: new resource images composed from OM's glyphs (`tools/oly_resource_recipe.py --strips`): `0x3e80` "Bl"
+  (B from "WB Auto" `0x2bde`, l from "Color" `0x1078`), `0x3e81` "Wh" (W from `0x2bde`, h from "Sh" `0x1077`), 24 px
+  like "Sh" / "Hi". `tone_labels` sets slot 0 of title labels 2 / 10 through OM's `label_img` `0x60f04d5e` (a0
+  label, d0 slot, d1 id; slots at label +172) and restores OM's in every other state; OM's own update never resets it.
+- Image id convention: the label ids (OM's records at `0x610d5aa8..` and `label_img`) are this note's image index + 1
+  as rendered by `oly_ui_bitmap` dumps: Sh = `0x1078`, Hi = `0x1077`, Mid INFO = `0x3f7f`. The new sprites use the
+  recipe tool's ids directly (`0x3e80..0x3e82` rendered correctly). Restoring with the dump's index gave "Hi" for
+  "Sh" and "Color Select INFO" for the hint (emulator).
+- Values: OM's view copies its numbers from GUI data model 17 (`0x60d42f19`, view +864), which reads OM's tone
+  values, not the alias. `tl_val` sets the sign (label 3 / 11: 0 for 0, 1 for +, 2 for −) and digit (4 / 12: |v|)
+  indices like `0x60df89bd` after each update (`label_index` `0x60f04d34`).
+- Hint: `0x3e82` = OM's "Mid INFO" (`0x3f7e` crop 58..124) with 62 blank columns (bitmaps are at most 128 wide);
+  `tone_text` writes "Bl/Wh" there in the Hi/Sh state.

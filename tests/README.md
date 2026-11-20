@@ -51,31 +51,26 @@ from patch-origin writes; it does not prove that all hardware paths are safe.
 All results are **emulator only**. No loader, second CPU, ISP, physical persistence or exposure validation
 is implied. Do not change `camera_tested` after a passing run.
 
-### Color Profile grain (v0.2.0-dev)
+### Color Profile grain (removed)
 
-Six GUI cases set and switch the Color Profile Film Grain row. They then read cells 907/911/915 and the effective
-setting 998 through OM's getters (`tests/cp_grain_assert.mjs`). On the alpha12 build `cp1-low` fails, as it should.
+Color Profile grain was removed on 2026-11-19 (no grain in colour pictures on the camera; stock grain is
+monochrome-only). Its tests, `run_cp_grain.py` and `cp_grain_assert.mjs`, are on the experiment branch
+`claude/cp-grain-experiment`.
 
-```sh
-python tests/run_cp_grain.py --emu generated/om-emu --build generated/strict --out generated/cp-grain
-```
+### Blacks / Whites curve (retired)
 
-### Blacks / Whites curve (v0.2.0-dev)
-
-`tests/bw_assert.mjs` calls the camera's tone-curve modifier `0x60385f08` and the gate wrapper on a test ramp, with
-Blacks/Whites written into P. Pass the gate wrapper's linked address (from `mn10300-elf-nm`):
-
-```sh
-BW_GATE=0x605af690 POST=$PWD/tests/bw_assert.mjs OM_EMU_DIR=... bash tools/dev/run.sh generated/strict OUT s1
-```
+`tests/bw_assert.mjs` tested the brightness-curve hook (`0x60385f08`), which the camera showed had no visible effect
+(research/OM5II-V020DEV-CAMERA-2026-11-19.md). Black / White now go into the split-tone delta tables, checked by
+`tests/st_assert.mjs` in the `run_bw_tint.py` cases below.
 
 ### Black / White on the tone page and split tone on the colour wheel (v0.2.0-dev)
 
 `tests/run_bw_tint.py` drives the tone page (INFO into Black/White, the dials, the INFO cycle, Color Profile 2, a stock
-mode afterwards) and the colour wheel's tint axes (7 cases). `tests/bw_tint_assert.mjs` checks the settings, OM's own
+mode afterwards) and the colour wheel (14 cases total). INFO changes group, and trash wraps within a group. `tests/bw_tint_assert.mjs` checks the settings, OM's own
 tone values, P's curve values and states; for tint cases it runs `tests/st_assert.mjs`, which recomputes every delta
 from the tint cells and calls the camera's R/G/B curve setter with test ramps (every output entry must match; with the
-tint flag cleared the stock tables must pass through).
+tint flag cleared or only sections 1 and 2 ready, the stock tables must pass through). The gamma cases enter at
+`0x603e6a3b`, trace the allowed section for all 1023 incomplete ready masks and check both stock exits.
 
 ```sh
 python tests/run_bw_tint.py --emu generated/om-emu --build generated/strict --out generated/bw-tint

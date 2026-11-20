@@ -85,8 +85,8 @@ class ReleaseTests(unittest.TestCase):
             end = start + len(bytes.fromhex(edit['bytes']))
             self.assertFalse(any(start < address + size and end > address for address, size in restored), edit)
 
-    def test_newest_release_is_alpha12(self):
-        self.assertEqual(patch.newest(), 'v0.1.0-alpha12')
+    def test_newest_release_and_alpha12_baseline(self):
+        self.assertEqual(patch.newest(), 'v0.2.0-alpha1')
         releases = ROOT / 'releases'
         alpha11 = releases / 'v0.1.0-alpha11'
         alpha12 = releases / 'v0.1.0-alpha12'
