@@ -80,6 +80,14 @@
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
+## Current priorities (owner, 2026-11-20)
+
+1. **Intermittent boot loop on `0565540a`** (power cycle recovers; not reproducible on demand). Find the cause
+   before more features. [Report](research/OM5II-DEV0565-CAMERA-2026-11-20.md#later-the-same-day-owner).
+2. Colour wheel INFO: switch between HSL and Tint axes (with its hint label), instead of the misleading "Color All".
+3. Separate split-tone row abandoned (`claude/split-tone-row`, note only). Work continues on this branch, not `main`
+   (main is alpha12, the original OM-5 builder's donor).
+
 ## Next camera checks
 
 000. **Dev package `9b14e1cea7a30826628a7914468b1f350a42174754aedd67f3739264abf295c9`** (check the card file's
