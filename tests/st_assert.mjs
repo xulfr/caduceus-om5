@@ -1,7 +1,9 @@
 // POST module: Split tone (v0.2.0-dev). After the GUI has set tints on the colour wheel, checks the delta tables the
 // refresh built in P against the documented formula (from the tint cells) and calls the camera's R/G/B curve setter
 // 0x603e6974 (hooked by wb.s st_entry / st_tint) with three ramp tables and a fake job output: the stored table
-// pointers (O+0xa24/0xa28/0xa2c) and values must be the ramps plus the deltas, clamped to 0..4095. With ST_A cleared
+// pointers (O+0xa24/0xa28/0xa2c) and values must be the ramps plus the delta at each value's output level
+// (value >> 4: the curve tables are indexed by linear input, so zones go by output level since 2026-11-20), clamped to
+// 0..4095. With ST_A cleared
 // the stock tables must pass through. Black / White (P+1172 / 1174) add -(X * u) >> 5 to every channel, X = Blacks
 // below the middle and Whites from it up (hsl.s tn_tables). Emulator only: no photo is developed.
 // OM5_ST_EXPECT (JSON, optional): {"cells": {"968": 48, ...}} cell values the GUI should have produced.
@@ -49,7 +51,7 @@ export default function (g) {
   assert.deepEqual(off.ptr, [R, G, B], 'no tint: the stock tables pass through');
   assert.deepEqual(on.ptr, [buf, buf + 512, buf + 1024], 'tint: the buffer tables');
   for (let c = 0; c < 3; c++) for (let i = 0; i < 256; i++)
-    assert.equal(on.t[c][i], Math.min(4095, Math.max(0, off.t[c][i] + exp[c][i])), `out c${c} i${i}`);
+    assert.equal(on.t[c][i], Math.min(4095, Math.max(0, off.t[c][i] + exp[c][off.t[c][i] >> 4])), `out c${c} i${i}`);
   assert.equal(Buffer.from(M.dbgRead(0x6218c2fe, 2)).readUInt16LE(), h, 'state handle intact');
   console.log('ST T ' + JSON.stringify(T));
   for (const i of [0, 32, 64, 128, 192, 224, 255]) console.log(`ST i=${i} off=${off.t.map(t => t[i])} on=${on.t.map(t => t[i])}`);

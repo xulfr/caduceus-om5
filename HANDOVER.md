@@ -45,6 +45,11 @@
   tint axis still selectable but only one colour moves. The same source plus cg1 (`f7f1db5d…2c51`) boot-looped, so
   cg1 / its carousel edit caused that. **Owner: colour grain shelved; this branch is the base for the next alpha.**
   [Report](research/OM5II-DEV4F7A-CAMERA-2026-11-20.md), cg1 report on `claude/cp-grain-experiment`.
+- **Camera, 2026-11-20, package `0565540a…de73`: works** (labels, live view). The first flash attempt failed (file on
+  the card not SHA-checked; suspected copy corruption, unconfirmed); the second, after a SHA-256 check, worked. The cg1
+  boot loop was also flashed unchecked, so its cause is not certain. Remaining: Highlight Tint showed nothing; the
+  colour wheel's selected-colour swatch changed every second colour; "Bl/Wh" drawn over OM's "Hi/Sh INFO".
+  [Report and fixes](research/OM5II-DEV0565-CAMERA-2026-11-20.md) (dev package `9b14e1ce…95c9`, not flashed).
 - **Fixes since (emulator only, not flashed):** Bl / Wh title images from OM's glyphs + OM's own ±n images + "Bl/Wh
   INFO" hint ([tone page note](research/OM5II-TONE-PAGE-2026-11-19.md)); live view: `gs_hook` makes each gamma-stage
   cache miss once after Black / White or tint tables change ([note](research/OM5II-LIVEVIEW-GAMMA-CACHE-2026-11-20.md)).
@@ -77,7 +82,11 @@
 
 ## Next camera checks
 
-00. **Dev package `0565540a52e09e483573bf59e1d4a62946db944a6364a9a605c4ee8b4a94de73`** (branch
+000. **Dev package `9b14e1cea7a30826628a7914468b1f350a42174754aedd67f3739264abf295c9`** (check the card file's
+   SHA-256 before flashing). Highlight Tint visible on bright areas; shadow / midtone tints and Black / White now act by
+   output brightness (different feel); swatch top right follows every colour; tone hint "Bl/Wh INFO" in Hi/Sh, OM's
+   "Hi/Sh INFO" untouched in Mid.
+00. **Dev package `0565540a52e09e483573bf59e1d4a62946db944a6364a9a605c4ee8b4a94de73`** (works, 2026-11-20) (branch
    `claude/wizardly-feynman-wejd65`; `4f7aeb6c` + labels + live-view fix; new: hook at `0x603e6a3b` in the gamma stage,
    ext8 code, resource images `0x3e80..0x3e82`, P 1544 bytes). Boots? Then: Black / White and each tint change live
    view **without** a half-press (also back to 0, and leaving to a stock mode clears the tint at once); tone page shows

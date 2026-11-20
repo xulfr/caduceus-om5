@@ -25,6 +25,7 @@ BW_B = 1172                     /* s16 Blacks of the active Color Profile, curve
 BW_W = 1174                     /* s16 Whites: positive lowers the white end */
 ST_A = 1176                     /* s16: 1 while the split-tone delta tables are valid (wb.s st_tint) */
 ST_TM = 1178                    /* byte: 1 = the tone page's Black / White state */
+ST_HINT = 1179                  /* byte: 1 = the tone hint shows IMG_HINT, tone_text writes Bl/Wh */
 ST_BUF = 1180                   /* split-tone buffer: 3 x 512 output tables, 16 bytes, 3 x 512 deltas */
 TINT_T = 1184                   /* 9 s16: tint of zone z (shadows, midtones, highlights), channel c (R, G, B) */
 ST_BUF_SIZE = 3088
@@ -406,6 +407,7 @@ paint_axis:
 paint_restore:
  mov a3,a0
  call gfx_wheel,[d2,d3,a2,a3],48
+ call wheel_swatch,[d2,d3,a2,a3],28   /* ext9: a2 = the view, a3 = context */
  mov (48,sp),d0
  movhu d0,(52,a3)
  mov (52,sp),d0
@@ -3152,13 +3154,22 @@ tl_cp:
  mov d0,(4,sp)                   /* profile 0..2 */
  cmp 0,d3
  bne tl_set                      /* 1: Black/White */
- mov 2189,d0
- call stock_get,[],4
- mov 2,d3                        /* Hi/Sh: our hint */
- cmp 1,d0
- bne tl_set
+ mov 2,d3                        /* Hi/Sh: our hint. Which hint OM shows */
+ mov (856,a2),a0                 /* (label 16's index: 0 "Mid INFO", 1 "Hi/Sh */
+ cmp 0,a0                        /* INFO") decides, not setting 2189: on the */
+ beq tl_set                      /* camera Bl/Wh was drawn over "Hi/Sh INFO" */
+ movbu (132,a0),d0
+ cmp 0,d0
+ beq tl_set
  clr d3                          /* Mid: OM's */
 tl_set:                          /* d3: 0 OM, 1 Black/White, 2 Hi/Sh */
+ call st_ptr,[],8
+ clr d0
+ cmp 2,d3
+ bne tl_h0
+ mov 1,d0
+tl_h0:
+ movbu d0,(ST_HINT,a0)           /* for tone_text */
  mov IMG_SH,d1
  cmp 1,d3
  bne tl_t1
@@ -3212,6 +3223,72 @@ tl_img:
  call label_img,[d2,a2],12
 tli_out:
  ret [],8
+/* a2 = the colour view, a3 = its paint context (from paint_axis, armed, after
+ * gfx_wheel). OM's selected-colour swatch (view label 4, +808) has 8 images
+ * for the OM-1 / OM-3 wheel: 7 colours and "All" (slot 7). With E148's 12
+ * colours it repeated every second colour (owner, 2026-11-20). Its colour
+ * slots 0..6 get the blank IMG_BLANK (OM never resets them; label_img does
+ * nothing when unchanged) and the selected colour's swatch is drawn here, as
+ * OM's: frame in palette 7, 22 x 22 at (586, 90), fill 20 x 20 in the wheel's
+ * colour (gtab_col). "All" stays OM's. call wheel_swatch,[d2,d3,a2,a3],28 */
+IMG_BLANK = 0x3e83
+wheel_swatch:
+ mov (808,a2),a2                 /* not 0: paint_axis checked it */
+ clr d3
+ws_loop:
+ mov a2,a0
+ mov d3,d0
+ mov IMG_BLANK,d1
+ call label_img,[d2,a2],12
+ inc d3
+ cmp 7,d3
+ bcs ws_loop
+ws_draw:
+ mov (scr_obj),a0                /* the colour editor, as gfx_wheel finds it */
+ cmp 0,a0
+ beq ws_out
+ mov (a0),a0
+ cmp 0,a0
+ beq ws_out
+ mov (76,a0),a0
+ cmp 0,a0
+ beq ws_out
+ movhu (120,a0),d0
+ cmp 13,d0
+ bne ws_out
+ movhu (122,a0),d0               /* 1..12, 0 = all */
+ add -1,d0
+ cmp 12,d0
+ bcc ws_out
+ mov gtab_col,a0
+ add d0,a0
+ movbu (a0),d0
+ mov d0,(4,sp)
+ mov a3,a2                       /* gfx_bar's context */
+ mov 7,d0                        /* frame */
+ clr d1
+ call ws_box,[d2,d3,a2,a3],28
+ mov (4,sp),d0                   /* fill, 1 px in */
+ mov 1,d1
+ call ws_box,[d2,d3,a2,a3],28
+ws_out:
+ ret [d2,d3,a2,a3],28
+/* a2 = context, d0 = colour, d1 = inset k: block (586 + k, 90 + k), 22 - 2k
+ * square. call ws_box,[d2,d3,a2,a3],28 */
+ws_box:
+ mov d1,d2
+ mov a2,a0
+ call pen_color,[d2,d3,a2,a3],16
+ mov 22,d3
+ sub d2,d3
+ sub d2,d3
+ mov 586,d0
+ add d2,d0
+ mov 90,d1
+ add d2,d1
+ mov d3,d2
+ call gfx_bar,[d2,d3,a2,a3],28
+ ret [d2,d3,a2,a3],28
 /* a2 = the view, d0 = setting, d1 = its sign label's offset (the digit
  * label follows): OM's image indices (0x60df89bd): sign 0 for 0, 1 for +,
  * 2 for -; digit |v|. call tl_val,[d2,d3],16 */
@@ -3243,31 +3320,6 @@ tlv_d:
  mov (4,a0),a0
  call label_index,[d2,a2],12
  ret [d2,d3],16
-/* a2 = paint context: "Bl/Wh" in the hint's blank part (IMG_HINT) in the
- * Hi/Sh state of a Color Profile. call tone_text,[d2,d3,a2,a3],48 */
-tone_text:
- call st_ptr,[],8
- cmp 0,a0
- beq tt_out
- movbu (ST_TM,a0),d3
- cmp 0,d3
- bne tt_out
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcc tt_out
- mov 2189,d0
- call stock_get,[],4
- cmp 1,d0
- beq tt_out
- mov text_bw,a1
- mov 290,d0                      /* the blank 62 px of IMG_HINT start at 296 */
- mov 426,d1
- mov 68,d2
- call tx_draw,[d2,d3,a2,a3],44
-tt_out:
- ret [d2,d3,a2,a3],48
 
 .section .ext6,"ax"
 /* a2 = paint context, a1 = UTF-16 text, d0 = x, d1 = y, d2 = width: the text
@@ -3307,6 +3359,23 @@ tx_restore:
  mov (20,sp),d0
  mov d0,(76,a2)
  ret [d2,d3,a2,a3],44
+.section .ext3,"a"
+/* a2 = paint context: "Bl/Wh" in the hint's blank part while tone_labels
+ * shows IMG_HINT (P+ST_HINT). call tone_text,[d2,d3,a2,a3],48 */
+tone_text:
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tt_out
+ movbu (ST_HINT,a0),d0           /* tone_labels put IMG_HINT in the label */
+ cmp 0,d0
+ beq tt_out
+ mov text_bw,a1
+ mov 290,d0                      /* the blank 62 px of IMG_HINT start at 296 */
+ mov 426,d1
+ mov 68,d2
+ call tx_draw,[d2,d3,a2,a3],44
+tt_out:
+ ret [d2,d3,a2,a3],48
 .section .ext8,"ax"
 .balign 2
 text_bw:                         /* the hint; titles are images (owner, 2026-11-20) */

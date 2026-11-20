@@ -35,6 +35,9 @@ CASES = [
      dict(pm=54, tint={968: 0x30, 974: 0x19}, stFlag=1, st=True)),
     ('cp3-midtone', CP1 + 'right right ' + WHEEL + TINT + 'delete main+3 ' + DONE,
      dict(pm=56, tint={973: 0x30}, stFlag=1, st=True)),
+    # Camera report 2026-11-20: Highlight Tint showed nothing (the zones went by the curve's linear input index).
+    # st_assert now checks every output against the delta at its own output level.
+    ('cp1-highlight', CP1 + WHEEL + TINT + 'delete delete main+3 ' + DONE, dict(pm=54, tint={974: 0x30}, stFlag=1, st=True)),
     # Camera report 2026-11-19: "all" on a tint axis wrote every colour in turn (the last, Yellow-green 0x3b, wins).
     # "all" (INFO) on Saturation, then trash to Shadow Tint: the axis is back on one colour (Yellow, 0x30).
     ('cp1-all-to-tint', CP1 + WHEEL + 'info ' + TINT + 'main+3 ' + DONE, dict(pm=54, tint={968: 0x30}, stFlag=1, st=True)),

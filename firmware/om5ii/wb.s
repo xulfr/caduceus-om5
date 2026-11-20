@@ -366,7 +366,8 @@ wb_mono_map:
  * are mov a0,a2; inc4 a2; mov d1,d2; mov d0,d1; mov (a2),d0 (replayed).
  * When armed and the active Color Profile has a tint (ST_A, set by hsl.s
  * tint_refresh with the delta tables, 0 in other modes) the tinted copies
- * c'[i] = c[i] + delta_c[i] (0..4095) are built in the buffer (R' +0, G'
+ * c'[i] = c[i] + delta_c[c[i] >> 4] (0..4095; the deltas are indexed by the
+ * output level, 2026-11-20) are built in the buffer (R' +0, G'
  * +512, B' +1024; deltas at +1552, +2064, +2576) and passed instead. The
  * buffer is uncached heap memory owned by Caduceus; concurrent jobs write
  * identical values. research/OM5II-SPLIT-TONE-2026-11-19.md */
@@ -394,13 +395,19 @@ st_tint:
  mov d0,(1544,a3)                /* G in */
  mov d1,(1548,a3)                /* B in; a1 = R in */
  mov a3,a0                       /* out: R' +0, G' +512, B' +1024 */
+ mov a3,d2
+ add 1552,d2                     /* this channel's deltas (d2 free: MDR is saved) */
  clr d3
 st_loop:
  movhu (a1),d0
- movhu (1552,a0),d1
+ mov d0,d1                       /* deltas by output level c >> 4, not by index: */
+ lsr 4,d1                        /* the tables are indexed by linear input (stock */
+ add d1,d1                       /* index 46 already gives half output), so zones */
+ add d2,d1                       /* by index put every tint in the highlights */
+ mov d1,a2
+ movhu (a2),d1
  exth d1
- add d1,d0
- cmp 0,d0
+ add d1,d0                       /* small values: N alone decides (no overflow) */
  bge st_lo
  clr d0
 st_lo:
@@ -413,9 +420,9 @@ st_hi:
  add 2,a1
  inc d3
  mov d3,d0
- and 255,d0
- cmp 0,d0
+ and 255,d0                      /* sets Z */
  bne st_loop
+ add 512,d2
  mov d3,d0                       /* 256 or 512: the next input, G or B */
  lsr 6,d0
  mov a3,d1

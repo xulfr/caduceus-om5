@@ -3,7 +3,7 @@ SECTIONS {
  .wb_extension 0x605af780 : { *(.wb_extension) }
  .wb_body 0x60829570 : { *(.wb_body) }
  .wb_profile 0x613f2f20 : { *(.wb_profile) }
- .st_tint 0x60829774 : { *(.st_tint) }
+ .st_tint 0x6082976c : { *(.st_tint) }
 }
 PM_ID = 111;
 /* Completed initialization, not the asynchronous load-submission word at +4. */
@@ -21,6 +21,6 @@ ST_POOL = 0xa1e27d80;
 ST_HANDLE_MAX = 43329;   /* R/G/B curve setter after its first 5 bytes (st_hook) */
 ctx_get = 0x602d2fc2;
 ASSERT(ADDR(.wb_extension) + SIZEOF(.wb_extension) <= 0x605af800, "WB gate leaves section 2")
-ASSERT(ADDR(.wb_body) + SIZEOF(.wb_body) <= 0x60829774, "WB body runs into st_tint")
+ASSERT(ADDR(.wb_body) + SIZEOF(.wb_body) <= 0x6082976c, "WB body runs into st_tint")
 ASSERT(ADDR(.st_tint) + SIZEOF(.st_tint) <= 0x60829800, "st_tint leaves section 4")
 ASSERT(ADDR(.wb_profile) + SIZEOF(.wb_profile) <= 0x613f2ffc, "WB profile helper runs into the extension vector")

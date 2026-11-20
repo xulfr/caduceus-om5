@@ -53,7 +53,7 @@ gs_miss_back = 0x603e6aa3;     /* gamma stage: the cache-miss path */
 setter_back = 0x603e6979;       /* R/G/B curve setter after its first 5 bytes (st_hook) */
 tone_info_stock = 0x60e9e8ff;   /* tone editor (type 0x1531) INFO handler, entered by calls */
 tone_view_stock = 0x60df862e;   /* the tone view's label update (a0 = view) */
-st_tint = 0x60829774;           /* wb.s .st_tint (fixed in wb.ld) */
+st_tint = 0x6082976c;           /* wb.s .st_tint (fixed in wb.ld) */
 knob_shading = 0x60e4aa19;      /* slider knob: Shading's case (effective 1016, -5..+5) */
 knob_none = 0x60e4aa37;
 cell_back = 0x60e4a37f;         /* panel row handler after mov 1016,d0; calls (a2) */
