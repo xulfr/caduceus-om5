@@ -1,24 +1,23 @@
 /* OM-5 Mark II 1.1 (E148, build 1100) HSL editor and builder overlay, ported
  * from the OM-3 patch. NOT tested on a camera; exercised in OM-Emu only.
  * Code and state live in the FF tails inside the loaded extents of sections 2,
- * 6, 7 and 8. E148 loads all ten sections once at boot (8 before 2) and never clears their
+ * 6, 7 and 8. E148 submits sections 1 through 10 at boot and never clears their
  * completion bits (finalizer 0x600464d0, bits 0xa26e2694). See README.md. */
 /* Runtime state is NOT kept in the loaded image. Stock E148 makes no absolute
  * store into it, and the 8 November camera failure began at the first such
  * stores this patch made (research/OM5II-IMAGE-STORE-FAULT-2026-11-11.md).
- * State lives in a 1040-byte heap block "P" (stock malloc, class-1 pool,
+ * State lives in a 1544-byte heap block "P" (stock malloc, class-1 pool,
  * uncached alias), allocated once on the first shutter half-press after boot.
  * Its handle is the padding halfword after the HLS event manager's task id
  * (.bss, zero at power-on). Until then every hook behaves as stock.
  *   P+0 axis (0 saturation, 1 hue, 2 lightness)   P+4 colour editor object
  *   P+8 reset-in-progress flag                    P+12 WB commit busy flag
- *   P+16..55 axis label text (UTF-16)             P+56 unused (was: repaint flag)
+ *   P+16..59 reserved (former text buffer and repaint flag)
  *   P+64.. reserved (Caduceus) */
 ST_AXIS = 0
 ST_EDITOR = 4
 ST_RESET = 8
 ST_BUSY = 12
-ST_LABEL = 16
 ST_SIZE = 1544                  /* the heap block P; 1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Blacks/Whites/Split tone rows, 1528 before gs_hook's table */
 /* v0.2.0-dev fields of P (after the 23 descriptor nodes at P+988..1171): */
 BW_B = 1172                     /* s16 Blacks of the active Color Profile, curve units */
@@ -36,7 +35,7 @@ ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
-/* INFO keeps its native individual/all role. Delete (trash) switches axis:
+/* On the colour wheel INFO switches groups and Delete switches axis:
  * the colour-direct screen forwards its native 0x9016 command to the focused
  * widget, and the colour page container consumes it for the colour editor. */
 .section .delete_pointer,"a"
@@ -142,15 +141,22 @@ delete_stock:
  jmp stock_delete_action
 
 /* Colour page container command method (vtable entry 0). Stock forwards INFO
- * to its focused child but drops 0x9016. Consume 0x9016 only when that child
+ * to its focused child but drops 0x9016. Handle either key only when that child
  * is the 13-child colour editor whose cursor is a colour-selection setting. */
 hsl_container:
  cmp 0x9014,d0
- beq container_info
+ beq container_check
  cmp 0x9016,d0
  bne container_stock
- add -4,sp
- mov a0,(sp)
+container_check:
+ add -16,sp
+ mov d0,(4,sp)
+ mov a1,(8,sp)
+ mov a0,(12,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ beq container_restore
+ mov (12,sp),a0
  mov (76,a0),a0
  cmp 0,a0
  beq container_restore
@@ -164,10 +170,12 @@ hsl_container:
  sub 2197,d0
  cmp 8,d0
  bcc container_restore
- mov (sp),a1                     /* the container */
- add 4,sp
+ mov (4,sp),d0
+ mov (12,sp),a1                     /* the container */
+ add 16,sp
  movm [d2,d3,a2,a3],(sp)
  add -8,sp
+ mov d0,d3
  mov a1,(4,sp)
  mov a0,a2
  call st_ptr,[],8
@@ -175,16 +183,10 @@ hsl_container:
  beq container_unarmed
  mov a2,(ST_EDITOR,a0)
  movbu (ST_AXIS,a0),d0
- inc d0
- cmp 6,d0                        /* Saturation, Hue, Lightness, Shadow / Midtone / Highlight tint */
- bcs container_axis
- clr d0
+ calls wheel_next_axis
 container_axis:
  movbu d0,(ST_AXIS,a0)
- /* A tint is one colour: arriving on a tint axis with "all" selected
-  * (parent +122 = 0), switch to one colour with OM's own INFO. */
- cmp 3,d0
- bcs container_refresh
+ /* If stock left the wheel on All, restore individual editing with its INFO. */
  movhu (122,a2),d0
  cmp 0,d0
  bne container_refresh
@@ -208,9 +210,12 @@ container_unarmed:
  mov 1,d0
  ret [d2,d3,a2,a3],24
 container_restore:
- mov (sp),a0
- add 4,sp
- mov 0x9016,d0
+ mov (12,sp),a0
+ mov (4,sp),d0
+ mov (8,sp),a1
+ add 16,sp
+ cmp 0x9014,d0
+ beq container_info
 container_stock:
  jmp stock_container
 /* INFO: section 2 (container_info2), for space. */
@@ -327,22 +332,17 @@ refresh_done:
  * Context layout is based on the matching OM-3 draw API, not PEN-F addresses. */
 paint_axis:
  movm [d2,d3,a2,a3],(sp)
- add -24,sp
- mov a0,a2
- mov a1,(20,sp)
+ add -20,sp
+ mov a0,a2                       /* view */
+ mov a1,(8,sp)
  call stock_paint,[a2,a3],16
- mov (20,sp),a1
- add -40,sp
- mov a1,(20,sp)
- mov d0,(16,sp)
- cmp 0,a1
- beq paint_done
+ mov d0,(12,sp)
  call st_ptr,[],8
  cmp 0,a0
  beq paint_done
- add ST_LABEL,a0
- mov a0,(56,sp)
- mov (20,sp),a1
+ mov (8,sp),a1
+ cmp 0,a1
+ beq paint_done
  movhu (4,a1),d0
  cmp 2,d0
  bne paint_done
@@ -353,95 +353,64 @@ paint_axis:
  cmp 0,a1
  beq paint_done
  movhu (8,a1),d0
- add 24,d0
- mov d0,(24,sp)
- /* Draw with the caller's paint context in place. stock_font only sets its
-  * font at +76 (0x60d51fa2) and the style below changes +52; both are put
-  * back afterwards. (OM-3 copied 684 bytes of context to the stack.) */
- movhu (52,a3),d0
- mov d0,(48,sp)
- mov (76,a3),d0
- mov d0,(52,sp)
- mov a3,a0
- mov 1,d0
- call stock_font,[a2],8
+ add -76,d0
+ mov d0,(16,sp)
+ movbu (ST_AXIS,a0),d3
+ /* Wheel label 11 (at +836) sits above frame 10. Replace the displayed
+  * slot's bitmap with the same INFO-only image the tone page uses. */
+ mov (836,a2),a0
  cmp 0,a0
- beq paint_restore
- mov a0,(32,sp)
- mov 2,d0
- movhu d0,(52,a3)
- mov (24,sp),d0
- add -100,d0
- movhu d0,(40,sp)
- add 199,d0
- movhu d0,(44,sp)
- mov 16,d0
- movhu d0,(42,sp)
- mov 47,d0
- movhu d0,(46,sp)
- mov (56,sp),a0
- call make_axis_label,[d2,d3,a2,a3],24
- mov (56,sp),d1
- mov a3,a0
- mov sp,a1
- add 40,a1
- mov text_style,d0
- call stock_text,[d2,d3,a2,a3],16
- mov (24,sp),d0
- add -100,d0
- movhu d0,(40,sp)
- add 199,d0
- movhu d0,(44,sp)
- mov 50,d0
- movhu d0,(42,sp)
- mov 81,d0
- movhu d0,(46,sp)
- mov text_switch,d1
- mov a3,a0
- mov sp,a1
- add 40,a1
- mov text_style,d0
- call stock_text,[d2,d3,a2,a3],16
- mov (32,sp),a0
- call stock_font_release,[],4
-paint_restore:
- mov a3,a0
- call gfx_wheel,[d2,d3,a2,a3],48
- call wheel_swatch,[d2,d3,a2,a3],28   /* ext9: a2 = the view, a3 = context */
- mov (48,sp),d0
- movhu d0,(52,a3)
- mov (52,sp),d0
- mov d0,(76,a3)
-paint_done:
- mov (16,sp),d0
- add 64,sp
- ret [d2,d3,a2,a3],16
-
-/* Axis title: Saturation / Hue / Lightness. The selected value is shown by
- * the native value label, which follows the active axis. */
-make_axis_label:
- mov a0,a2
- call st_axis,[],12
- mov d0,d3
+ beq paint_title
+ movbu (132,a0),d0
+ mov IMG_HINT,d1
+ call label_img,[d2,a2],12
+paint_title:
+ mov a2,(4,sp)
+ mov a3,a2                       /* tx_draw's context */
  mov text_saturation,a1
-label_skip:                      /* the axis' name is the d3-th of the list */
- cmp 0,d3
- beq label_copy
+ mov d3,d2
+label_skip:
+ cmp 0,d2
+ beq paint_axis_name
 label_skip_ch:
  movhu (a1),d0
  add 2,a1
  cmp 0,d0
  bne label_skip_ch
- add -1,d3
+ add -1,d2
  bra label_skip
-label_copy:
- movhu (a1),d0
- movhu d0,(a2)
- add 2,a1
- add 2,a2
- cmp 0,d0
- bne label_copy
- ret [d2,d3,a2,a3],24
+paint_axis_name:
+ mov (16,sp),d0
+ mov 16,d1
+ mov 199,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ mov text_switch,a1
+ mov (16,sp),d0
+ mov 50,d1
+ call tx_draw,[d2,d3,a2,a3],44
+ mov text_tint,a1
+ cmp 3,d3
+ bcs paint_hint
+ mov text_hsl,a1
+paint_hint:
+ mov 290,d0
+ mov 426,d1
+ mov 68,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ mov a3,a0
+ call gfx_wheel,[d2,d3,a2,a3],48
+ mov (4,sp),a2
+ call wheel_swatch,[d2,d3,a2,a3],28
+paint_done:
+ mov (12,sp),d0
+ add 20,sp
+ ret [d2,d3,a2,a3],16
+
+.balign 2
+text_tint:
+ .short 'T','i','n','t',0
+text_hsl:
+ .short 'H','S','L',0
 .balign 4
 text_style:
  .long 10,15,15
@@ -2524,23 +2493,10 @@ ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
 
 .section .ext2,"ax"
-/* INFO (0x9014) toggles the custom pages' native controls (all / individual,
- * the tone curve's point). Stock runs it but restarts the screen's timeout
- * only for other commands. Run stock, then count a consumed INFO as activity
- * on the custom pages (section 10, armed only). Same frame use as
- * hsl_delete_action: (0,sp) stays free for the nested calls. On a tint axis
- * of the colour wheel with one colour selected, INFO is consumed and does
- * nothing: a tint has one colour, and "all" wrote every colour in turn
- * (camera report 2026-11-19). From "all", INFO still leaves it. */
+/* INFO outside the colour wheel keeps OM's action and activity timer. */
 container_info2:
  add -12,sp
  mov a0,(4,sp)
- mov d0,(8,sp)
- call info_tint,[a2],8
- cmp 0,d0
- bne info_kept
- mov (8,sp),d0
- mov (4,sp),a0
  calls stock_container
  mov d0,(8,sp)
  cmp 1,d0
@@ -2550,39 +2506,31 @@ container_info2:
  beq info_done
  mov (4,sp),a0
  call ui_info_activity,[d2,d3,a2,a3],24
- bra info_done
-info_kept:
- mov d0,(8,sp)
 info_done:
  mov (8,sp),d0
  add 12,sp
  rets
 
-/* a0 = the container -> d0 = 1 when INFO must not switch to "all": armed,
- * colour wheel parent (13 children), tint axis (3..5), one colour selected.
- * Preserves d1, a1-a3. call info_tint,[a2],8 */
-info_tint:
- mov (76,a0),a2
- call st_ptr,[],8
- cmp 0,a0
- beq it_no
- movbu (ST_AXIS,a0),d0
+.section .ext8,"ax"
+/* d0 = axis, d3 = key. INFO pairs Saturation/Shadow, Hue/Midtone,
+ * Lightness/Highlight. Delete wraps at the end of each group. Armed only. */
+wheel_next_axis:
+ cmp 0x9014,d3
+ beq wheel_group
+ inc d0
  cmp 3,d0
- bcs it_no
- cmp 0,a2
- beq it_no
- movhu (120,a2),d0
- cmp 13,d0
- bne it_no
- movhu (122,a2),d0
- cmp 0,d0
- beq it_out
- mov 1,d0
- bra it_out
-it_no:
- clr d0
-it_out:
- ret [a2],8
+ beq wheel_wrap
+ cmp 6,d0
+ bne wheel_axis_done
+wheel_wrap:
+ add -3,d0
+ rets
+wheel_group:
+ cmp 3,d0
+ bcc wheel_wrap
+ add 3,d0
+wheel_axis_done:
+ rets
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
  * Blacks / Whites are added to the split-tone delta tables (tn_tables, ext3), so
@@ -2721,12 +2669,12 @@ CAD_NDESC = 15
 /* The tone view's own label update 0x60df862e (a0 = the view; called at
  * 0x60df85f3 and 0x60df8626, each followed by ret [a2],8) shows OM's labels
  * again after each change; both calls jump here: OM's update, then, once
- * armed, tone_labels_v. Section 3 loads before the GUI. */
+ * armed, tone_labels_v. Both stock call sites and the gate are in section 7. */
 .section .tv_call1,"ax"
  jmp tv_upd
 .section .tv_call2,"ax"
  jmp tv_upd
-.section .ext3,"a"
+.section .ext7,"ax"
 tv_upd:
  call tone_view_stock,[d2,d3,a2,a3],48
  call tv_after,[d2,d3,a2,a3],24
@@ -2740,6 +2688,8 @@ tv_after:                        /* a2 = the view; d0 kept */
 tva_out:
  mov (4,sp),d0
  ret [d2,d3,a2,a3],24
+.section .ext3,"a"
+.balign 2
 bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
  .hword 965, 966, 967, 993, 997, 1020
 tint_ids:                        /* zone z of Color Profile p: 3z + p (shadows, midtones, highlights) */
@@ -3395,24 +3345,33 @@ text_switch:
  * gs_hook replaces cmp 0,d3; beq 0x603e6aa3; mov (56,sp),a0 at 0x603e6a3b:
  * once armed, a cache that has not seen the current GS_GEN (bw_refresh adds 1
  * after each table rebuild) takes the stock miss path once (as with d3 = 0,
- * the cache is then refilled). No call: d0, d1, a0, a1 are free here (the
- * stage reloads them); d2 (= 1) and d3 are kept. In section 8, which loads
- * first after section 1 (section 2 has no room). */
+ * the cache is then refilled). Registers d0, d1, a0, a1 are free here (the
+ * stage reloads them); d2 (= 1) and d3 are kept. The gate and both stock
+ * exits live with the gamma stage in section 2. */
 .section .gs_hook,"ax"
  jmp gs_entry
  nop
-.section .ext8,"ax"
+.section .ext2,"ax"
 gs_entry:
  cmp 0,d3
- beq gs_miss
- movhu (st_handle_u),d0
- cmp 0,d0
- beq gs_go
- add ST_POOL-1,d0
- mov d0,a0
- mov (ST_MAGIC,a0),d1
- cmp ST_MAGIC_VALUE,d1
- bne gs_go
+ beq gs_stock_miss
+ mov (loaded_bits),d0
+ and 1023,d0
+ cmp 1023,d0
+ bne gs_stock_go
+ add -4,sp                       /* private call slot; preserve the stage's frame */
+ call st_ptr,[],8
+ add 4,sp
+ cmp 0,a0
+ beq gs_stock_go
+ jmp gs_cache
+gs_stock_miss:
+ jmp gs_miss_back
+gs_stock_go:
+ mov (56,sp),a0
+ jmp gs_back
+.section .ext8,"ax"
+gs_cache:
  mov (GS_GEN,a0),d1
  mov a0,a1
  add GS_TAB+32,a1                /* end of the table */
@@ -3452,6 +3411,10 @@ gs_go:
  jmp st_entry
 .section .ext2,"ax"
 st_entry:
+ mov (loaded_bits),d2
+ and 1023,d2
+ cmp 1023,d2
+ bne st_unarmed
  movhu (st_handle_u),d2          /* st_ptr, inline: a call would write its */
  cmp 0,d2                        /* return address over the setter's saved a2 */
  beq st_unarmed

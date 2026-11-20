@@ -44,6 +44,14 @@ export default function (g) {
   const tab = a => { const b = Buffer.from(M.dbgRead(a, 512)); return Array.from({ length: 256 }, (_, i) => b.readUInt16LE(2 * i)); };
   const run = () => { M.dbgWrite(O, new Uint8Array(4096)); g.__call(0x603e6974, { a0: O, a1: R, d0: G, d1: B }, [0xa0, 8]);
     const ptr = [u32(O + 0xa24), u32(O + 0xa28), u32(O + 0xa2c)]; return { ptr, t: ptr.map(tab) }; };
+  const ready = 0xa26e2694, saved = M.dbgRead(ready, 4).slice();
+  try {
+    // The caller in section 2 is available, the tint body in section 4 is not.
+    M.dbgWrite(ready, Uint8Array.of(3, 0, 0, 0));
+    assert.deepEqual(run().ptr, [R, G, B], 'partial load: keep the stock curves even with a valid P');
+  } finally {
+    M.dbgWrite(ready, saved);
+  }
   const on = run();
   const sa = Buffer.alloc(2); M.dbgWrite(P + ST_A, new Uint8Array(sa));
   const off = run();

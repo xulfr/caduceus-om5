@@ -19,7 +19,8 @@ ALLOWED = {
     'display_hook', 'display_stock', 'label_get', 'label_get_done',
     'hsl_container', 'container_stock', 'container_restore', 'container_unarmed',
     'hsl_delete_action', 'delete_done', 'delete_restore', 'delete_stock',
-    'container_info', 'info_done',                                        # INFO: stock, then an armed-only branch
+    'container_check', 'container_info', 'container_info2', 'info_done',                                        # INFO: stock, then an armed-only branch
+    'tv_upd', 'tv_after', 'tva_out', 'ui_alias', 'ua_out',                # stock UI update and same-task state gates
     'parent_hook', 'parent_restore', 'st_set_editor', 'st_set_editor_out',
     'reset_hook', 'st_reset_on', 'st_reset_off', 'st_reset_put', 'st_reset_out',
     'builder_hook', 'builder_stock',

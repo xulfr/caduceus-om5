@@ -13,11 +13,12 @@ export default async function (g) {
   assert.notEqual(h, 0, 'armed');
   const b = Buffer.from(g.__M.dbgRead(0xa1e27d80 - 1 + h + 1172, 8));
   const tintIds = [968, 969, 970, 971, 972, 973, 974, 975, 964];
-  const got = { pm: G(111), bw: [965, 966, 967, 993, 997, 1020].map(G), p: [b.readInt16LE(0), b.readInt16LE(2)],
+  const got = { axis: g.__M.dbgRead(0xa1e27d80 - 1 + h, 1)[0], pm: G(111), bw: [965, 966, 967, 993, 997, 1020].map(G), p: [b.readInt16LE(0), b.readInt16LE(2)],
     st: b.readInt16LE(4), tm: b[6], mode: G(2189), tone: Array.from({ length: 9 }, (_, i) => G(976 + i)),
     tint: Object.fromEntries(tintIds.map(id => [id, G(id) & 0xff])), grain: [907, 911, 915].map(G) };
   console.log('BW TINT ' + JSON.stringify(got));
   const want = JSON.parse(process.env.OM5_BW_EXPECT || '{}');
+  if (want.axis !== undefined) assert.equal(got.axis, want.axis, 'colour wheel axis');
   if (want.pm !== undefined) assert.equal(got.pm, want.pm, 'picture mode');
   if (want.bw) assert.deepEqual(got.bw, want.bw, 'Blacks / Whites settings');
   if (want.p) assert.deepEqual(got.p, want.p, 'curve values in P');

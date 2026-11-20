@@ -9,7 +9,7 @@ export default function(g) {
   const half = (a, v) => { const b = Buffer.alloc(2); b.writeUInt16LE(v); M.dbgWrite(a, b); };
   const handle = 0x6218c2fe, tid = 0x6218c2fc, ready = 0xa26e2694;
   const malloc = 0x60023818, getTid = 0x600317b4;
-  const SIZE = 1528;   // hsl.s ST_SIZE (1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Black/White/Split Tone rows)
+  const SIZE = 1544;   // hsl.s ST_SIZE (1024 before the Shading descriptors' nodes, 1040 before CP grain's, 1136 with the Black/White/Split Tone rows)
   const saved = [read(handle, 2), read(tid, 2), read(ready, 4)];
   const trig = 0x602f0cc2, resume = 0x602f0b9a, armGate = 0x613f2d93;
   const hooks = new Map([malloc, getTid, trig, resume, armGate].map(pc => [pc, lab.hooks.get(pc)]));
@@ -49,7 +49,7 @@ export default function(g) {
     // Obtain a genuine pool block, then return it from the controlled allocator.
     if (hooks.get(malloc)) lab.hooks.set(malloc, hooks.get(malloc)); else lab.hooks.delete(malloc);
     owned = g.__call(malloc, { d0: 2048 }, [0, 4]).a0 >>> 0;
-    assert.ok(owned >= 0xa1e27d80 && owned <= 0xa1e27d80 + 43328, 'real class-1 allocation');
+    assert.ok(owned >= 0xa1e27d80 && owned <= 0xa1e27d80 + 42240, 'real class-1 allocation');
     allocation = owned;
     lab.hook_rt(malloc, (h, r) => h.finish(r, { a0: allocation }), 'audit-allocation-success');
     M.dbgWrite(owned, Buffer.alloc(SIZE + 16, 0x5a));   // the block and a 16-byte guard band
@@ -60,8 +60,8 @@ export default function(g) {
     assert.equal(read(0xa218c2fe, 2).readUInt16LE(), owned - 0xa1e27d80 + 1, 'handle is in RAM as well');
     assert.deepEqual(read(owned + SIZE, 16), Buffer.alloc(16, 0x5a), 'state clear stops at its boundary');
     // A handle counts only when in range, 4-aligned and pointing at a block with the magic.
-    const spots = [0xa1e27d80, 0xa1e326c0, 0xa1e27d84].map(a => [a + 60, read(a + 60, 4)]);
-    for (const [value, pointer, magic] of [[0, 0, 1], [1, 0xa1e27d80, 1], [1, 0, 0], [43329, 0xa1e326c0, 1], [43329, 0, 0], [2, 0, 1], [5, 0xa1e27d84, 1], [43330, 0, 1], [65535, 0, 1]]) {
+    const spots = [0xa1e27d80, 0xa1e32280, 0xa1e27d84].map(a => [a + 60, read(a + 60, 4)]);
+    for (const [value, pointer, magic] of [[0, 0, 1], [1, 0xa1e27d80, 1], [1, 0, 0], [42241, 0xa1e32280, 1], [42241, 0, 0], [2, 0, 1], [5, 0xa1e27d84, 1], [42242, 0, 1], [65535, 0, 1]]) {
       for (const [a] of spots) word(a, magic ? 0x55444143 : 0x12345678);
       half(handle, value);
       const r = g.__call(0x605af4b0, { d0: 0x12345678, d1: 42, a1: 123 }, [0, 8]);

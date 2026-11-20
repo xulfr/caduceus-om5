@@ -5,7 +5,7 @@
 
 Opens the Picture Mode direct screen on Color Profile 1 and reads the composited frames. The wheel must show
 the twelve colours' blocks on their spokes at the radius of each value, follow a dial edit, the selected colour
-(white edge), the axis switch and "All"; the tone page must show the curve and bend it with Shadows. Every
+(white edge), the group switch and its INFO hint; the tone page must show the curve and bend it with Shadows. Every
 consumed dial step must invalidate the page exactly once (OM only repaints the label that changed; a stale
 wheel on the camera would look right here only if this count were wrong). Geometry and palette indices are
 those of firmware/om5ii/hsl.s. Emulator only: the frame is OM-Emu's model of the OSD plane, not a camera.
@@ -113,7 +113,7 @@ def main():
         print(name, 'ok' if not bad else 'FAILED: ' + '; '.join(bad[:6]), flush=True)
         faults.extend(f'{name}: {b}' for b in bad)
 
-    # frames: 12 = the wheel row; then three steps up, next colour, two steps down, axis, one step, all, five up
+    # frames: 12 = the wheel row; then three steps up, next colour, two steps down, Hue, one step, Midtone Tint, five up
     keys = OPEN + 'down T+ main+1 main+1 main+1 sub-1 main-1 main-1 delete main+1 info ' + 'main+1 ' * 5 + 'T-'
     f = session(a, 'wheel', keys, 14)
     zero = [0] * 12
@@ -123,10 +123,12 @@ def main():
     check('wheel-second-colour', wheel(frame(f[18]), [3, -2] + [0] * 10, {1}))
     check('wheel-hue-axis', wheel(frame(f[19]), zero, {1}))
     check('wheel-hue-edit', wheel(frame(f[20]), [0, 1] + [0] * 10, {1}))
-    check('wheel-all', wheel(frame(f[21]), [0, 1] + [0] * 10, set(range(12))))
-    # "All" moves every colour by one step and stops when one of them is at the list's end (+5): the fifth
-    # step changes nothing, so there are 14 layouts and invalidations for the 15 inputs
-    check('wheel-all-edit', wheel(frame(f[26]), [4, 5] + [4] * 10, set(range(12))))
+    check('wheel-midtone-tint', wheel(frame(f[21]), zero, {1}))
+    check('wheel-midtone-edit', wheel(frame(f[26]), [0, 5] + [0] * 10, {1}))
+    def hint(n, left, right):
+        return [row[4 * left:4 * right] for row in frame(f[n])[425:460]]
+    check('wheel-group-hint', [] if hint(20, 295, 356) != hint(21, 295, 356)
+          and hint(20, 358, 422) == hint(21, 358, 422) else ['group text or INFO glyph did not match'])
 
     # tone row: straight on entry, then Shadows +5 lifts the lower quarter and leaves the upper half
     f = session(a, 'tone', OPEN + 'down down T+ ' + 'main+1 ' * 5 + 'T-', 5)
@@ -145,7 +147,7 @@ def main():
 
     if faults:
         sys.exit('page graphics regressions failed')
-    print('all 10 page graphics checks passed')
+    print('all 11 page graphics checks passed')
 
 
 if __name__ == '__main__':
