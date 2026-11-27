@@ -26,6 +26,7 @@
 - [The tone page: OM's editor, labels, INFO and the Black/White state (v0.2.0-dev)](../research/OM5II-TONE-PAGE-2026-11-19.md)
 - [Split tone: three tints on the colour wheel (v0.2.0-dev)](../research/OM5II-SPLIT-TONE-2026-11-19.md)
 - [Looks as a Color Profile's defaults: Hold OK reset and the "changed" mark (v0.2.0-dev)](../research/OM5II-LOOK-DEFAULTS-2026-11-27.md)
+- [Can the GPU (c3d) draw our wheel and curve? E148 c3d kinds, GPU tooling, recommendation](../research/OM5II-C3D-GPU-WHEEL-2026-11-27.md)
 
 The archive contains historical findings, not necessarily
 the current state of the repository.

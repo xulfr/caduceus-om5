@@ -91,6 +91,9 @@
   build. Slider rows and the strip ignore Hold OK in OM-Emu on stock too. No "star" seen in the emulator.
   [Note and results](research/OM5II-LOOK-DEFAULTS-2026-11-27.md).
 
+- GPU wheel question (2026-11-27, static): E148's c3d accepts kinds 1, 2, 6, 8, 9 only (no empty-renderer kind);
+  stock kinds cannot show our values. Keep the CPU-drawn graphics. [Note](research/OM5II-C3D-GPU-WHEEL-2026-11-27.md).
+
 ## Current priorities (owner, 2026-11-20)
 
 1. **Intermittent boot loop on `0565540a`**. Power cycling recovers it. The old gamma hook demonstrably entered
