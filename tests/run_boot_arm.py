@@ -4,7 +4,8 @@
 OM-Emu does not run E148's FastEndCb, so tests/boot_pre.mjs starts boot.s's task as the hook does (bg_start), after the
 section bits are published. Each case then idles or presses keys without a half-press first, and
 tests/boot_arm_assert.mjs checks the state block P: armed, the start-up refresh pending until the first half-press,
-LOOKS.BIN read in the background, and the look button working before any half-press. Cases with BG off are the
+LOOKS.BIN and the card block read in the background (a block for another build or a damaged one refused), and the
+look button working before any half-press. Cases with BG off are the
 unchanged half-press path. Emulator only: start-up timing, the real FastEndCb and the card's speed are camera-only.
 
     python tests/run_boot_arm.py --emu OM_EMU_DIR --build generated/strict --out generated/boot-arm
@@ -19,11 +20,19 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from card.mklooks import looks_bin
+sys.path.insert(0, str(ROOT / 'tools'))
+import mkcardblock  # noqa: E402
 
 CP1 = 'ok ok ' + 'right ' * 8         # Picture Mode, Color Profile 1 highlighted (no half-press)
-# (name, background task started, card mounted, keys, expectation)
+# (name, background task started, card mounted, keys, expectation[, card block: 'good' (default), None, 'other-build',
+#  'bad-crc'])
 CASES = [
-    ('bg-arms', True, True, 'wait:4000', dict(armed=True, pend=1, films=1, count=4, slot0=None)),
+    ('bg-arms', True, True, 'wait:4000', dict(armed=True, pend=1, films=1, count=4, slot0=None, block=1, table=True)),
+    # The card block: refused whole when absent, made for another build (a check word differs) or damaged
+    ('bg-no-block', True, True, 'wait:4000', dict(armed=True, films=1, block=2, table=False), None),
+    ('bg-block-other-build', True, True, 'wait:4000', dict(armed=True, films=1, block=2, table=False), 'other-build'),
+    ('bg-block-bad-crc', True, True, 'wait:4000', dict(armed=True, films=1, block=2, table=False), 'bad-crc'),
+    ('halfpress-block', False, True, 's1', dict(armed=True, pend=0, block=1, table=True)),
     ('bg-look-without-halfpress', True, True, 'wait:4000 ' + CP1 + 'delete', dict(armed=True, pend=1, films=1, slot0=0)),
     ('bg-then-halfpress', True, True, 'wait:4000 s1', dict(armed=True, pend=0, films=1)),
     # No card: armed, LOOKS.BIN not tried (the task waits 10 s for a medium, then leaves it to the half-press)
@@ -49,15 +58,27 @@ def main():
     ap.add_argument('--case', action='append')
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
-    card = a.out.resolve() / 'card'
-    (card / 'OM5MOD').mkdir(parents=True)
-    (card / 'OM5MOD' / 'LOOKS.BIN').write_bytes(looks_bin(json.loads((ROOT / 'tools/dev/films-test.json').read_text())))
+    looks = looks_bin(json.loads((ROOT / 'tools/dev/films-test.json').read_text()))
+    good = a.out.resolve() / 'CADUCEUS.BIN'
+    mkcardblock.build(a.build.resolve(), good)
+    good = good.read_bytes()
+    other = bytearray(good)
+    other[24] ^= 0xff                 # the first check's expected word: as a block made for another build
+    bad = bytearray(good)
+    bad[-1] ^= 1                      # the body no longer matches its CRC-32
+    blocks = {'good': good, None: None, 'other-build': bytes(other), 'bad-crc': bytes(bad)}
     start = bg_start(a.build.resolve())
     results, failed = [], []
-    for name, bg, mounted, keys, want in CASES:
+    for name, bg, mounted, keys, want, *block in CASES:
         if a.case and name not in a.case:
             continue
         folder = a.out.resolve() / name
+        card = folder / 'card'
+        (card / 'OM5MOD').mkdir(parents=True)
+        (card / 'OM5MOD' / 'LOOKS.BIN').write_bytes(looks)
+        data = blocks[block[0] if block else 'good']
+        if data is not None:
+            (card / 'OM5MOD' / 'CADUCEUS.BIN').write_bytes(data)
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/boot_pre.mjs'),
                    POST=str(ROOT / 'tests/boot_arm_assert.mjs'), OM5_BOOT_EXPECT=json.dumps(want),
                    OM5_UNMOUNTED='0' if mounted else '1')
