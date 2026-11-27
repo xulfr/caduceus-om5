@@ -37,6 +37,7 @@ FL_READ  = FL_SIZE + 1           /* read one extra byte to detect an oversized f
 PANEL_ROW = 136                 /* panel updater object: kind of the highlighted row */
 PANEL_TITLE = 140               /* u16: that row's title id (the mode strip: mode name or 203) */
 LABEL_ID = 130                  /* text label: the string id it last laid out */
+ST_RESET_B = 8                  /* hsl.s ST_RESET: P+8, set during OM's colour-editor reset */
 FL_TAG   = 0x464c               /* 'FL': word 0 of a slot's name cells = FL_TAG << 16 | index << 8 */
 
 .section .hook_str,"ax"
@@ -642,3 +643,173 @@ fl_path:
  .asciz "C:\\OM5MOD\\LOOKS.BIN"
 fl_mode:
  .asciz "rb"
+
+/* ---- The look as the slot's defaults (section 2, in the old record table
+ * of setting 111 that color_profiles.py no longer uses: 0x604ef120..0x604ef520).
+ *
+ * OM's Picture Mode screen asks one method for a setting's default, the
+ * settings object's vtable +152 (stock 0x608ef2b4, table 0x60bb6ad0). The
+ * row's "changed" check (0x60e4ae7b) compares each value with it, and the
+ * Hold OK resets (0x60e91c1d, 0x60e92358, ...) write it back. On a Color
+ * Profile that holds a look, the look's value is the default. A look is
+ * known only while this power-on's LOOKS.BIN is loaded and still has the
+ * slot's look, by index and name; otherwise OM's default (0) as before.
+ * Reached from the GUI before arming too: fl_preset calls st_ptr first and
+ * touches nothing else (fl_ids / fl_cells are in section 10) until armed. */
+.section .ext2b,"ax"
+.global def_hook
+def_hook:                        /* calls: d0 = id, a0 = object, a1 = out */
+ movm [d2,d3,a2,a3],(sp)
+ add -8,sp
+ mov d0,d2
+ mov a0,a2
+ mov a1,a3
+ clr d1
+ call fl_preset,[d2,d3,a2,a3],16
+ cmp 0,d1
+ beq dh_stock
+ cmp 0,a3
+ beq dh_stock
+ mov d0,(a3)
+ clr d0
+ ret [d2,d3,a2,a3],24
+dh_stock:
+ mov d2,d0
+ mov a2,a0
+ mov a3,a1
+ calls stock_default
+ ret [d2,d3,a2,a3],24
+
+/* ui_write (hsl.s) on the Hue / Lightness axis: d2 = colour cell, d1 = the
+ * value -> d0 = the value, or during OM's reset (ST_RESET) the look's Hue /
+ * Lightness of that cell, or 0. call hl_reset,[d3],8 */
+.global hl_reset
+hl_reset:
+ mov d1,d3
+ mov ST_RESET_B,d0
+ call st_getb,[],12
+ cmp 0,d0
+ beq hr_keep
+ call st_axis,[],12
+ mov d0,d1
+ mov d2,d0
+ call fl_preset,[d2,d3,a2,a3],16
+ cmp 0,d1
+ bne hr_out
+ clr d0
+ ret [d3],8
+hr_keep:
+ mov d3,d0
+hr_out:
+ ret [d3],8
+
+/* d0 = setting id, d1 = axis for the colour cells (0 saturation, 1 hue,
+ * 2 lightness) -> d1 = 1 and d0 = that value in the look the Color Profile
+ * slot holds, else d1 = 0. Reads only. call fl_preset,[d2,d3,a2,a3],16 */
+fl_preset:
+ mov d0,d2
+ mov d1,d3
+ call st_ptr,[],8
+ cmp 0,a0
+ beq fp_no
+ mov a0,a2
+ movbu (FL_STATE,a2),d0
+ cmp 1,d0
+ bne fp_no
+ /* On the tone page's Black / White state OM's tone IDs write Black /
+  * White (hsl.s tone_alias), which no look holds: keep OM's default. */
+ mov d2,d0
+ call ui_alias,[d2,d3],12
+ cmp d0,d2
+ bne fp_no
+ /* colour cells 928 + 12p + s: record byte s (hue), 12 + s, 24 + s */
+ mov d2,d0
+ add -928,d0
+ cmp 36,d0
+ bcc fp_rows
+ clr d1
+fp_div:
+ cmp 12,d0
+ bcs fp_col
+ add -12,d0
+ inc d1
+ bra fp_div
+fp_col:
+ mov fp_axis,a0
+ add d3,a0
+ movbu (a0),d3
+ add d0,d3
+ mov d3,a3
+ bra fp_slot
+ /* contrast, sharpness, shading, tone: fl_ids {first id, step, offset} */
+fp_rows:
+ mov fl_ids,a0
+ mov 6,a3
+fp_row:
+ movhu (a0),d0
+ clr d1
+fp_p:
+ cmp d0,d2
+ beq fp_hit
+ movbu (2,a0),d3
+ add d3,d0
+ inc d1
+ cmp 3,d1
+ bne fp_p
+ add 4,a0
+ add -1,a3
+ cmp 0,a3
+ bne fp_row
+fp_no:
+ clr d1
+ ret [d2,d3,a2,a3],16
+fp_hit:
+ movbu (3,a0),d0
+ mov d0,a3
+fp_slot:                         /* d1 = p, a3 = record byte */
+ mov fl_cells,a0
+ add d1,a0
+ add d1,a0
+ movhu (a0),d3
+ mov d3,d0
+ mov 1,d1
+ call active_read,[d2],8
+ mov d0,d1
+ lsr 16,d1
+ cmp FL_TAG,d1
+ bne fp_no
+ lsr 8,d0
+ and 255,d0
+ movbu (FL_N,a2),d1
+ cmp d1,d0
+ bcc fp_no
+ mov FL_REC,d1
+ mul d1,d0
+ add FL_BANK + FL_HDR,d0
+ add d0,a2                       /* a2 = the look's record */
+ /* the slot's stored name (cells +1..+3) must still be this record's */
+ clr d2
+fp_name:
+ inc d3
+ mov d3,d0
+ mov 1,d1
+ call active_read,[d2],8
+ mov (64,a2),d1
+ cmp d1,d0
+ bne fp_no
+ add 4,a2
+ inc d2
+ cmp 3,d2
+ bne fp_name
+ add -12,a2
+ add a3,a2
+ movbu (a2),d0
+ extb d0
+ mov 1,d1
+ ret [d2,d3,a2,a3],16
+fp_axis:
+ .byte 24, 0, 12
+
+/* OM's settings object, vtable +152 (default value): Color Profile looks */
+.section .def_pointer,"a"
+ .long def_hook

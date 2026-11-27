@@ -9,6 +9,10 @@
 - **Split toning on the colour wheel** of Color Profile 1–3: Shadow, Midtone and Highlight Tint on the trash button;
   any of the twelve colours, strength 1..5. Works on the camera (live view and JPEGs). A tint is one colour: "all"
   is no longer offered on the tint axes. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- **Hold OK returns to the look** on a Color Profile slot holding one (2026-11-27, static analysis and build only):
+  OM's default for the slot's colours, tone, Contrast, Sharpness and Shading is the look's value, so the reset and
+  OM's "changed" mark use the look instead of 0. Needs this switch-on's `LOOKS.BIN`.
+  [Note](research/OM5II-LOOK-DEFAULTS-2026-11-27.md).
 - **Picture Mode stays open 30 s** after the last key, dial or tap (was 8 s).
 - **Film Grain for Color Profiles removed**: the camera showed no grain in colour pictures (its grain pass is
   monochrome-only). Work continues on the experiment branch `claude/cp-grain-experiment`.

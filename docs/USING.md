@@ -49,7 +49,11 @@ set while it is selected come back when you select it again. All other picture m
 is not a row in the Picture Mode screen: set white balance as usual (WB button or super control panel). Not yet
 checked on a camera.
 
-**Hold OK** on a row resets it, as on OM's own picture modes.
+**Hold OK** on a row resets it, as on OM's own picture modes. On a slot holding a look (v0.2.0-dev, not yet checked
+on a camera or in the emulator) it goes back to **the look's value**, and OM's "changed" mark compares against the
+look, so it shows once you move a value away from the look. This needs the look file read at this switch-on (the
+card with the same `LOOKS.BIN`); without it the reset is 0 as before. Black and White are not part of a look and
+reset to 0.
 
 ## Looks
 

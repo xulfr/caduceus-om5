@@ -490,15 +490,15 @@ ui_write:
  cmp 2,d0
  bne ui_write_stock
 ui_write_alt:
- mov ST_RESET,d0
- call st_getb,[],12
- cmp 0,d0
- beq write_not_reset
- clr d3
-write_not_reset:
- cmp -5,d3
+ /* During OM's reset: the slot's look value, or 0 (films.s hl_reset). A
+  * look may hold -7..7, so the guard takes that range; the editor's own
+  * list only offers -5..5. */
+ mov d3,d1
+ call hl_reset,[d3],8
+ mov d0,d3
+ cmp -7,d3
  blt ui_write_end
- cmp 5,d3
+ cmp 7,d3
  bgt ui_write_end
  mov d2,d0
  mov 1,d1
@@ -859,6 +859,8 @@ st_ptr_out:
  ret [],8
 /* d0 = byte P+0 (axis) / P+d0, or 0 when not armed. call ...,[],12.
  * Preserves everything else. */
+.global st_axis
+.global st_getb
 st_axis:
  clr d0
 st_getb:
@@ -1155,6 +1157,7 @@ st_set_editor_out:
  ret [a2],8
 /* ui_read / ui_write: tone_alias (section 9) only once armed, when every
  * section is loaded. call ui_alias,[d2,d3],12: d0 = id -> d0 */
+.global ui_alias
 ui_alias:
  call st_ptr,[],8
  cmp 0,a0

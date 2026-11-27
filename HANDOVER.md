@@ -82,6 +82,15 @@
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
+## Look defaults (branch `ccr-568c4ae0-gogwt3`, 2026-11-27, static + build only)
+
+- Owner report: on a slot holding a look, editing a value shows no star, and Hold OK sets the value to 0, not to
+  the look's value. The fix points OM's settings default method (vtable `0x60bb6ad0` +152) at the look's values.
+  `ui_write` resets Hue / Lightness to the look. The code is in the dead tail of 111's old record table
+  (`.ext2b`, `0x604ef120`). Package `e583093b…1839`. `check.py fast` and the static build audit pass.
+  **OM-Emu was not available, so this is not run.** Which mark the row status draws is unconfirmed.
+  [Note and checks](research/OM5II-LOOK-DEFAULTS-2026-11-27.md).
+
 ## Current priorities (owner, 2026-11-20)
 
 1. **Intermittent boot loop on `0565540a`**. Power cycling recovers it. The old gamma hook demonstrably entered
