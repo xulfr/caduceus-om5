@@ -82,6 +82,18 @@
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
+## Look defaults (branch `ccr-568c4ae0-gogwt3`, 2026-11-27, emulator only)
+
+- Owner report: on a slot holding a look, no change mark and Hold OK resets to 0. Reproduced in OM-Emu on alpha1.
+  OM's settings default (vtable `0x60bb6ad0` +152) now gives the look's values; `ui_write` resets Hue / Lightness to
+  the look. Code in `.ext2b` (`0x604ef120`, dead tail of 111's old record table). Package `ed8b80e6…db20`.
+- `tests/run_look_defaults.py` 6/6 (alpha1 fails the 5 look cases). OM-Emu caught a frame-size bug in the first
+  build. Slider rows and the strip ignore Hold OK in OM-Emu on stock too. No "star" seen in the emulator.
+  [Note and results](research/OM5II-LOOK-DEFAULTS-2026-11-27.md).
+
+- GPU wheel question (2026-11-27, static): E148's c3d accepts kinds 1, 2, 6, 8, 9 only (no empty-renderer kind);
+  stock kinds cannot show our values. Keep the CPU-drawn graphics. [Note](research/OM5II-C3D-GPU-WHEEL-2026-11-27.md).
+
 ## Current priorities (owner, 2026-11-20)
 
 1. **Intermittent boot loop on `0565540a`**. Power cycling recovers it. The old gamma hook demonstrably entered

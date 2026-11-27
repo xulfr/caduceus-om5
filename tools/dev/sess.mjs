@@ -3,6 +3,7 @@
 // the firmware's own GUI, key by key, with optional watchpoints over the loaded image.
 //   OM_EMU_MODEL=E148 node tools/om5ii_ui_session.mjs OM_EMU_DIR MAIN.bin RES.bin OUT_DIR 'key key ...' [options]
 // keys: ok menu up down left right info delete s1 s2 play ... (OM-Emu key ids); main+N / sub-N turn a dial; wait:MS idles;
+// hold:KEY:MS holds a key down for MS ms (default 1500) and releases it (a long press, e.g. hold:ok for Reset);
 // tap:X,Y touches the TFT panel at (X, Y) (down, 100 ms, up);
 // T+ / T- switch a PRE module's tracing (tools/dev/calls.mjs, trace.mjs) on and off between keys.
 // --ready     publish all ten section-completion bits (0xa26e2694) after the start; OM-Emu does not run E148's loader
@@ -88,6 +89,7 @@ try {
   for (const tok of script.split(/\s+/).filter(Boolean)) {
     if (tok === 'T+' || tok === 'T-') { (globalThis.__trace ??= {}).on = tok === 'T+'; console.log('TRACE ' + tok); continue; }
     if (tok.startsWith('wait:')) { s.idle_slice(lab.lab_time() + Number(tok.slice(5)) * 1e6); }
+    else if (tok.startsWith('hold:')) { const [, k, ms] = tok.split(':'); s.key(k, 'down'); s.camapp.pump(); s.idle_slice(lab.lab_time() + Number(ms ?? 1500) * 1e6); s.key(k, 'up'); s.camapp.pump(); s.idle_slice(lab.lab_time() + 1200e6); }
     else if (tok.startsWith('tap:')) { const [x, y] = tok.slice(4).split(',').map(Number); s.touch('down', x, y); s.idle_slice(lab.lab_time() + 100e6); s.touch('up', x, y); s.camapp.pump(); s.idle_slice(lab.lab_time() + 1200e6); }
     else if (/^(main|sub)[+-]\d+$/.test(tok)) { const m = tok.match(/^(main|sub)([+-]\d+)$/); s.dial_input(m[1], Number(m[2])); s.camapp.pump(); s.idle_slice(lab.lab_time() + 1200e6); }
     else press(tok);

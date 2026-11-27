@@ -39,6 +39,8 @@ SECTIONS {
  .tv_call2 0x60df8626 : { *(.tv_call2) }
  .ext3 0x60621e80 : { *(.ext3) }
  .ext9 0x615ee5c8 : { *(.ext9) }
+ .ext2b 0x604ef120 : { *(.ext2b) }
+ .def_pointer 0x60bb6b68 : { *(.def_pointer) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
@@ -127,13 +129,15 @@ pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
 move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */
 line_to = 0x60d51774;     /* a0 dc, d0 x, d1 y; call ...,[d2,d3,a2,a3],32 */
 cp_ticked = 0x60d223d5;   /* d0 = CP item k (table 0x60f7f57c) -> d0 1 if ticked; call ...,[],4 */
-ui_invalidate = 0x60d49294; /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
+ui_invalidate = 0x60d49294;
+stock_default = 0x608ef2b4; /* settings object vtable +152 (table 0x60bb6ad0): d0 id, a1 out -> d0 0; entered by calls */ /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(SIZEOF(.cp_any_hook) == 7, "cp_any_hook replaces 7 bytes")
 ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(ADDR(.ext3) + SIZEOF(.ext3) <= 0x60622000, ".ext3 leaves section 3")
 ASSERT(ADDR(.ext9) + SIZEOF(.ext9) <= 0x615ee800, ".ext9 leaves section 9")
+ASSERT(ADDR(.ext2b) + SIZEOF(.ext2b) <= 0x604ef520, ".ext2b leaves the old 111 record table (color_profiles.py OLD_REC)")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
 ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")

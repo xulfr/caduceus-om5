@@ -76,6 +76,14 @@ tint flag cleared or only sections 1 and 2 ready, the stock tables must pass thr
 python tests/run_bw_tint.py --emu generated/om-emu --build generated/strict --out generated/bw-tint
 ```
 
+`tests/run_look_defaults.py` applies a look to Color Profile 1, changes the wheel (each axis) or the tone curve,
+holds OK (`hold:ok:3000`) and checks with `tests/look_defaults_assert.mjs` that the values return to the look and
+that the Reset OK Hold hint shows only while they differ. Black / White and a slot without a look reset to 0.
+
+```bash
+python tests/run_look_defaults.py --emu generated/om-emu --build generated/strict --out generated/look-defaults
+```
+
 ### Live ND shooting labels
 
 Run the shooting UI with the display-side reads for settings 1709–1711 supplied by the fixture.
