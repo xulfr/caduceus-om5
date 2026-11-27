@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "d362364c5c593d8c19f6ff2fcfba6e2e691f8dea240539ba1cd03e6d99945fe2",
+      "stored_after_sha256": "8dad70e5d3a446235aadd634b2b01308150e076fac152a6187bb8eee17e95a8c",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "b91f84d20d4baf1c1d8ac5394b1d6df7f4cab88855790218dbe0d852fa5c6342",
+      "after_sha256": "8f7caf03d2c2626cb65be0635f04dc8e9f10c0160ff77eea5c4f960be127eee3",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -219,7 +219,7 @@
       "address": "0x60ca7b00",
       "bytes": 1269,
       "before_sha256": "ee9cf072267b3d64f4e4059278f3145633e4492906840947ea32e0d0d28dc7a6",
-      "after_sha256": "e1331f82190028857a04032afa1f749acf1d094b61ffe2e9c93dd1769bbe43a1"
+      "after_sha256": "051fe2bcc504e8ab612f235ea8651ba4d553b045e2e467a0796f084c0c085e28"
     },
     {
       "component": "0x100",
@@ -945,9 +945,9 @@
       "component": "0x100",
       "name": "ext2b",
       "address": "0x604ef120",
-      "bytes": 279,
-      "before_sha256": "708dabc49fe673fe955e9dee3ca2496013f5fa2a1ccea14d6557add40388a7af",
-      "after_sha256": "10a078983112027eb8dacfd209f1cefff1a84c256304daf65cbc1389de4016b7"
+      "bytes": 338,
+      "before_sha256": "b16130417901ec29a6b7fab1f898ef831a36c4213e14359b6c3d322f38d55be4",
+      "after_sha256": "bb1c1170a3f3e6219cf49dcd125605c2b72d16b41b80fb547aa6daa5e485a087"
     },
     {
       "component": "0x100",
@@ -1581,7 +1581,7 @@
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "e583093b1f09b8c237d10f75489a53cb0761aacfe38efb439f34798198c81839",
+    "sha256": "ed8b80e6d5846c5ebd3df8fd908b1d7f7ee784517c7c7ba633501cc22bacdb20",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },

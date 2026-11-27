@@ -665,12 +665,40 @@ def_hook:                        /* calls: d0 = id, a0 = object, a1 = out */
  mov a0,a2
  mov a1,a3
  clr d1
- call fl_preset,[d2,d3,a2,a3],16
+ call fl_preset,[d2,d3,a2,a3],20
  cmp 0,d1
  beq dh_stock
  cmp 0,a3
  beq dh_stock
  mov d0,(a3)
+ /* OM's check compares a colour cell's saturation only. On the wheel's
+  * Hue / Lightness axis, a cell whose value there differs from the look
+  * gets a default one off its saturation, so the check sees the change.
+  * OM's reset on those axes writes through hl_reset, which ignores it. */
+ mov d2,d0
+ add -928,d0
+ cmp 36,d0
+ bcc dh_ok
+ call st_axis,[],12
+ mov d0,d3
+ add -1,d0
+ cmp 2,d0
+ bcc dh_ok
+ mov d2,d0
+ mov d3,d1
+ call fl_preset,[d2,d3,a2,a3],20
+ cmp 0,d1
+ beq dh_ok
+ mov d0,d3
+ mov d2,d0
+ call ui_read,[d2,d3,a2,a3],24
+ cmp d0,d3
+ beq dh_ok
+ mov d2,d0
+ call stock_get,[],4
+ xor 1,d0
+ mov d0,(a3)
+dh_ok:
  clr d0
  ret [d2,d3,a2,a3],24
 dh_stock:
@@ -693,7 +721,7 @@ hl_reset:
  call st_axis,[],12
  mov d0,d1
  mov d2,d0
- call fl_preset,[d2,d3,a2,a3],16
+ call fl_preset,[d2,d3,a2,a3],20
  cmp 0,d1
  bne hr_out
  clr d0
@@ -705,7 +733,7 @@ hr_out:
 
 /* d0 = setting id, d1 = axis for the colour cells (0 saturation, 1 hue,
  * 2 lightness) -> d1 = 1 and d0 = that value in the look the Color Profile
- * slot holds, else d1 = 0. Reads only. call fl_preset,[d2,d3,a2,a3],16 */
+ * slot holds, else d1 = 0. Reads only. call fl_preset,[d2,d3,a2,a3],20 */
 fl_preset:
  mov d0,d2
  mov d1,d3
@@ -762,7 +790,7 @@ fp_p:
  bne fp_row
 fp_no:
  clr d1
- ret [d2,d3,a2,a3],16
+ ret [d2,d3,a2,a3],20
 fp_hit:
  movbu (3,a0),d0
  mov d0,a3
@@ -806,7 +834,7 @@ fp_name:
  movbu (a2),d0
  extb d0
  mov 1,d1
- ret [d2,d3,a2,a3],16
+ ret [d2,d3,a2,a3],20
 fp_axis:
  .byte 24, 0, 12
 

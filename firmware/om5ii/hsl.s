@@ -430,6 +430,7 @@ text_lightness:
 read_hook:
  call ui_read,[d2,d3,a2,a3],24
  jmp read_resume
+.global ui_read
 ui_read:
  mov d0,d2
  call ui_alias,[d2,d3],12        /* the tone page's Black / White state */
