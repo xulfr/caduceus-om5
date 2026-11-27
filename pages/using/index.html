@@ -122,7 +122,11 @@ in the whites. With INFO on "all" the dial sets the last colour only, so use the
 set while it is selected come back when you select it again. All other picture modes share one white balance. This
 is not a row in the Picture Mode screen: set white balance as usual (WB button or super control panel). Not yet
 checked on a camera.</p>
-<p><strong>Hold OK</strong> on a row resets it, as on OM's own picture modes.</p>
+<p><strong>Hold OK</strong> on a row resets it, as on OM's own picture modes. On a slot holding a look (v0.2.0-dev, not yet checked
+on a camera or in the emulator) it goes back to <strong>the look's value</strong>, and OM's "changed" mark compares against the
+look, so it shows once you move a value away from the look. This needs the look file read at this switch-on (the
+card with the same <code>LOOKS.BIN</code>); without it the reset is 0 as before. Black and White are not part of a look and
+reset to 0.</p>
 </section>
 <section class="card">
 <h2 id="looks">Looks</h2>
