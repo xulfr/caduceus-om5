@@ -40,6 +40,7 @@ SECTIONS {
  .ext3 0x60621e80 : { *(.ext3) }
  .ext9 0x615ee5c8 : { *(.ext9) }
  .ext2b 0x604ef120 : { *(.ext2b) }
+ .bg_site 0x601b1362 : { *(.bg_site) }
  .def_pointer 0x60bb6b68 : { *(.def_pointer) }
 }
 screen_forward = 0x60ed5c18;
@@ -129,10 +130,17 @@ pen_size = 0x60d51eed;    /* a0 dc, d0 width, d1 height; call ...,[d2,d3],8 */
 move_to = 0x60d519e7;     /* a0 dc, d0 x, d1 y; call ...,[],4 */
 line_to = 0x60d51774;     /* a0 dc, d0 x, d1 y; call ...,[d2,d3,a2,a3],32 */
 cp_ticked = 0x60d223d5;   /* d0 = CP item k (table 0x60f7f57c) -> d0 1 if ticked; call ...,[],4 */
-ui_invalidate = 0x60d49294;
-stock_default = 0x608ef2b4; /* settings object vtable +152 (table 0x60bb6ad0): d0 id, a1 out -> d0 0; entered by calls */ /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
+ui_invalidate = 0x60d49294; /* a0 widget, d0 1, a1 rect or 0 (whole widget); call ...,[],4 */
+/* boot.s: FastEndCb hook and the kernel calls of a task (addresses as OMKit's loader uses them) */
+fastend_resume = 0x601b1367; /* FastEndCb after its first two instructions (movm [a2],(sp); add -4,sp) */
+acre_task = 0x60051d5c;    /* acre_Task: d0 2, d1 0, a0 name, a1 entry, (4,sp) prio, (8,sp) stack, (12,sp) 0; call ...,[d2,d3,a2,a3],56 */
+dly_tsk = 0x60051a2b;      /* sleep d0 ms; call ...,[d2],8 */
+ext_tsk = 0x6003167e;      /* end the calling task; call ...,[a2],8 */
+key_up = 0x60130fb8;       /* d0 key code (4 = OK) -> 0 while held; call ...,[d2,d3,a2,a3],24 */
+stock_default = 0x608ef2b4; /* settings object vtable +152 (table 0x60bb6ad0): d0 id, a1 out -> d0 0; entered by calls */
 ASSERT(ADDR(.ext7) + SIZEOF(.ext7) <= 0x612a5000, ".ext7 leaves section 7")
 ASSERT(SIZEOF(.cp_any_hook) == 7, "cp_any_hook replaces 7 bytes")
+ASSERT(SIZEOF(.bg_site) == 5, "bg_site replaces 5 bytes")
 ASSERT(ADDR(.ext5) + SIZEOF(.ext5) <= 0x60846000, ".ext5 leaves section 5")
 ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(ADDR(.ext3) + SIZEOF(.ext3) <= 0x60622000, ".ext3 leaves section 3")

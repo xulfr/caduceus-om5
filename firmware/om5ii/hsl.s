@@ -1621,6 +1621,10 @@ arm_gate:
  movhu (12,sp),d0
  cmp d1,d0
  bne arm_out
+/* boot.s enters here from its background task (no task check: it waited for
+ * hls_tid itself). Same frame: call arm_alloc,[d2,d3,a2,a3],36 */
+.global arm_alloc
+arm_alloc:
  mov ST_SIZE,d0
  call malloc,[],4
  cmp 0,a0
@@ -1658,6 +1662,7 @@ arm_out:
  * before arming). Any other context is left alone. The refresh takes the
  * context in d0 and its picture mode in d1. call arm_refresh,[d2,d3],16;
  * (4,sp) = a number was cleared. */
+.global arm_refresh
 arm_refresh:
  /* A profile number without its family: OM's own firmware (or its Reset)
   * changes 111 and leaves 903 / 989, and 111 then reads as an unknown mode
@@ -1731,7 +1736,7 @@ arm_refresh_next:
 .section .extvec,"a"
 .global ext_halfpress
 ext_halfpress:
- .long fl_entry
+ .long hp_entry                  /* boot.s: the pending start-up refresh, then films.s fl_entry */
 
 .section .ext10,"ax"
 /* ---- inactivity: custom controls are user activity (section 10, armed) ----
