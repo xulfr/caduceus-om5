@@ -18,6 +18,9 @@ import subprocess
 import sys
 import zlib
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from card_block import card_for  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 OPEN = 's1 ok ok ' + 'right ' * 8
 GX, GY, ZERO, STEP = 290, 222, 84, 8
@@ -88,7 +91,8 @@ def curve(rows, column):
 def session(a, name, keys, invalidations):
     out = a.out / name
     cmd = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()), str(a.build.resolve() / 'decoded/0100.bin'),
-           str(a.build.resolve() / 'decoded/0101.bin'), str(out), keys, '--ready', '--peekP']
+           str(a.build.resolve() / 'decoded/0101.bin'), str(out), keys, '--ready', '--peekP',
+           '--card=' + str(card_for(a.build, a.out))]   # the graphics are in the card block
     env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/ui_activity.mjs'),
                POST=str(ROOT / 'tests/ui_activity.mjs'), UI_PAGE_INVALIDATE=str(invalidations))
     run = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900)

@@ -26,7 +26,7 @@
 Alpha8 through alpha11 also booted there. Their reports are listed in <a href="https://github.com/xulfr/caduceus-om5/blob/main/docs/INDEX.md">docs/INDEX.md</a>.
 The owner performs any physical test; development sessions prepare and check files only.</p>
 </div>
-<nav class="toc" aria-label="On this page"><a href="#first-priority-om-5-mark-ii-e148-firmware-11">First priority: OM-5 Mark II (E148, firmware 1.1)</a><a href="#second-stage-original-om-5-e144-firmware-12">Second stage: original OM-5 (E144, firmware 1.2)</a><a href="#v020-priorities-owner-2026-11-18">v0.2.0 priorities (owner, 2026-11-18)</a><a href="#deferred">Deferred</a><a href="#community-handover">Community handover</a></nav>
+<nav class="toc" aria-label="On this page"><a href="#first-priority-om-5-mark-ii-e148-firmware-11">First priority: OM-5 Mark II (E148, firmware 1.1)</a><a href="#research-bird-detection-autofocus-2026-11-28-no-build">Research: bird detection autofocus (2026-11-28, no build)</a><a href="#second-stage-original-om-5-e144-firmware-12">Second stage: original OM-5 (E144, firmware 1.2)</a><a href="#v020-priorities-owner-2026-11-18">v0.2.0 priorities (owner, 2026-11-18)</a><a href="#deferred">Deferred</a><a href="#community-handover">Community handover</a></nav>
 <section class="card">
 <h2 id="first-priority-om-5-mark-ii-e148-firmware-11">First priority: OM-5 Mark II (E148, firmware 1.1)</h2>
 <ul>
@@ -59,6 +59,18 @@ The owner performs any physical test; development sessions prepare and check fil
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   <a href="../first-flash/">camera test checklist</a> and record the exact package hash.</li>
 </ul>
+</section>
+<section class="card">
+<h2 id="research-bird-detection-autofocus-2026-11-28-no-build">Research: bird detection autofocus (2026-11-28, no build)</h2>
+<p>Feasibility only. Plausible on the OM-5 Mark II, but a large research project:
+- <strong>Plausible:</strong> it has the same chip and memory as the E-M5 III, where the E-M5 III notes run their own bird network
+  on the image engine beside live view. Their C-AF follows a bird in their camera tests, with tracking unfinished.
+  The OM-5 II also keeps OM's dormant subject-AF code (no network).
+- <strong>Not public:</strong> their engine program and models are not published.
+- <strong>db firmware:</strong> its release notes (to v0.4.6b) list no bird detection for the OM-5 II.
+- <strong>What it needs:</strong> an image-engine program, a shippable model, AF integration and camera-only testing.
+- <strong>Next:</strong> a static trace of E148's dormant subject-AF path, and optionally asking those authors.</p>
+<p><a href="https://github.com/xulfr/caduceus-om5/blob/main/research/OM5II-BIRD-DETECT-FEASIBILITY-2026-11-28.md">Feasibility note</a>.</p>
 </section>
 <section class="card">
 <h2 id="second-stage-original-om-5-e144-firmware-12">Second stage: original OM-5 (E144, firmware 1.2)</h2>

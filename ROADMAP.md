@@ -35,6 +35,19 @@ The owner performs any physical test; development sessions prepare and check fil
   custom-mode recall, JPEG colour output, real ND32/64 capture and recovery. Use the
   [camera test checklist](docs/FIRST_FLASH.md) and record the exact package hash.
 
+## Research: bird detection autofocus (2026-11-28, no build)
+
+Feasibility only. Plausible on the OM-5 Mark II, but a large research project:
+- **Plausible:** it has the same chip and memory as the E-M5 III, where the E-M5 III notes run their own bird network
+  on the image engine beside live view. Their C-AF follows a bird in their camera tests, with tracking unfinished.
+  The OM-5 II also keeps OM's dormant subject-AF code (no network).
+- **Not public:** their engine program and models are not published.
+- **db firmware:** its release notes (to v0.4.6b) list no bird detection for the OM-5 II.
+- **What it needs:** an image-engine program, a shippable model, AF integration and camera-only testing.
+- **Next:** a static trace of E148's dormant subject-AF path, and optionally asking those authors.
+
+[Feasibility note](research/OM5II-BIRD-DETECT-FEASIBILITY-2026-11-28.md).
+
 ## Second stage: original OM-5 (E144, firmware 1.2)
 
 The [E148-program transplant builder](patches/ports/om-5-i-from-ii/README.md) is included and rebuilt

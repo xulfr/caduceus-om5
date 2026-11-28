@@ -28,6 +28,9 @@ ALLOWED = {
     'pm_set_a3', 'pm_set_a2', 'pm_set', 'pm_set_done', 'pm_put', 'pm_put_done',
     'arm_hook', 'arm_back', 'paint_axis', 'paint_done',
     'paint_tone', 'pt_out',                                               # stock painter, then an armed-only branch
+    # boot.s: FastEndCb's hook only creates the background task; the task waits for every section to be initialised
+    # (loaded_bits, as arm_hook) before it arms, so its waiting loop and exits are unarmed code like arm_hook's gate
+    'bg_hook', 'bg_start', 'bg_task', 'bt_sec', 'bt_ready', 'bt_hls', 'bt_hls_wait', 'bt_end',
 }
 
 

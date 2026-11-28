@@ -285,6 +285,7 @@ fl_c_bad:
  ret [d2,d3,a2,a3],20
 
 /* a0 = bytes, d1 = length -> d0 = CRC-32 (zlib). call fl_crc,[d2,d3],12 */
+.global fl_crc
 fl_crc:
  mov -1,d0
 fl_crc_byte:

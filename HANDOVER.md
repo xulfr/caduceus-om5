@@ -82,17 +82,24 @@
 - `firmware/om5ii` on this branch is no longer the alpha12 source. The original OM-5 builder's donor on this
   branch is therefore not alpha12; use `main` for E144 work.
 
-## Look defaults (branch `ccr-568c4ae0-gogwt3`, 2026-11-27, emulator only)
+## Background arming and the card block (branch `ccr-568c4ae0-gogwt3`, 2026-11-27, emulator only)
 
-- Owner report: on a slot holding a look, no change mark and Hold OK resets to 0. Reproduced in OM-Emu on alpha1.
-  OM's settings default (vtable `0x60bb6ad0` +152) now gives the look's values; `ui_write` resets Hue / Lightness to
-  the look. Code in `.ext2b` (`0x604ef120`, dead tail of 111's old record table). Package `ed8b80e6…db20`.
-- `tests/run_look_defaults.py` 6/6 (alpha1 fails the 5 look cases). OM-Emu caught a frame-size bug in the first
-  build. Slider rows and the strip ignore Hold OK in OM-Emu on stock too. No "star" seen in the emulator.
-  [Note and results](research/OM5II-LOOK-DEFAULTS-2026-11-27.md).
+- **Owner priority:** fast start-up and no half-press. `boot.s` hooks `FastEndCb` (`0x601b1362`, OMKit's site),
+  which only creates a low-priority task. The task waits for `0xa26e2694`, allocates P, reads `LOOKS.BIN` and then
+  `OM5MOD/CADUCEUS.BIN`. The settings-writing refresh stays at the first half-press. OK held at switch-on skips it.
+  **This replaces alpha7's "nothing before the first half-press" rule**, so it needs a careful camera check of
+  start-up (with and without a card, Wi-Fi, USB, sleep).
+  [Note](research/OM5II-BACKGROUND-ARM-2026-11-27.md).
+- **Card block:** the page graphics (about 1 KB) moved to `CADUCEUS.BIN`, loaded into the unused DRAM gap past
+  resource record 0 (`0xa3700000`, OMKit's camera-tested arena) and checked against the build.
+  `patch.py` / `mkrelease.py` ship it. [Note](research/OM5II-CARD-BLOCK-2026-11-27.md).
+- **Tests:** `tests/run_boot_arm.py` 11/11, page graphics 11/11, mono filter pass (OM-Emu).
 
-- GPU wheel question (2026-11-27, static): E148's c3d accepts kinds 1, 2, 6, 8, 9 only (no empty-renderer kind);
-  stock kinds cannot show our values. Keep the CPU-drawn graphics. [Note](research/OM5II-C3D-GPU-WHEEL-2026-11-27.md).
+## Look defaults (merged, PR #14; emulator only)
+
+- Hold OK returns a look slot's values to the look, and the Reset OK Hold hint follows the look
+  ([note](research/OM5II-LOOK-DEFAULTS-2026-11-27.md)). GPU wheel: keep CPU drawing
+  ([note](research/OM5II-C3D-GPU-WHEEL-2026-11-27.md)). More room: [options](research/OM5II-CARD-CODE-OPTIONS-2026-11-27.md).
 
 ## Current priorities (owner, 2026-11-20)
 
