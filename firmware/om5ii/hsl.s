@@ -32,6 +32,7 @@ CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descripto
 GS_GEN = 1504                   /* u32: +1 at each rebuild of the Black / White and tint tables */
 GS_TAB = 1508                   /* 4 x {gamma cache, GS_GEN it last saw} (gs_hook) */
 ST_BAL = 1540                   /* s8: Tone Balance of the profile the tables are built for (tn_pre) */
+ST_P = 1541                     /* u8: that profile, 3 = none (tn_pre; card block rgb_add) */
 BAL_ID = 907                    /* Tone Balance of Color Profile p: 907 + 4p (the removed CP grain's ids; reset and copy lists, default 0) */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
@@ -2317,7 +2318,8 @@ tn_ok:
  mov (BW_B,a3),d1                /* Blacks | Whites << 16 */
  or d1,d0
  cmp 0,d0
- beq tn_out
+ beq tn_rgbq
+tn_alloc:
  mov (ST_BUF,a3),a2
  cmp 0,a2
  bne tn_build
@@ -2331,6 +2333,11 @@ tn_build:
  jmp tn_pre                        /* ext5: Tone Balance, then ext3: the delta tables */
 tn_out:
  ret [d2,d3,a2,a3],32
+tn_rgbq:                         /* no tint, no Black / White: an R / G / B curve? (card block) */
+ call rgb_any,[d2,d3,a2,a3],24
+ cmp 0,d0
+ beq tn_out
+ bra tn_alloc
 
 
 .section .ext3,"a"
@@ -2396,6 +2403,7 @@ tn_c:
  inc d3
  cmp 256,d3
  bcs tn_i
+ call rgb_add,[d2,d3,a2,a3],72   /* the R / G / B curves (card block) */
  mov 1,d0
  movhu d0,(ST_A,a3)
  ret [d2,d3,a2,a3],32
@@ -3353,6 +3361,7 @@ tp_lo:
  mov 5,d0
 tp_set:
  movbu d0,(ST_BAL,a3)
+ movbu d3,(ST_P,a3)              /* for the card block's rgb_add */
  jmp tn_tables
 
 /* d3 = table index i, a3 = P -> d0 = u for the tint weights.
@@ -3542,3 +3551,25 @@ view_upd:
  call tint_vis,[d2,d3,a2,a3],24
  mov (4,sp),d0
  ret [a2],12
+
+.section .ext7,"ax"
+/* R / G / B curves (roadmap phase 4): the card block's rgb.s. Without a block
+ * no curve applies. call rgb_any,[d2,d3,a2,a3],24 (d3 = p -> d0) and
+ * call rgb_add,[d2,d3,a2,a3],72 (a3 = P). */
+rgb_any:
+ mov 16,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq ry_none
+ jmp (a1)
+ry_none:
+ clr d0
+ ret [d2,d3,a2,a3],24
+rgb_add:
+ mov 20,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq rad_none
+ jmp (a1)
+rad_none:
+ ret [d2,d3,a2,a3],72

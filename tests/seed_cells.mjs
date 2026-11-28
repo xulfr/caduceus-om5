@@ -6,4 +6,7 @@ export default async function (g) {
   g.__M.dbgWrite(0x61e43b88, new Uint8Array([0, 0xf0, 0, 0]));
   for (const [id, value] of Object.entries(JSON.parse(process.env.OM5_SEED || '{}')))
     g.__call(0x60855cdc, { d0: Number(id), d1: Number(value), a0: 1 }, [0xf0, 20]);
+  // OM5_SEED_P1: part 1 of the active store (active_write 0x602f5121), e.g. the R / G / B curve cells
+  for (const [id, value] of Object.entries(JSON.parse(process.env.OM5_SEED_P1 || '{}')))
+    g.__call(0x602f5121, { d0: Number(id), d1: 1, a0: Number(value) >>> 0 }, [0x80, 8]);
 }

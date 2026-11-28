@@ -11,6 +11,8 @@ cb_entries:
  .long gfx_tone                  /* +4: gfx_tone */
  .long gfx_filter                /* +8: gfx_filter */
  .long tint_vis                  /* +12: tint_vis (hsl.s view_upd) */
+ .long rgb_any_b                 /* +16: rgb_any (hsl.s tint_refresh, rgb.s) */
+ .long rgb_add_b                 /* +20: rgb_add (hsl.s tn_tables, rgb.s) */
 
 /* ---- Colour wheel and tone curve graphics (section 5, armed only) ----
  * OM-3 draws both through its GPU layer: the page controller sends

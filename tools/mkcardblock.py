@@ -69,11 +69,13 @@ def build(build_dir, out):
         body_file = tmp / 'body.bin'
         subprocess.run([tool('objcopy'), '-O', 'binary', '--only-section=.text', str(blk), str(body_file)], check=True)
         body = body_file.read_bytes()
-        undefined = set()
+        undefined, defined = set(), set()
         for obj in objects:
             for line in subprocess.run([tool('nm'), '-u', str(obj)], capture_output=True, text=True,
                                        check=True).stdout.splitlines():
                 undefined.add(line.split()[-1])
+            defined.update(symbols(obj))
+        undefined -= defined              # another block file's symbol, not the flashed build's
         own = symbols(blk)
     if own.get('cb_entries', (0,))[0] != BODY:
         sys.exit('cb_entries must be the first thing in the block')

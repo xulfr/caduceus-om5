@@ -18,11 +18,16 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tests'))
+from card_block import card_for  # noqa: E402
 CP1 = 's1 ok ok ' + 'right ' * 8          # Picture Mode, Color Profile 1 highlighted
 TONE, WHEEL, SPLIT = 'down down down ', 'down ', 'down down '   # rows: colour wheel, Split toning (since phase 3a), tone curve
 DONE = 'ok wait:500'
 # OM-Emu's dials: in the Black/White state sub+2 sets Black -1 and main-3 White -2 (the stock Sh / Hi steps).
 BW = CP1 + TONE + 'info info sub+2 main-3 '   # INFO: Hi/Sh -> Mid -> Black/White (OM-3 v0.41)
+# R / G / B curve cells (tests/rgb_curves.py): lifted shadows, an S curve, a falling end at both limits
+from rgb_curves import pack  # noqa: E402
+RGB = [pack([3, 5, 0, -2, -4]), pack([0, -3, 1, 4, 7]), pack([-7, 7, -7, 7, -7])]
 CASES = [
     ('cp1-black-white', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=1, tone3=[0, 0, 0], stFlag=1, st=True)),
     ('cp1-info-cycle', BW + 'info sub+1 ' + DONE,
@@ -58,6 +63,16 @@ CASES = [
     # Tints too (owner 2026-11-20): cp1-wheel-gs-baseline / cp1-tint-gamma-cache edited a tint with the dial on the
     # wheel's Tint group, which the OM-3 v0.41 key map removed. They come back with the Split toning row; gs_hook's
     # cache miss after a table rebuild is still covered by cp1-bw-gamma-cache.
+    # R / G / B curves (phase 4, card block rgb.s): part 1 of 976 + 3p + c. Curves alone build the tables; with a tint
+    # and Black / White the deltas add up; another profile's curve does not apply; without the card block, none.
+    ('cp1-rgb-curves', CP1 + WHEEL + DONE, dict(pm=54, stFlag=1, st=True, card=True,
+                                                seed_p1={976: RGB[0], 977: RGB[1], 978: RGB[2]})),
+    ('cp1-rgb-tint-bw', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], stFlag=1, st=True, card=True,
+                                        seed={968: 0x30}, seed_p1={976: RGB[1], 978: RGB[0]})),
+    ('cp2-rgb-curves', CP1 + 'right ' + WHEEL + DONE, dict(pm=55, stFlag=1, st=True, card=True,
+                                                           seed_p1={979: RGB[2], 976: RGB[0]})),
+    ('cp1-rgb-other-profile', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, card=True, seed_p1={979: RGB[0]})),
+    ('cp1-rgb-no-card', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, seed_p1={976: RGB[0]})),
     ('stock-after-tint', CP1 + WHEEL + DONE + ' ok ok up ' + 'left ' * 6 + DONE,
      dict(pm=5, tint={968: 0x30}, stFlag=0, seed={968: 0x30})),
 ]
@@ -78,7 +93,10 @@ def main():
         folder = a.out.resolve() / name
         want = dict(want)
         seed = want.pop('seed', {})
+        seed_p1 = want.pop('seed_p1', {})
+        card = want.pop('card', False)
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/seed_cells.mjs'), OM5_SEED=json.dumps(seed),
+                   OM5_SEED_P1=json.dumps(seed_p1),
                    POST=str(ROOT / 'tests/bw_tint_assert.mjs'), OM5_BW_EXPECT=json.dumps(want))
         if want.get('gs'):
             above = gs_seen.get(want.get('gs_above'))
@@ -87,7 +105,7 @@ def main():
             env.update(OM5_GS_MIN=str(above + 1 if above is not None else 1))
         command = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()),
                    str(a.build.resolve() / 'decoded/0100.bin'), str(a.build.resolve() / 'decoded/0101.bin'),
-                   str(folder / 'screens'), keys, '--ready']
+                   str(folder / 'screens'), keys, '--ready'] + (['--card=' + str(card_for(a.build, a.out))] if card else [])
         run = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=400)
         log = run.stdout.decode('utf-8', errors='replace')
         folder.mkdir(parents=True, exist_ok=True)
