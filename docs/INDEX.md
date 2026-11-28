@@ -31,6 +31,7 @@
 - [Phase 4 scoping: Sharpness, WB row, RGB curves, Color Mix; flash room (2026-11-28)](../research/OM5II-PHASE4-SCOPING-2026-11-28.md)
 - [Split toning on its own row, steps 3a–3c (2026-11-28)](../research/OM5II-SPLIT-TONE-ROW-2026-11-28.md)
 - [RGB curves: where 15 values per profile can live (settings stores, lists; 2026-11-28)](../research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md)
+- [Sharpness −5..+2 and Color Mix: static traces (2026-11-28)](../research/OM5II-SHARPNESS-COLORMIX-TRACE-2026-11-28.md)
 - [Borrowing Color Creator's GPU drawing as OMKit does: hooks, CPU 1, surface, testing, probe plan (2026-11-28)](../research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md)
 - [Arming in the background after start-up: no half-press needed (v0.2.0-dev)](../research/OM5II-BACKGROUND-ARM-2026-11-27.md)
 - [Code from the card: OM5MOD/CADUCEUS.BIN, the page graphics (v0.2.0-dev)](../research/OM5II-CARD-BLOCK-2026-11-27.md)
