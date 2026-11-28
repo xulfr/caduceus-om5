@@ -5,7 +5,8 @@
 
 Opens the Picture Mode direct screen on Color Profile 1 and reads the composited frames. The wheel must show
 the twelve colours' blocks on their spokes at the radius of each value, follow a dial edit, the selected colour
-(white edge), the INFO axis steps and the H/S/L INFO hint; the tone page must show the curve and bend it with Shadows. Every
+(white edge), the INFO axis steps and the H/S/L INFO hint; the tone page must show the curve and bend it with Shadows.
+The Split toning row must have its own icon, hide OM's value group on its tint pages and show "Split Tone [INFO]". Every
 consumed dial step must invalidate the page exactly once (OM only repaints the label that changed; a stale
 wheel on the camera would look right here only if this count were wrong). Geometry and palette indices are
 those of firmware/om5ii/hsl.s. Emulator only: the frame is OM-Emu's model of the OSD plane, not a camera.
@@ -153,9 +154,39 @@ def main():
         bad.append(f'column 30 moved: {curve(rows, 30)}')
     check('tone-shadows', bad)
 
+    # Split toning row (phase 3 follow-ups, 2026-11-28): its own column icon, OM's bottom value group hidden on the
+    # tint pages (it showed the editor's position, strength - 5) and kept on Balance, the "Split Tone [INFO]" hint
+    # without OM's narrower frame. Frames: 12 the wheel row, 13 Shadows, 14 a dial step, 15 Balance, 16 Highlights,
+    # 17 the wheel row again.
+    f = session(a, 'split', OPEN + 'down down main+3 info info up', 0)
+    fr = {n: frame(f[n]) for n in range(12, 18)}
+
+    def lit(rows, box):
+        x0, y0, x1, y1 = box
+        pts = [(x, y) for y in range(y0, y1) for x in range(x0, x1) if px(rows, x, y)[0] > 150]
+        if not pts:
+            return frozenset()
+        mx, my = min(x for x, _ in pts), min(y for _, y in pts)
+        return frozenset((x - mx, y - my) for x, y in pts)
+    wheel_icon, split_icon = lit(fr[13], (2, 122, 88, 179)), lit(fr[12], (2, 180, 88, 240))   # each unfocused
+    check('split-row-icon', [] if wheel_icon and split_icon and wheel_icon != split_icon
+          else ['the Split toning row shows the wheel row\'s icon (or none)'])
+    group = (495, 358, 620, 398)    # OM's arc, "Vivid" and the value under the wheel
+    bad = [f'frame {n}: OM\'s value group shown on a tint page' for n in (13, 14, 16) if lit(fr[n], group)]
+    bad += [f'frame {n}: OM\'s value group missing' for n in (12, 15, 17) if not lit(fr[n], group)]
+    check('split-value-group', bad)
+    hint_box = (262, 418, 458, 470)
+    hints = {n: lit(fr[n], hint_box) for n in (12, 13, 15, 16, 17)}
+    bad = [] if hints[13] and hints[13] == hints[15] == hints[16] and hints[13] != hints[12] else [
+        'the Split Tone [INFO] hint differs between the Split toning pages or is the wheel\'s']
+    raw = lambda n: [row[4 * hint_box[0]:4 * hint_box[2]] for row in fr[n][hint_box[1]:hint_box[3]]]
+    if raw(17) != raw(12):
+        bad.append('the wheel\'s hint (with OM\'s frame) did not come back')
+    check('split-hint', bad)
+
     if faults:
         sys.exit('page graphics regressions failed')
-    print('all 13 page graphics checks passed')
+    print('all 16 page graphics checks passed')
 
 
 if __name__ == '__main__':

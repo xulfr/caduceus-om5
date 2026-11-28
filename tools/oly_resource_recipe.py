@@ -5,12 +5,15 @@
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --artwork ANCHOR=TARGET [...]
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --sprite TARGET=SOURCE:X0,Y0,X1,Y1 [...]
     python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --strips 'TARGET=[{"source": ...}, ...]'
+    python3 tools/oly_resource_recipe.py firmware/om5ii --stock E148.BIN --glyphs 'TARGET={"size": ..., "place": ...}'
 
 TARGET=SOURCE points the placeholder TARGET at stock image SOURCE (resource_aliases). --artwork ANCHOR=TARGET
 adds TARGET to the ids of the artwork sprite that already lists ANCHOR, so TARGET shows the same bitmap.
 --sprite TARGET=SOURCE:X0,Y0,X1,Y1 adds a new artwork sprite for TARGET cropped from stock image SOURCE (appended
 to record 37 like the other sprites). --strips TARGET=JSON does the same with a list of strips in the patch.json
 artwork form (source, optional crop, width and pad_left), joined left to right, e.g. glyphs from several images.
+--glyphs TARGET=JSON places glyph cores from stock images anywhere on a blank canvas (several lines, a glyph
+turned by 180 degrees) and outlines them (oly_ui_bitmap.compose_glyphs).
 
 The record-0 stream is re-encoded from the current recipe's own stream (oly_compress._repack with split
 matches), so only the sequences around each changed pointer word differ. The recipe window is the span of
@@ -70,6 +73,7 @@ def main():
     p.add_argument('--artwork', action='append', default=[], metavar='ANCHOR=TARGET')
     p.add_argument('--sprite', action='append', default=[], metavar='TARGET=SOURCE:X0,Y0,X1,Y1')
     p.add_argument('--strips', action='append', default=[], metavar='TARGET=JSON')
+    p.add_argument('--glyphs', action='append', default=[], metavar='TARGET=JSON')
     a = p.parse_args()
     spec_path = Path(a.patch) / 'patch.json'
     spec = json.loads(spec_path.read_text())
@@ -89,6 +93,12 @@ def main():
         if not isinstance(strips, list) or not strips or any('source' not in st for st in strips):
             sys.exit('--strips needs a non-empty JSON list of strips with a source')
         spr.append((int(target, 16), strips))
+    for item in a.glyphs:
+        target, rest = item.split('=', 1)
+        glyphs = json.loads(rest)
+        if not isinstance(glyphs, dict) or not glyphs.get('place'):
+            sys.exit('--glyphs needs a JSON canvas with places')
+        spr.append((int(target, 16), {'glyphs': glyphs}))
     if not extra and not art and not spr:
         sys.exit('nothing to add')
     sprites = group.get('artwork', {}).get('sprites', [])
@@ -125,7 +135,8 @@ def main():
         for target, strips in spr:
             if struct.unpack_from('<I', data, table + 4 * target)[0] != placeholder:
                 sys.exit(f'{target:#x} is not a placeholder')
-            group['artwork']['sprites'].append({'ids': [f'{target:#x}'], 'strips': strips})
+            group['artwork']['sprites'].append({'ids': [f'{target:#x}'],
+                                                **(strips if isinstance(strips, dict) else {'strips': strips})})
         # The new sprites' pointers: build the whole block with the new artwork (record 37 re-encoded from the
         # stock stream) and read them back.
         free = copy.deepcopy(group['artwork'])

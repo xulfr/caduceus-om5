@@ -10,6 +10,7 @@ cb_entries:
  .long gfx_wheel                 /* +0: hsl.s gfx_wheel stub */
  .long gfx_tone                  /* +4: gfx_tone */
  .long gfx_filter                /* +8: gfx_filter */
+ .long tint_vis                  /* +12: tint_vis (hsl.s view_upd) */
 
 /* ---- Colour wheel and tone curve graphics (section 5, armed only) ----
  * OM-3 draws both through its GPU layer: the page controller sends
@@ -522,3 +523,79 @@ ftab_col:
 ftab_slot:
  .byte 8,0,1,2,6,7,3,4,5
 
+
+/* ---- The Split toning pages: OM's value group hidden (2026-11-28, emulator only) ----
+ * The colour view's bottom group, label 2 (the arc), 5 ("Vivid"), 6 (the
+ * value) and 7 (OM's alternative to 6; hidden on every page seen), shows the
+ * editor's position there (strength - 5) while paint_strength writes the
+ * strength 0..10 under the title. On the tint pages (axes 3 and 5) the group
+ * is hidden; Balance (axis 6, in range) and the wheel keep OM's. Label 2,
+ * which OM itself never hides, marks that this code hid the group: only then
+ * are 2, 5, 6 shown and 7 hidden again (as OM leaves them off "All").
+ * Label 10 (the hint's frame, about 142 px) is hidden on all three Split
+ * toning pages: their hint is OM-style "Split Tone [INFO]", 180 px.
+ * Run after OM's own label update (hsl.s view_upd, the view's data-model
+ * handler), which shows the group again on every command. a0 = the view (its
+ * class is checked). call tint_vis,[d2,d3,a2,a3],24 */
+TV_VIEW = 0x610c14a0            /* the colour page's view class */
+TV_LABELS = 792                 /* the view's label pointers, 4 bytes each */
+tint_vis:
+ mov a0,a2
+ cmp 0,a2
+ beq tv_out
+ mov (a2),d0
+ cmp TV_VIEW,d0
+ bne tv_out
+ call st_ptr,[],8
+ cmp 0,a0
+ beq tv_out
+ movbu (0,a0),d0                 /* ST_AXIS */
+ mov d0,d2
+ clr d3                          /* label 10, the hint's frame: off on the Split toning */
+ cmp 3,d2                        /* pages, whose hint (IMG_SPLIT_HINT) is wider than it */
+ bcc tv_frame
+ mov 1,d3
+tv_frame:
+ mov 40,d0
+ call tv_one,[d2,d3,a2],16
+ mov d2,d0
+ cmp 3,d0
+ beq tv_hide
+ cmp 5,d0
+ beq tv_hide
+ mov (TV_LABELS + 8,a2),a0       /* label 2: hidden only by us */
+ cmp 0,a0
+ beq tv_out
+ mov (a0),a1
+ mov (80,a1),a1
+ calls (a1)
+ extbu d0
+ cmp 0,d0
+ bne tv_out
+ mov 1,d3                        /* shown: 2, 5, 6; 7 off */
+ bra tv_set
+tv_hide:
+ clr d3
+tv_set:
+ mov 8,d0
+ call tv_one,[d2,d3,a2],16
+ mov 20,d0
+ call tv_one,[d2,d3,a2],16
+ mov 24,d0
+ call tv_one,[d2,d3,a2],16
+ mov 28,d0
+ clr d3
+ call tv_one,[d2,d3,a2],16
+tv_out:
+ ret [d2,d3,a2,a3],24
+/* a2 = view, d0 = the label's offset past TV_LABELS, d3 = 0 / 1.
+ * call tv_one,[d2,d3,a2],16 */
+tv_one:
+ add TV_LABELS,d0
+ mov (d0,a2),a0
+ cmp 0,a0
+ beq to_out
+ mov d3,d0
+ call set_visible,[d2,d3,a2],16
+to_out:
+ ret [d2,d3,a2],16

@@ -89,6 +89,10 @@ ST_MAGIC_VALUE = 0x55444143
  .byte CP_ROWS
 .section .row_match_hook,"ax"
  jmp row_match
+.section .col_icon_ptr,"a"
+ .long col_icon                  /* column handler table 0x611b7b28, item 5374's slot (24) */
+.section .view_upd_ptr,"a"
+ .long view_upd                  /* colour view (0x610c14a0) data-model handler, was 0x60df1217 */
 
 .section .ext7,"ax"
 /* Action-table entry of the SCP direct-setting screen for the Delete press
@@ -370,6 +374,10 @@ paint_axis:
  beq paint_title
  movbu (132,a0),d0
  mov IMG_HINT,d1
+ cmp 3,d3
+ bcs paint_hint_img
+ mov IMG_SPLIT_HINT,d1           /* Split toning: "Split Tone [INFO]" */
+paint_hint_img:
  call label_img,[d2,a2],12
 paint_title:
  mov a2,(4,sp)
@@ -391,15 +399,14 @@ paint_axis_name:
  mov 16,d1
  mov 199,d2
  call tx_draw,[d2,d3,a2,a3],44
- mov text_hsl,a1                 /* the hint: "H/S/L" or "Split" [INFO] */
- cmp 3,d3
- bcs paint_hint
- mov text_split,a1
-paint_hint:
+ cmp 3,d3                        /* Split toning: IMG_SPLIT_HINT is the whole hint */
+ bcc paint_hint
+ mov text_hsl,a1                 /* the hint: "H/S/L" [INFO] */
  mov 290,d0
  mov 426,d1
  mov 68,d2
  call tx_draw,[d2,d3,a2,a3],44
+paint_hint:
  call paint_strength,[d2,d3,a2,a3],24
  mov a3,a0
  call gfx_wheel,[d2,d3,a2,a3],48
@@ -413,8 +420,6 @@ paint_done:
 .balign 2
 text_hsl:
  .short 'H','/','S','/','L',0
-text_split:
- .short 'S','p','l','i','t',0              /* "Split Tone" does not fit the hint's 62 px */
 .balign 4
 text_style:
  .long 10,15,15
@@ -698,6 +703,14 @@ pg_inval:
  mov 1,d0
  call ui_invalidate,[],4
 pg_axis_out:
+ ret [d2,d3,a2,a3],24
+tint_vis:                        /* a0 = view; in the card block. call tint_vis,[d2,d3,a2,a3],24 */
+ mov 12,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq tv_none
+ jmp (a1)
+tv_none:
  ret [d2,d3,a2,a3],24
 pg_tone:                         /* the tone page: its labels follow the Black / White state */
  mov a3,a0
@@ -2609,6 +2622,7 @@ trf_next:
 IMG_BL = 0x3e80
 IMG_WH = 0x3e81
 IMG_HINT = 0x3e82
+IMG_SPLIT_HINT = 0x3e85          /* "Split Tone [INFO]", 180 px in OM's hint font and key, as its "Color Select INFO" */
 IMG_SH = 0x1078                  /* label ids: OM's tone view records (0x610d5aa8 ..) */
 IMG_HI = 0x1077
 IMG_MIDINFO = 0x3f7f
@@ -3477,3 +3491,54 @@ th_img:
  call label_img,[d2,a2],12
 th_out:
  ret [],8
+
+/* The Split toning row's own icon (2026-11-28, emulator only). The Picture
+ * Mode column draws each row through the item's slot in 0x611b7b28; item 5374's
+ * handler (0x60e4a3e0, shared with 5373 / 5029 / 662) shows the row record's
+ * +28 image (0x2c85 "Color") and, when the row's value is not 0, the value
+ * text ("Vivid") under it (mode 5). Both 5374 rows matched one record. On the
+ * Split toning row (list index (24,sp) = SPLIT_ROW) this shows IMG_SPLIT,
+ * "Split / Tone" from OM's glyphs, without the value text (mode 1). Entered by
+ * jmp from the column loop, in its frame: (20,sp) the rows' base, (96,sp) the
+ * shown row, (28,sp) the panel. */
+IMG_SPLIT = 0x3e84
+col_icon:
+ mov (24,sp),d0
+ cmp SPLIT_ROW,d0
+ beq ci_split
+ jmp col_icon_stock
+ci_split:
+ mov (20,sp),a2
+ movhu (96,sp),d0
+ mov 160,d1
+ mul d1,d0
+ add d0,a2
+ mov 1,d0
+ movbu d0,(a2)
+ inc4 a2
+ mov (28,sp),a0
+ mov split_icon,a1
+ mov a2,d0
+ call col_icon_set,[d2,a2,a3],20
+ mov 1,d0                        /* image only */
+ movhu d0,(6,a2)
+ jmp col_next
+.balign 4
+split_icon:
+ .short 3, IMG_SPLIT
+ .long 0x611b42ac
+
+/* The colour view's data-model handler (0x60df1217, at 0x610c1630) sets its
+ * labels' images and visibility after each command: OM's, then the card
+ * block's tint_vis (the Split toning pages' value group). Entered by calls,
+ * a0 = the view, a1 = the model. */
+view_upd:
+ movm [a2],(sp)
+ add -8,sp
+ mov a0,a2
+ calls view_upd_stock
+ mov d0,(4,sp)
+ mov a2,a0
+ call tint_vis,[d2,d3,a2,a3],24
+ mov (4,sp),d0
+ ret [a2],12

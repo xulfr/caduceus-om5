@@ -3,15 +3,16 @@
 import struct
 
 
-def unpack_bitmap(data, start):
-    """Read a type-14 bitmap body (format 11, five 12-bit runs per 64-bit word)."""
+def unpack_bitmap(data, start, max_width=180):
+    """Read a type-14 bitmap body (format 11, five 12-bit runs per 64-bit word), at most as wide as OM's own wide
+    hints (0x3f7d "Color Select INFO" is 180)."""
     header = data[start:start + 4]
     if len(header) != 4 or header[3] != 11:
         raise ValueError('Expected a format-11 OSD bitmap')
     width = ((header[1] >> 4) | (header[2] << 4)) + 1
     height = (header[0] | ((header[1] & 15) << 8)) + 1
-    if width > 128 or height > 60:
-        raise ValueError('Icon source exceeds 128 x 60')
+    if width > max_width or height > 60:
+        raise ValueError(f'Icon source exceeds {max_width} x 60')
     pixels = bytearray()
     for start in range(start + 4, len(data), 8):
         word = int.from_bytes(data[start:start + 8], 'little')
@@ -44,16 +45,69 @@ def pack_bitmap(rows):
         group = tokens[i:i + 5]
         word = sum(token << (12 * j) for j, token in enumerate(group))
         encoded.extend(word.to_bytes(8 if len(group) == 5 else (12 * len(group) + 7) // 8, 'little'))
+    if width > 180:
+        raise ValueError('Artwork wider than OM\'s widest hint (180)')
     if unpack_bitmap(encoded, 0) != rows:
         raise ValueError('Bitmap round trip failed')
     return encoded
+
+
+def compose_glyphs(spec, source_rows):
+    """A sprite drawn from stock glyph cores on a blank canvas, then outlined as OM's fonts are.
+
+    spec: {"size": [W, H], "core": MIN, "outline": [RADIUS, VALUE] or "rings": [VALUE, ...], "place": [{"source",
+    "crop": [X0, Y0, X1, Y1], "at": [X, Y], optional "rotate": 180, optional "raw": true}]}. From each crop only
+    pixels >= MIN (the letter's fill and edge) are copied, so neighbouring glyphs and the stock outline stay behind;
+    a "raw" place copies every non-blank pixel as it is (OM's INFO key). Blank pixels within RADIUS (in both axes) of
+    a copied core pixel then get VALUE; with "rings", the pixels at distance k get the k-th value (OM's hint font has
+    a two-tone outline)."""
+    width, height = spec['size']
+    core = spec['core']
+    rings = spec['rings'] if 'rings' in spec else [spec['outline'][1]] * spec['outline'][0]
+    radius = len(rings)
+    if not (1 <= width <= 180 and 1 <= height <= 60 and radius <= 4 and all(0 < v < core for v in rings)
+            and core <= 15):
+        raise ValueError('Invalid glyph canvas')
+    canvas = [bytearray(width) for _ in range(height)]
+    for place in spec['place']:
+        rows = source_rows(int(place['source'], 16))
+        x0, y0, x1, y1 = place['crop']
+        if not (0 <= x0 < x1 <= len(rows[0]) and 0 <= y0 < y1 <= len(rows)):
+            raise ValueError('Glyph crop leaves source')
+        glyph = [row[x0:x1] for row in rows[y0:y1]]
+        rotate = place.get('rotate', 0)
+        if rotate == 180:
+            glyph = [row[::-1] for row in glyph[::-1]]
+        elif rotate:
+            raise ValueError('Glyphs turn by 180 degrees only')
+        raw = place.get('raw', False)
+        margin = 0 if raw else radius
+        ax, ay = place['at']
+        if not (margin <= ax and ax + x1 - x0 + margin <= width and margin <= ay and ay + y1 - y0 + margin <= height):
+            raise ValueError('Glyph or its outline leaves the canvas')
+        for y, row in enumerate(glyph):
+            for x, pixel in enumerate(row):
+                if pixel >= core or (raw and pixel):
+                    canvas[ay + y][ax + x] = pixel
+    lit = [(x, y) for y in range(height) for x in range(width) if canvas[y][x] >= core]
+    for ring, value in enumerate(rings, 1):
+        for x, y in lit:
+            for yy in range(max(0, y - ring), min(height, y + ring + 1)):
+                for xx in range(max(0, x - ring), min(width, x + ring + 1)):
+                    if canvas[yy][xx] == 0:
+                        canvas[yy][xx] = value
+    return [bytes(row) for row in canvas]
 
 
 def append_icons(atlas, load, sprites, source_rows):
     """Add type-14 records whose normal and alternate draws use the same artwork."""
     pointers = {}
     for sprite in sprites:
-        strips = []
+        if 'glyphs' in sprite:
+            if 'strips' in sprite:
+                raise ValueError('A sprite has strips or glyphs, not both')
+            sprite = dict(sprite, strips=[], rows=compose_glyphs(sprite['glyphs'], source_rows))
+        strips = [] if 'rows' not in sprite else [sprite['rows']]
         for strip in sprite['strips']:
             rows = source_rows(int(strip['source'], 16))
             if 'crop' in strip:
