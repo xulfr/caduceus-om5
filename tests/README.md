@@ -66,7 +66,7 @@ monochrome-only). Its tests, `run_cp_grain.py` and `cp_grain_assert.mjs`, are on
 ### Black / White on the tone page and split tone (v0.2.0-dev)
 
 `tests/run_bw_tint.py` drives the tone page (INFO into Black/White, the dials, the INFO cycle, Color Profile 2, a stock
-mode afterwards) and checks the split-tone tints (10 cases total). Since the OM-3 v0.41 wheel keys (2026-11-28) the
+mode afterwards), the Split toning row (phase 3a) and the split-tone tints (12 cases total). Since the OM-3 v0.41 wheel keys (2026-11-28) the
 tints have no key on the wheel: their cases set the tint cells first (`tests/seed_cells.mjs`); the Tint-group key cases
 and the wheel tint gamma-cache pair are retired until the Split toning row. `tests/bw_tint_assert.mjs` checks the settings, OM's own
 tone values, P's curve values and states; for tint cases it runs `tests/st_assert.mjs`, which recomputes every delta
@@ -95,11 +95,12 @@ that the Reset OK Hold hint shows only while they differ. Black / White and a sl
 python tests/run_look_defaults.py --emu generated/om-emu --build generated/strict --out generated/look-defaults
 ```
 
-`tests/run_wheel_keys.py` drives the colour wheel with the OM-3 v0.41 key map: INFO steps Hue → Saturation →
+`tests/run_wheel_keys.py` (14 cases) drives the colour wheel and the Split toning row with the OM-3 v0.41 key map: INFO steps Hue → Saturation →
 Lightness, the colour dial past colour 1 gives Sat. All (skipped on Hue / Lightness), INFO from Sat. All returns to
 colour 1, Delete changes nothing, and the "H/S/L [INFO]" hint is the same on every axis. `tests/wheel_keys_assert.mjs`
 reads the settings and P. `tests/seed_cells.mjs` (also used by `run_bw_tint.py` for the tints, which have no key on
-the wheel now) writes setting cells before the keys.
+the wheel now) writes setting cells before the keys. The Split toning cases check the focused row (the panel's
+per-row state bytes), its Shadows / Highlights pages and that Picture Mode reopens on the wheel row.
 
 ```bash
 python tests/run_wheel_keys.py --emu generated/om-emu --build generated/strict --out generated/wheel-keys

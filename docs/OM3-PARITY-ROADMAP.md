@@ -104,6 +104,10 @@ before the camera build.
 
 ### Phase 3: split toning on its own row, as on the OM-3
 
+**Step 3a done 2026-11-28 (emulator only):** the row under the wheel (OM's colour editor a second time), Shadows ↔
+Highlights by INFO, "Split [INFO]" hint, Picture Mode reopening on the wheel row, Midtone values cleared.
+[Note](../research/OM5II-SPLIT-TONE-ROW-2026-11-28.md). **Step 3b next:** strength 0–10, Tone Balance, the row's icon.
+
 - **The row:** Split toning, under the colour wheel. INFO steps Shadows → Balance → Highlights. A bar shows the tint's
   colour. Hint "Split Tone INFO". On Balance only the bar shows, and the rear dial sets Tone Balance (−5..+5).
 - **Ranges as on the OM-3:** strength 0–10 in half steps, 0 = off.

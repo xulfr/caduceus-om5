@@ -5,7 +5,8 @@ build.
 INFO steps Hue -> Saturation -> Lightness (the wheel opens on Saturation, so S -> L -> H -> S). The colour dial (the
 rear dial on this body; OM-Emu's "sub") past the first colour gives Sat. All: OM's own ring, whose place 0 between
 colour 12 and colour 1 is all colours. On Hue and Lightness that place is skipped. INFO with all colours on goes back
-to colour 1 and on to Lightness. Delete does nothing on the wheel. The hint reads "H/S/L [INFO]" on every axis.
+to colour 1 and on to Lightness. Delete does nothing on the wheel. The hint reads "H/S/L [INFO]" on every axis. Split toning (phase 3a): the same editor on the row under the wheel,
+Shadows / Highlights tints, INFO between them; Picture Mode reopens on the wheel row.
 tests/wheel_keys_assert.mjs reads the settings and P after the keys. Emulator only: not a camera result.
 
     python tests/run_wheel_keys.py --emu OM_EMU_DIR --build generated/strict --out generated/wheel-keys
@@ -36,6 +37,14 @@ CASES = [
     ('lightness-skips-all', 'info sub+1 sub-1 main+1', dict(axis=2, cur=COLOUR1, light={0: 1}), [2], None),
     # Earlier builds left OM's one / all cell at "all" with INFO; INFO now puts it back to one colour.
     ('info-restores-one', 'info', dict(axis=2, one=1), [2], {2197: 0}),
+    # Split toning (phase 3a): the row under the wheel opens on Shadows (3); INFO steps Shadows <-> Highlights (5);
+    # the dial sets the tint of the colour under the cursor; back on the wheel row, Saturation again.
+    ('wheel-row', '', dict(row=1, axis=0), None, None),
+    ('split-row-opens-on-shadows', 'down main+2', dict(row=2, axis=3, tint=[0x20, 0]), None, None),
+    ('split-row-info', 'down info info info main+1', dict(row=2, axis=5, tint=[255, 0x10]), [5, 3, 5], None),   # 968 untouched: 255 (no tint)
+    ('split-row-and-back', 'down main+1 up main+1', dict(row=1, axis=0, sat={0: 1}, tint=[0x10, 0]), None, None),
+    # OM reopens Picture Mode on the remembered item's row: the wheel row, not Split toning
+    ('reopen-on-wheel-row', 'down main+1 ok wait:500 ok ok', dict(row=1, axis=0, tint=[0x10, 0]), None, None),
 ]
 
 

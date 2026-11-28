@@ -102,7 +102,9 @@
   [Note and build plan](research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md). Supersedes the c3d note's "keep CPU drawing".
 - **Phase 2 keys:** INFO steps H → S → L, Sat. All on the colour (rear) dial past colour 1, skipped on Hue / Lightness,
   Delete inert on the wheel, "H/S/L [INFO]" hint. New pointer site `0x61211cf4`. `tests/run_wheel_keys.py` 9/9.
-  **The tints have no key until phase 3** (stored tints still apply): do not flash phase 2 without phase 3.
+- **Phase 3a:** Split toning row under the wheel (5374 listed twice), Shadows ↔ Highlights, Midtone cleared at arming,
+  reopening on the wheel row (hook `0x60e377ed`). [Note](research/OM5II-SPLIT-TONE-ROW-2026-11-28.md).
+  Next: 3b (strength 0–10, Tone Balance, row icon). Not a camera candidate before 3b.
 - Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
 
 ## Look defaults (merged, PR #14; emulator only)

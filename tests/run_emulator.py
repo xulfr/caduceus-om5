@@ -65,8 +65,8 @@ def main():
         ('persisted-name', good, True, 'delete', 1, 4, [selected(0), None, None]),
         # Delete below the Picture Mode row: the colour wheel takes it (axis), the other rows ignore it.
         ('other-rows', good, True, ('down delete ' * 5).strip(), 1, 4, [None] * 3),
-        ('row-return', good, True, 'down ' * 6 + 'delete', 1, 4, [selected(0), None, None]),
-        ('row-return-title', twins, True, 'delete ' + 'down ' * 6 + 'delete delete', 1, 2, [twin(0), None, None]),
+        ('row-return', good, True, 'down ' * 7 + 'delete', 1, 4, [selected(0), None, None]),
+        ('row-return-title', twins, True, 'delete ' + 'down ' * 7 + 'delete delete', 1, 2, [twin(0), None, None]),
         # Two films that differ only in name: the frame must change on each step (title repaint).
         ('title-redraw', twins, True, 'delete delete', 1, 2, [twin(1), None, None]),
         ('scp-name', good, True, 'delete ok wait:500 ok wait:500', 1, 4, [selected(0), None, None]),

@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_page_graphics import OPEN, frame, px
 
 ROOT = Path(__file__).resolve().parents[1]
-X0, Y0, X1, Y1 = 4, 184, 84, 236        # inside the selected row's cell
+X0, Y0, X1, Y1 = 4, 244, 84, 296        # inside the selected row's cell (the tone row, under Split toning)
 LIT = 150                               # luma above the highlighted cell's fill
 
 
@@ -73,7 +73,7 @@ def main():
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
     keys, states = walk()
-    lead = (OPEN + 'down down').split()
+    lead = (OPEN + 'down down down').split()
     cmd = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()), str(a.build.resolve() / 'decoded/0100.bin'),
            str(a.build.resolve() / 'decoded/0101.bin'), str(a.out / 'tone'), ' '.join(lead + keys), '--ready']
     env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tools/dev/mount.mjs'))

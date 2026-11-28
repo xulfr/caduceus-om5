@@ -30,7 +30,8 @@ def icon(rows):
 
 
 def run(a, name, rights):
-    keys = 's1 ok ok ' + 'right ' * rights + 'down down main+1 ok s1 wait:500'
+    rows = 'down down down' if rights < 11 else 'down down'   # the tone row; Color Profiles have Split toning above it
+    keys = 's1 ok ok ' + 'right ' * rights + rows + ' main+1 ok s1 wait:500'
     out = a.out / name.replace(' ', '-').lower()
     cmd = ['node', str(ROOT / 'tools/dev/sess.mjs'), str(a.emu.resolve()), str(a.build.resolve() / 'decoded/0100.bin'),
            str(a.build.resolve() / 'decoded/0101.bin'), str(out), keys, '--ready']

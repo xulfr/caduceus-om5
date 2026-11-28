@@ -79,6 +79,12 @@ ST_MAGIC_VALUE = 0x55444143
  nop
 .section .cursor_pointer,"a"
  .long wheel_cursor
+.section .cp_rows_ptr,"a"
+ .long cp_rows
+.section .cp_rows_count,"a"
+ .byte CP_ROWS
+.section .row_match_hook,"ax"
+ jmp row_match
 
 .section .ext7,"ax"
 /* Action-table entry of the SCP direct-setting screen for the Delete press
@@ -381,7 +387,10 @@ paint_axis_name:
  mov 16,d1
  mov 199,d2
  call tx_draw,[d2,d3,a2,a3],44
- mov text_hsl,a1                 /* the hint: "H/S/L" [INFO] */
+ mov text_hsl,a1                 /* the hint: "H/S/L" or "Split" [INFO] */
+ cmp 3,d3
+ bcs paint_hint
+ mov text_split,a1
 paint_hint:
  mov 290,d0
  mov 426,d1
@@ -399,6 +408,8 @@ paint_done:
 .balign 2
 text_hsl:
  .short 'H','/','S','/','L',0
+text_split:
+ .short 'S','p','l','i','t',0              /* "Split Tone" does not fit the hint's 62 px */
 .balign 4
 text_style:
  .long 10,15,15
@@ -631,6 +642,7 @@ pages_armed:
  movbu (247,a0),d0
  mov 2,d1
  call show_page,[d2,d3,a2,a3],24
+ call pg_rows,[d2,d3,a2,a3],24
  call pg_axis,[d2,d3,a2,a3],24
  jmp direct_ret
 pages_off:
@@ -1682,6 +1694,7 @@ arm_fix_next:
  cmp 12,d3
  bne arm_fix
 arm_fix_done:
+ call mid_clear,[d2,d3,a2,a3],24
  clr d2
 arm_refresh_ctx:
  mov 111,d0                      /* context 0: the live setting; context 1: its store 2 (as wb.s) */
@@ -2035,10 +2048,13 @@ info_done:
  rets
 
 .section .ext8,"ax"
-/* d0 = axis -> the next on INFO, as on the OM-3 v0.41: Hue -> Saturation ->
- * Lightness -> Hue (1 -> 0 -> 2 -> 1). The split-tone tints (3..5) have no key
- * on the wheel any more (their own row comes later); from one, Hue. Armed only. */
+/* d0 = axis -> the next on INFO, as on the OM-3 v0.41. The colour wheel row:
+ * Hue -> Saturation -> Lightness -> Hue (1 -> 0 -> 2 -> 1). The Split toning
+ * row (the same editor, axes 3..5): Shadows <-> Highlights (3 <-> 5); the
+ * Midtone tint (4) is deferred. Armed only. */
 wheel_next_axis:
+ cmp 3,d0
+ bcc wheel_tint
  cmp 1,d0
  beq wheel_sat
  cmp 0,d0
@@ -2050,6 +2066,14 @@ wheel_light:
  rets
 wheel_sat:
  clr d0
+ rets
+wheel_tint:
+ cmp 3,d0
+ bne wheel_shadow
+ mov 5,d0
+ rets
+wheel_shadow:
+ mov 3,d0
  rets
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
@@ -3030,3 +3054,132 @@ wheel_cursor:
 wc_out:
  mov (4,sp),d0
  ret [d2,d3,a2,a3],24
+
+/* ---- Split toning on its own row (roadmap phase 3a, 2026-11-28, emulator only) ----
+ * The Color Profile row list (stock 0x6119a0f0, 6 items, taken at 0x60e376c3)
+ * gets the colour wheel's item a second time, right under it: the Split toning
+ * row, as on the OM-3 v0.41. Both rows open OM's colour editor; P+0 picks what
+ * it edits: 0..2 Saturation / Hue / Lightness on the wheel row, 3 / 5 Shadow /
+ * Highlight tint on the Split toning row (tint_read / tint_write, unchanged). */
+CP_ROWS = 7
+SPLIT_ROW = 2                    /* the list index of the Split toning row */
+.balign 4
+cp_rows:
+ .long 111, 5374, 5374, 5375, 5376, 7, 8
+
+/* d0 = 1 when the Picture Mode panel's focused row is the Split toning row:
+ * the panel ((scr_obj)->+4) keeps a state byte per row at +1068 + index:
+ * 3 on the focused row, 4 once a dial changed it (OM-Emu, 2026-11-28).
+ * call st_split,[],4 */
+st_split:
+ mov (scr_obj),a0
+ cmp 0,a0
+ beq ss_no
+ mov (4,a0),a0
+ cmp 0,a0
+ beq ss_no
+ movbu (1068+SPLIT_ROW,a0),d0
+ add -3,d0
+ cmp 2,d0
+ bcc ss_no
+ mov 1,d0
+ ret [],4
+ss_no:
+ clr d0
+ ret [],4
+
+/* pages_hook, armed, after the pages are shown (d2 = the screen's data struct,
+ * +245 = 1 while the colour page shows): keep P+0 on the row's own pages. The
+ * Split toning row opens on Shadows, the wheel row on Saturation, when the
+ * axis belongs to the other row (or is the deferred Midtone tint).
+ * call pg_rows,[d2,d3,a2,a3],24 */
+pg_rows:
+ mov d2,a0
+ movbu (245,a0),d0
+ cmp 1,d0
+ bne pr_done
+ call st_split,[],4
+ mov d0,d3
+ call st_ptr,[],8
+ cmp 0,a0
+ beq pr_done
+ movbu (ST_AXIS,a0),d0
+ cmp 0,d3
+ beq pr_wheel
+ cmp 3,d0
+ beq pr_done
+ cmp 5,d0
+ beq pr_done
+ mov 3,d0
+ bra pr_set
+pr_wheel:
+ cmp 3,d0
+ bcs pr_done
+ clr d0
+pr_set:
+ movbu d0,(ST_AXIS,a0)
+ /* The editor stays when the focus moves between the two rows: its children
+  * still hold the other row's values. Re-read them for the new axis. The
+  * colour page (child 4) holds the editor at +76, as hsl_container finds it. */
+ mov a3,a0
+ mov 4,d0
+ call child_get,[],0
+ cmp 0,a0
+ beq pr_done
+ mov (76,a0),a2
+ cmp 0,a2
+ beq pr_done
+ movhu (120,a2),d0
+ cmp 13,d0
+ bne pr_done
+ mov (124,a2),a1
+ cmp 0,a1
+ beq pr_done
+ movhu (80,a1),d0
+ sub 2197,d0
+ cmp 8,d0
+ bcc pr_done
+ mov a2,a0
+ call st_set_editor,[a2],8
+ call refresh_children,[d2,d3,a2,a3],24
+pr_done:
+ ret [d2,d3,a2,a3],24
+
+/* The Midtone tint is deferred (owner, 2026-11-28): a value an earlier build
+ * stored (971..973, Color Profile 1..3) is cleared at arming, so nothing
+ * applies that cannot be seen. call mid_clear,[d2,d3,a2,a3],24 */
+mid_clear:
+ mov 971,d2
+mc_loop:
+ mov d2,d0
+ call stock_get,[],4
+ cmp 0,d0
+ beq mc_next
+ mov d2,d0
+ clr d1
+ mov 1,a0
+ call stock_ui_write,[d2,d3,a2,a3],20
+mc_next:
+ inc d2
+ cmp 974,d2
+ bne mc_loop
+ ret [d2,d3,a2,a3],24
+
+/* OM's column builder (0x60e377a5.., a setlb loop) marks the row whose item is
+ * the remembered one (2148) and keeps looking, so the last match wins: with the
+ * wheel's item twice, Picture Mode would reopen on the Split toning row. A 5374
+ * at the Split toning row's index never takes the remembered place; the wheel
+ * row above it does. Replaces cmp d0,d2; bne 0x60e377f5; mov (16,sp),a0 at
+ * 0x60e377ed (d0 remembered item, d2 this row's item, d1 its index). */
+row_match:
+ cmp d0,d2
+ bne rm_no
+ cmp SPLIT_ROW,d1
+ bne rm_yes
+ cmp 5374,d2
+ beq rm_no
+rm_yes:
+ mov (16,sp),a0
+ jmp row_match_back
+rm_no:
+ jmp row_match_skip

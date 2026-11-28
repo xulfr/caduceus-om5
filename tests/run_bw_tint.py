@@ -19,7 +19,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 CP1 = 's1 ok ok ' + 'right ' * 8          # Picture Mode, Color Profile 1 highlighted
-TONE, WHEEL = 'down down ', 'down '           # rows 3 (tone curve) and 2 (colour wheel)
+TONE, WHEEL, SPLIT = 'down down down ', 'down ', 'down down '   # rows: colour wheel, Split toning (since phase 3a), tone curve
 DONE = 'ok wait:500'
 # OM-Emu's dials: in the Black/White state sub+2 sets Black -1 and main-3 White -2 (the stock Sh / Hi steps).
 BW = CP1 + TONE + 'info sub+2 main-3 '
@@ -30,14 +30,19 @@ CASES = [
     # a lone main-3 moves OM's Sh by -3 (checked on stock Hi/Sh), so here Black of Color Profile 2
     ('cp2-black', CP1 + 'right ' + TONE + 'info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1,
                                                                    stFlag=1, st=True)),
-    ('stock-after-bw', BW + DONE + ' ok ok up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0], stFlag=0)),
+    ('stock-after-bw', BW + DONE + ' ok ok up up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0], stFlag=0)),
     # The tints have no key on the wheel since the OM-3 v0.41 key map (2026-11-28; their own row comes later): these
     # cases set the tint cells before the keys (tests/seed_cells.mjs) and check the refresh, the tables and the setter.
     ('cp1-tints', CP1 + WHEEL + DONE, dict(pm=54, tint={968: 0x30, 974: 0x19}, stFlag=1, st=True, seed={968: 0x30, 974: 0x19})),
-    ('cp3-midtone', CP1 + 'right right ' + WHEEL + DONE, dict(pm=56, tint={973: 0x30}, stFlag=1, st=True, seed={973: 0x30})),
+    # The Midtone tint is deferred (owner, 2026-11-28): a stored one is cleared at arming and nothing applies.
+    ('cp3-midtone-cleared', CP1 + 'right right ' + WHEEL + DONE, dict(pm=56, tint={973: 0}, stFlag=0, seed={973: 0x30})),
     # Camera report 2026-11-20: Highlight Tint showed nothing (the zones went by the curve's linear input index).
     # st_assert now checks every output against the delta at its own output level.
     ('cp1-highlight', CP1 + WHEEL + DONE, dict(pm=54, tint={974: 0x30}, stFlag=1, st=True, seed={974: 0x30})),
+    # The Split toning row (phase 3a): it opens on Shadows; INFO goes to Highlights; the colour wheel row is unchanged.
+    ('cp1-split-row', CP1 + SPLIT + 'main+3 info main+2 ' + DONE,
+     dict(pm=54, axis=5, tint={968: 0x30, 974: 0x20}, stFlag=1, st=True)),
+    ('cp1-split-then-wheel', CP1 + SPLIT + 'main+2 up main+1 ' + DONE, dict(pm=54, axis=0, tint={968: 0x20}, stFlag=1, st=True)),
     # Retired with the key map: cp1-group-wrap and cp1-tint-info (Delete / INFO within and between the HSL and Tint
     # groups); tests/run_wheel_keys.py covers the wheel's keys now.
     # Live view (owner 2026-11-20): Black / White changes must reach live view; gs_hook makes each gamma cache miss

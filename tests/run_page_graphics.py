@@ -139,14 +139,14 @@ def main():
           else ['the H/S/L INFO hint differs between axes or is missing'])
 
     # tone row: straight on entry, then Shadows +5 lifts the lower quarter and leaves the upper half
-    f = session(a, 'tone', OPEN + 'down down T+ ' + 'main+1 ' * 5 + 'T-', 5)
-    rows = frame(f[13])
+    f = session(a, 'tone', OPEN + 'down down down T+ ' + 'main+1 ' * 5 + 'T-', 5)
+    rows = frame(f[14])   # 12 the wheel, 13 Split toning, 14 the tone row
     bad = [f'column {c}: {curve(rows, c)}' for c in (4, 12, 24, 36, 44) if curve(rows, c) is None or abs(curve(rows, c) - 4 * c - 2) > 3]
     for c in range(0, 193, 48):
         if px(rows, TX + c, TY + 30) != GREY or px(rows, TX + 30, TY + c) != GREY:
             bad.append(f'grid line {c} missing')
     check('tone-entry', bad)
-    rows = frame(f[18])
+    rows = frame(f[19])
     lift = curve(rows, 12) - 4 * 12 - 2 if curve(rows, 12) is not None else None
     bad = [] if lift is not None and 17 <= lift <= 23 else [f'Shadows +5 lifts column 12 by {lift}, expected 20']
     if curve(rows, 30) is None or abs(curve(rows, 30) - 4 * 30 - 2) > 3:
