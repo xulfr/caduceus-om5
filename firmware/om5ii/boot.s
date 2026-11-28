@@ -8,7 +8,7 @@
  *
  *  1. FastEndCb (0x601b1362), a fast-startup callback that runs once per
  *     power-on about 1.2 s in, after the live view (OMKit's loader site,
- *     camera-run there; see research/OM5II-BACKGROUND-ARM-2026-11-28.md).
+ *     camera-run there; see research/OM5II-BACKGROUND-ARM-2026-11-27.md).
  *     The hook only creates one low-priority task and returns. Nothing else
  *     runs during start-up.
  *  2. The task waits until every section is initialised (loaded_bits, the
@@ -29,7 +29,7 @@
 ST_PEND  = 16                   /* P+16: 1 = armed in the background, the start-up refresh not yet run */
 CB_STATE = 17                   /* P+17: CADUCEUS.BIN 0 not tried, 1 loaded, 2 tried: none / bad */
 CB_TAB   = 20                   /* P+20: the block's entry table (cached address), 0 = none */
-CB_BUF   = 0xa3700000           /* the file, read through the uncached view (see research/OM5II-CARD-BLOCK-2026-11-28.md) */
+CB_BUF   = 0xa3700000           /* the file, read through the uncached view (see research/OM5II-CARD-BLOCK-2026-11-27.md) */
 CB_HDR   = 256                  /* header: magic, ABI, body length, CRC-32 of the body, n, n x {address, word} */
 CB_BODY  = 0x63700100           /* the body runs through the cached view; cardblock/block.ld links it here */
 CB_MAX   = 0x10000              /* header and body */

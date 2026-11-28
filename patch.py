@@ -9,6 +9,7 @@
 Writes  DIR/DCOLYMP/E1489999.BIN       the patched update (copy the DCOLYMP folder to the top of the SD card)
         DIR/restore/DCOLYMP/E1489999.BIN  OM's own firmware 1.1, to go back
         DIR/OM5MOD/LOOKS.BIN            the starter films, when the release has them
+        DIR/OM5MOD/CADUCEUS.BIN         the Picture Mode graphics, when the release has them (copy OM5MOD too)
 
 Needs only Python 3.8+. It never talks to a camera. It contains no OM firmware: it works on the official file,
 checks that file's SHA-256, applies this project's changes and checks the result against the release's SHA-256.
@@ -176,10 +177,19 @@ def main():
         kept_looks = looks.exists()
         if not kept_looks and (folder / 'LOOKS.BIN').is_file():
             atomic_write(looks, (folder / 'LOOKS.BIN').read_bytes())
+        block = rel.get('card_block')
+        if block:
+            # The Picture Mode graphics: made for exactly this update, so always the release's own (never kept)
+            data = (folder / 'CADUCEUS.BIN').read_bytes()
+            if sha256(data) != block['sha256']:
+                raise Refuse('the release\'s CADUCEUS.BIN differs from its patch.json; nothing more was written')
+            atomic_write(out / block['file'], data)
         atomic_write(out / 'DCOLYMP/E1489999.BIN', image)
         print(f'\nDone. In {out}:')
         print('  DCOLYMP/E1489999.BIN          the patched update, SHA-256 ' + sha256(image))
         print('  restore/DCOLYMP/E1489999.BIN  OM\'s firmware 1.1, to go back')
+        if block:
+            print('  OM5MOD/CADUCEUS.BIN           the Picture Mode graphics, made for this update')
         if (out / 'OM5MOD' / 'LOOKS.BIN').is_file():
             print('  OM5MOD/LOOKS.BIN              ' + ('your existing looks (kept)' if kept_looks else 'the starter looks'))
         print('Next: docs/INSTALL.md')

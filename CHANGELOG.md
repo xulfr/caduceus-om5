@@ -9,6 +9,13 @@
 - **Split toning on the colour wheel** of Color Profile 1–3: Shadow, Midtone and Highlight Tint on the trash button;
   any of the twelve colours, strength 1..5. Works on the camera (live view and JPEGs). A tint is one colour: "all"
   is no longer offered on the tint axes. [Note](research/OM5II-SPLIT-TONE-2026-11-19.md).
+- **No half-press needed after switching on** (2026-11-27, emulator only): a small background task, started
+  once the camera has finished starting, wakes Caduceus and reads the card; start-up itself is unchanged. The
+  profile's catch-up stays at the first half-press. Hold OK at switch-on to skip it.
+  [Note](research/OM5II-BACKGROUND-ARM-2026-11-27.md).
+- **The Picture Mode graphics come from the card** (`OM5MOD/CADUCEUS.BIN`, made for each update; about 1 KB freed
+  in the firmware). Without the file the pages work without the graphic.
+  [Note](research/OM5II-CARD-BLOCK-2026-11-27.md).
 - **Hold OK returns to the look** on a Color Profile slot holding one (2026-11-27, emulator only): the colour
   wheel (each axis) and tone curve reset to the look's values instead of 0, and OM's Reset OK Hold hint shows only
   while a value differs from the look. Needs this switch-on's `LOOKS.BIN`.

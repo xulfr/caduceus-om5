@@ -70,6 +70,10 @@ def main():
     bank = looks_bin([by_name[film] for film in starter])
     out.mkdir(parents=True, exist_ok=True)
     (out / 'LOOKS.BIN').write_bytes(bank)
+    # The card block (Picture Mode graphics) is made for exactly this build: boot.s checks it against the flashed code
+    import mkcardblock
+    mkcardblock.build(build, out / 'CADUCEUS.BIN')
+    release['card_block'] = {'file': 'OM5MOD/CADUCEUS.BIN', 'sha256': sha256((out / 'CADUCEUS.BIN').read_bytes())}
     (out / 'patch.json').write_text(json.dumps(release, indent=1) + '\n')
     print(f'{out}/patch.json: {len(edits)} runs, {sum(len(e["bytes"]) // 2 for e in edits)} bytes, package {release["package"]["sha256"]}')
 

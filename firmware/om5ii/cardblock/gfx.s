@@ -3,7 +3,7 @@
  *
  * Built by tools/mkcardblock.py into OM5MOD/CADUCEUS.BIN, linked at a fixed address (cardblock/block.ld) against
  * the flashed build's symbols, and loaded by boot.s (cb_load) into memory the firmware does not use (see
- * research/OM5II-CARD-BLOCK-2026-11-28.md). hsl.s keeps a stub of each entry with its caller's frame; these
+ * research/OM5II-CARD-BLOCK-2026-11-27.md). hsl.s keeps a stub of each entry with its caller's frame; these
  * bodies are the former hsl.s code, moved unchanged. The entry table must stay first: the stubs index it. */
 .section .text,"ax"
 cb_entries:

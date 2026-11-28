@@ -76,6 +76,15 @@ tint flag cleared or only sections 1 and 2 ready, the stock tables must pass thr
 python tests/run_bw_tint.py --emu generated/om-emu --build generated/strict --out generated/bw-tint
 ```
 
+`tests/run_boot_arm.py` starts boot.s's background task as its FastEndCb hook would (OM-Emu does not run that
+callback) and checks, with no half-press, that the patch arms, reads `LOOKS.BIN` and `CADUCEUS.BIN`, refuses a card
+block made for another build or damaged, and that the first half-press runs the pending refresh. The page-graphics
+and Monochrome filter tests put `CADUCEUS.BIN` for the build under test on their card (`tests/card_block.py`).
+
+```bash
+python tests/run_boot_arm.py --emu generated/om-emu --build generated/strict --out generated/boot-arm
+```
+
 `tests/run_look_defaults.py` applies a look to Color Profile 1, changes the wheel (each axis) or the tone curve,
 holds OK (`hold:ok:3000`) and checks with `tests/look_defaults_assert.mjs` that the values return to the look and
 that the Reset OK Hold hint shows only while they differ. Black / White and a slot without a look reset to 0.

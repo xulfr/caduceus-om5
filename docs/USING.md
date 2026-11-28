@@ -1,9 +1,14 @@
 # Using it
 
-**After switching on, half-press the shutter button once.** Until then the camera behaves exactly as OM's
-firmware (the Color Profiles are in the list, but their extra controls are asleep and no look file is read).
-A profile that was selected when the camera was switched off is applied at that half-press; a photo taken
-before any half-press (by remote control, for example) uses the camera's stock values.
+**After switching on, Caduceus wakes up by itself** (v0.2.0-dev, not yet checked on a camera). About a second
+after the live view appears, the Color Profiles' extra controls, the looks and the page graphics are ready; there is
+no need to half-press first. Start-up itself is OM's, unchanged. The profile's one-time catch-up still runs at the
+first half-press, so it is in place before the first photo.
+
+- **Hold OK while switching on** to skip this: Caduceus then wakes at the first half-press, as in earlier versions.
+- **The card:** the looks (`OM5MOD/LOOKS.BIN`) and the Picture Mode graphics (`OM5MOD/CADUCEUS.BIN`) are read from it
+  once per switch-on. Without `CADUCEUS.BIN` everything works, but the colour wheel, tone curve and filter pages show
+  no graphic. `CADUCEUS.BIN` is made for one update: use the one that came with your `E1489999.BIN`.
 
 ## The slots
 
