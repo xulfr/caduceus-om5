@@ -27,13 +27,28 @@ research/NOTES.md), OMKit's E148 1.1 docs (CC BY 4.0) and this project's own not
 - **Storage.** 907 / 911 / 915 now hold Tone Balance. RGB curves need 45 more per-profile values: settings cells
   (which ids are free and signed is a research step), the card, or the heap with a card file.
 
+## RGB curves: how it maps onto our route (2026-11-28, reading only)
+
+- The OM-3's model (`research/rgbcurves/model.py` on its `try/v0.41-beta4`): per channel 5 points at 0 / 25 / 50 / 75 /
+  100 % of the 12-bit output, offsets −7..+7 × 48, a monotone cubic (Fritsch-Butland tangents) in Q12 integer maths,
+  t' = t + D(t), then a clamp and running max. Bit-exact model, truncating division as the CPU's `div`.
+- Our delta tables are per channel and indexed by output level (`st_tint` adds the delta at value >> 4), so the curve
+  goes in as delta_c[i] += D_c(16 i) in `tn_tables`' pass, next to the tints and Black / White. `st_tint` already
+  clamps; the OM-3's running max (keeping each table rising) would be new.
+- **Storage is the blocker.** 15 values per profile; the spare per-profile ids are taken (tints 964 / 968..975, Black /
+  White 965..967 / 993 / 997 / 1020, Tone Balance 907 / 911 / 915). Lead: the colour cells are 32-bit raw (928.. pack
+  Hue / Saturation / Lightness, `0x602f50f8` / `0x602f5121`), so five 4-bit points fit one cell per channel, 3 cells per
+  profile. Which ids are unused by E148, kept across power-off, reset as wanted and copied to C1–C5 is the research
+  step (the stock reset / copy lists in [Ghidra findings](OM5II-GHIDRA-FINDINGS-2026-11-18.md) are the place to start).
+- The engine itself should go into `CADUCEUS.BIN` (called from `tn_tables` through a stub), not the flashed tails.
+
 ## Suggested order
 
-1. **Move armed-only UI code into `CADUCEUS.BIN`** (label helpers, `paint_strength`, tone hints, Split toning helpers),
-   keeping in flash only hooks, entry stubs and code that must run unarmed. `run_page_graphics.py` and
-   `run_boot_arm.py` already cover the block's load and refusal.
-2. **RGB curves**: image side on the existing route (model from the OM-3, bit-exact test like `st_assert.mjs`); then
-   storage; then the row.
+1. **New phase 4 code goes into `CADUCEUS.BIN` from the start**, behind flashed stubs (the block's loader and checks
+   are covered by `run_page_graphics.py` and `run_boot_arm.py`). Existing flashed code moves only when a feature needs
+   its bytes: moving it frees little and each move needs a stub.
+2. **RGB curves**: settle storage (above), then the image side on the existing route (model from the OM-3, bit-exact
+   test like `st_assert.mjs`), then the row.
 3. **Sharpness −5..+2**: static trace of the detail block's input first; UI after.
 4. **WB Compensation row.**
 5. **Color Mix**: static trace of the matrix site first (OMKit's `ispdrv.c` route as a reference, not a copy).
