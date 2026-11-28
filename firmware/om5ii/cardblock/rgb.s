@@ -10,15 +10,20 @@
  * A_i = m_i >> 2, B_i = m[i+1] >> 2. tests/rgb_curves.py holds the same arithmetic and checks it against the OM-3
  * model; tests/st_assert.mjs checks the tables the camera code builds.
  *
- * Storage (research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md): part 1 of the tone cells, channel c of Color
- * Profile p at 976 + 3p + c (part 0 there is the tone curve). A cell is RGB_TAG << 24 | point j's offset in bits
- * 4j..4j+3 (two's complement, -7..+7); without the tag it is a flat curve, as after OM's init and reset (0). */
-RGB_ID = 976                    /* 976 + 3p + c, part 1 */
+ * Storage (research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md): nine settings E148 defines no descriptor for, the
+ * fourth slots of four-wide families (a fourth Color / Monochrome Profile E148 does not have): channel c of Color
+ * Profile p is rgb_ids[3p + c], read from its working cell (wc_get, 32 bits; OM's writer keeps them). All nine are
+ * in OM's save, custom-mode copy and reset lists. A cell is RGB_TAG << 24 | point j's offset in bits 4j..4j+3 (two's
+ * complement, -7..+7); without the tag it is a flat curve, as after OM's reset (the stock defaults -3..3). */
 RGB_TAG = 0xc5
 ST_BUF = 1180                   /* hsl.s: the split-tone buffer; deltas at +1552, 512 bytes a channel */
 ST_P = 1541                     /* hsl.s: the profile the tables are built for (tn_pre), 3 = none */
 
 .section .text,"ax"
+.balign 2
+.global rgb_ids
+rgb_ids:                        /* R, G, B of Color Profile 1, 2, 3 */
+ .hword 985, 986, 987, 1030, 1031, 1032, 1002, 1006, 1010
 
 /* d3 = profile p (3.. none) -> d0 = 1 when one of its channels has a curve. From hsl.s tint_refresh, before
  * it decides whether to build the tables. call rgb_any,[d2,d3,a2,a3],24 */
@@ -30,13 +35,13 @@ rgb_any_b:
  mov d3,d0
  add d0,d0
  add d3,d0
- add RGB_ID,d0
- mov d0,a3
+ add d0,d0
+ mov rgb_ids,a3
+ add d0,a3
  mov 3,d3
 ra_loop:
- mov a3,d0
- mov 1,d1
- call active_read,[d2],8
+ movhu (a3),d0
+ call wc_get,[],4
  mov d0,d1
  lsr 24,d1
  cmp RGB_TAG,d1
@@ -46,7 +51,7 @@ ra_loop:
  mov 1,d2
  bra ra_out
 ra_next:
- inc a3
+ add 2,a3
  add -1,d3
  bne ra_loop
 ra_out:
@@ -55,7 +60,7 @@ ra_out:
 
 /* a3 = P: add each channel's curve to the delta tables tn_tables has just built (from hsl.s tn_tables, before
  * ST_A is set). Frame: (0..19,sp) Y[0..4], (20..39,sp) m[0..4], (40,sp) channel, (44,sp) its deltas, (48,sp)
- * its cell, (52,sp) the running sum. call rgb_add,[d2,d3,a2,a3],72 */
+ * its rgb_ids entry, (52,sp) the running sum. call rgb_add,[d2,d3,a2,a3],72 */
 .global rgb_add_b
 rgb_add_b:
  movbu (ST_P,a3),d0
@@ -64,8 +69,9 @@ rgb_add_b:
  mov d0,d1
  add d0,d0
  add d1,d0
- add RGB_ID,d0
- mov d0,(48,sp)
+ add d0,d0
+ add rgb_ids,d0
+ mov d0,(48,sp)                  /* the channel's entry in rgb_ids */
  mov (ST_BUF,a3),a2
  cmp 0,a2
  beq rd_out
@@ -74,9 +80,9 @@ rgb_add_b:
  clr d0
  mov d0,(40,sp)
 rd_chan:
- mov (48,sp),d0
- mov 1,d1
- call active_read,[d2],8
+ mov (48,sp),a0
+ movhu (a0),d0
+ call wc_get,[],4
  mov d0,d1
  lsr 24,d1
  cmp RGB_TAG,d1
@@ -220,7 +226,7 @@ rd_next:
  add 512,d0
  mov d0,(44,sp)
  mov (48,sp),d0
- inc d0
+ add 2,d0
  mov d0,(48,sp)
  mov (40,sp),d0
  inc d0

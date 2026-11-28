@@ -63,16 +63,19 @@ CASES = [
     # Tints too (owner 2026-11-20): cp1-wheel-gs-baseline / cp1-tint-gamma-cache edited a tint with the dial on the
     # wheel's Tint group, which the OM-3 v0.41 key map removed. They come back with the Split toning row; gs_hook's
     # cache miss after a table rebuild is still covered by cp1-bw-gamma-cache.
-    # R / G / B curves (phase 4, card block rgb.s): part 1 of 976 + 3p + c. Curves alone build the tables; with a tint
-    # and Black / White the deltas add up; another profile's curve does not apply; without the card block, none.
+    # R / G / B curves (phase 4, card block rgb.s): cells 985-987 (Color Profile 1), 1030-1032 (2), 1002 / 1006 / 1010
+    # (3), R, G, B. Curves alone build the tables; with a tint and Black / White the deltas add up; another profile's
+    # curve does not apply; without the card block, none.
     ('cp1-rgb-curves', CP1 + WHEEL + DONE, dict(pm=54, stFlag=1, st=True, card=True,
-                                                seed_p1={976: RGB[0], 977: RGB[1], 978: RGB[2]})),
+                                                seed={985: RGB[0], 986: RGB[1], 987: RGB[2]})),
     ('cp1-rgb-tint-bw', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], stFlag=1, st=True, card=True,
-                                        seed={968: 0x30}, seed_p1={976: RGB[1], 978: RGB[0]})),
+                                        seed={968: 0x30, 985: RGB[1], 987: RGB[0]})),
     ('cp2-rgb-curves', CP1 + 'right ' + WHEEL + DONE, dict(pm=55, stFlag=1, st=True, card=True,
-                                                           seed_p1={979: RGB[2], 976: RGB[0]})),
-    ('cp1-rgb-other-profile', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, card=True, seed_p1={979: RGB[0]})),
-    ('cp1-rgb-no-card', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, seed_p1={976: RGB[0]})),
+                                                           seed={1032: RGB[2], 1030: RGB[0], 985: RGB[1]})),
+    ('cp3-rgb-curves', CP1 + 'right right ' + WHEEL + DONE, dict(pm=56, stFlag=1, st=True, card=True,
+                                                                 seed={1006: RGB[0], 1010: RGB[1]})),
+    ('cp1-rgb-other-profile', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, card=True, seed={1030: RGB[0]})),
+    ('cp1-rgb-no-card', CP1 + WHEEL + DONE, dict(pm=54, stFlag=0, seed={985: RGB[0]})),
     ('stock-after-tint', CP1 + WHEEL + DONE + ' ok ok up ' + 'left ' * 6 + DONE,
      dict(pm=5, tint={968: 0x30}, stFlag=0, seed={968: 0x30})),
 ]
@@ -93,10 +96,9 @@ def main():
         folder = a.out.resolve() / name
         want = dict(want)
         seed = want.pop('seed', {})
-        seed_p1 = want.pop('seed_p1', {})
         card = want.pop('card', False)
         env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/seed_cells.mjs'), OM5_SEED=json.dumps(seed),
-                   OM5_SEED_P1=json.dumps(seed_p1),
+
                    POST=str(ROOT / 'tests/bw_tint_assert.mjs'), OM5_BW_EXPECT=json.dumps(want))
         if want.get('gs'):
             above = gs_seen.get(want.get('gs_above'))

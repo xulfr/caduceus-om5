@@ -55,3 +55,27 @@ built; nothing camera-tested.** Phase 4 needs 15 values per Color Profile (R / G
   assumption and are themselves not yet camera-checked: one camera check of a WB record across power-off answers both.
 - **Override table.** Whether `0x604daf50` routes any of 976–984 to a non-zero part (would make part 1 OM's).
 - **All writers.** A wider OM-Emu watch (menus, playback, capture, Reset, C-modes) on parts 0 and 1 of 976–984.
+
+## Decision (2026-11-28, later): nine slot-4 cells, part 0 (emulator and static only)
+
+- **Part 1 is out.** Both copy loops, store-save `0x602e1153` (working cells → active store) and `0x602e1237`
+  (source store `0x620eb264` through `0x602f52ea` → active store), write **part 0** of every list id (another part only
+  through the override table). Part 1 therefore does not follow C1–C5; the same holds for this project's WB records.
+- **The cells.** 1589 stock setting descriptors (`0x6050dad4`, 20 bytes each) leave ids without one. Among 880..1100
+  most come in a pattern: the **fourth slot of four-wide families**, as 907 / 911 / 915 (Sharpness / Contrast /
+  Shading 904 + p .. with p = 3) and 964–975 (Saturation 928 + 12p, p = 3): a Color / Monochrome Profile 4 E148 does
+  not have. Chosen, all in the save list A, list B and the reset list, none used by this project:
+
+  | Color Profile | R | G | B | stock defaults |
+  |---|---|---|---|---|
+  | 1 | 985 | 986 | 987 | −3, 0, 3 (the fourth profile's Hi / Mid / Sh, as 976 + 3p) |
+  | 2 | 1030 | 1031 | 1032 | −3, 0, 3 (the same in the 1021 + 3p family) |
+  | 3 | 1002 | 1006 | 1010 | 1, 0, 0 (fourth slots of 999.., 1003.., 1007..) |
+
+- **OM-Emu:** in a broad session (three Color Profiles, the tone page, a capture, the menus, playback, the Control
+  Panel) **no code read or wrote any of the nine** (`generated/idw.txt`: every accessor, by id and caller). OM's writer
+  `0x60855cdc` keeps a full 32-bit value in the working cell (`wc_get` `0x602f514d` reads it back; the context getter
+  `0x602d000d` gives only the low byte), and the active store's part 0 follows at OM's next save. The tag `0xC5 << 24`
+  never matches a stock default, so after a reset every curve reads flat.
+- **Still a camera question:** that the save, C1–C5 and Reset behave on the camera as the lists say; one check of a
+  curve across power-off, a C1 save / recall and Reset.

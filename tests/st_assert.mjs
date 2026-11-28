@@ -13,9 +13,10 @@ const ST_A = 1176, ST_BUF = 1180;
 const TINT_IDS = [968, 969, 970, 971, 972, 973, 974, 975, 964];   // 3 z + p: shadows, midtones, highlights
 const RGB = Array.from({ length: 12 }, (_, k) => [0, 1, 2].map(c => Math.round(64 * Math.cos((60 - 30 * k - 120 * c) * Math.PI / 180))));
 
-// R / G / B curves (phase 4, card block rgb.s): part 1 of 976 + 3p + c, 0xC5 << 24 | five 4-bit offsets; the
+// R / G / B curves (phase 4, card block rgb.s): working cells RGB_IDS[3p + c], 0xC5 << 24 | five 4-bit offsets; the
 // delta entry k gains D(16 k) of the OM-3 model (tests/rgb_curves.py, checked there against the OM-3's own).
 const tdiv = (a, b) => Math.trunc(a / b);
+const RGB_IDS = [985, 986, 987, 1030, 1031, 1032, 1002, 1006, 1010];
 function curve(cell) {
   if (((cell >>> 24) & 255) !== 0xc5) return null;
   const v = [0, 1, 2, 3, 4].map(j => { const n = (cell >>> (4 * j)) & 15; return Math.max(-7, n >= 8 ? n - 16 : n); });
@@ -40,8 +41,8 @@ export default function (g) {
   const T = [0, 1, 2].map(z => { const v = get(TINT_IDS[3 * z + p]) & 0xff, k = v & 15, s = v >> 4;
     return k < 12 && s < 11 ? RGB[k].map(x => Math.floor(s * x / 2)) : [0, 0, 0]; });   // strength 0..10, half steps
   const bw = Buffer.from(M.dbgRead(P + 1172, 4)), BB = bw.readInt16LE(0), WW = bw.readInt16LE(2);   // Blacks, Whites
-  const part1 = id => g.__call(0x602f50f8, { d0: id, d1: 1 }, [0x80, 8]).d0 >>> 0;
-  const cv = [0, 1, 2].map(c => curve(part1(976 + 3 * p + c)));
+  const wc = id => g.__call(0x602f514d, { d0: id }, [0, 4]).d0 >>> 0;
+  const cv = [0, 1, 2].map(c => curve(wc(RGB_IDS[3 * p + c])));
   const any = T.some(t => t.some(x => x)) || BB !== 0 || WW !== 0 || cv.some(x => x);
   const pb = Buffer.from(M.dbgRead(P + ST_A, 8));
   assert.equal(pb.readInt16LE(0), any ? 1 : 0, 'ST_A follows the tints and Black / White');

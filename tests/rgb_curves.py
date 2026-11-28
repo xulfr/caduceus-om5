@@ -6,13 +6,14 @@ Apache-2.0, Copyright 2026 androidfanman): 5 points at 0 / 25 / 50 / 75 / 100 % 
 as the CPU's div. Here a channel's 5 offsets are used directly (the OM-3 keeps 6 values, the second unused), and the
 curve is evaluated at t = 16 k for the split-tone delta tables (one entry per 16 output levels).
 
-Cell format (part 1 of 976 + 3p + c): TAG << 24 | offset j in bits 4j..4j+3 (two's complement)."""
+Cells: channel c of Color Profile p is IDS[3p + c] (working cell, 32 bits): TAG << 24 | offset j in bits
+4j..4j+3 (two's complement); untagged = flat."""
 X = [0, 1024, 2048, 3072, 4096]
 H = [X[i + 1] - X[i] for i in range(4)]
 INV = [(1 << 24) // h for h in H]
 STEP = 48
 TAG = 0xC5
-CELL = 976
+IDS = [985, 986, 987, 1030, 1031, 1032, 1002, 1006, 1010]
 
 
 def tdiv(a, b):
