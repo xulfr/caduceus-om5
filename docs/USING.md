@@ -63,7 +63,8 @@ while a value differs from the look. This needs the look file read at this switc
 
 1. Make `LOOKS.BIN` in [LookLab](https://xulfr.github.io/caduceus-om5/looklab/) (or use the starter file) and put
    it in a folder `OM5MOD` at the top of the card.
-2. Switch on, half-press once. The camera reads the file (up to ten looks).
+2. Switch on. The camera reads the file about a second after the live view appears (up to ten looks). On
+   v0.2.0-alpha1 and earlier, or with OK held at switch-on, it reads it at the first half-press instead.
 3. **Picture Mode › Color Profile 1** (or 2, 3). Press the **trash button**: the slot takes a look. Press again:
    the next look. After the last look it starts again at the first.
 4. The title changes to the look's name at once and the rows show its values.
