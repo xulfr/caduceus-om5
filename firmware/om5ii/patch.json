@@ -12,9 +12,9 @@
       "cpu_base": "0x60021020",
       "image_transform": "olycompress",
       "stored_before_sha256": "f9c6b0bb37675a2b031ccf09292796ab5793994b8ce2053dcfd7f9fe68035cd8",
-      "stored_after_sha256": "c03c46f5b3cdbca186cf9beba5b49dd697193aab04dc0cfb6500fb33a4e420f8",
+      "stored_after_sha256": "7618a987ba9f698ddbdcbc8706db9f77895cf68c7f4ffd33d533c837d0ff9355",
       "before_sha256": "7ae7d4c60990cc859c070e0ceb6cbe612f9c5b260713f2f1256e51d137851c61",
-      "after_sha256": "9bd4e4b3639ce54fd132bac7d3e96693b43a1c10f1ae697d4c1a2ec2258393df",
+      "after_sha256": "277c523bf2bb5fba1d0dac21baeccd14b47d4ee3a07d9f1d389e33dcd76bc21d",
       "repack": "split",
       "stream_length": "stock-page"
     },
@@ -301,7 +301,7 @@
       "address": "0x60845a00",
       "bytes": 1036,
       "before_sha256": "20b02dd746827d07ac378a227ded43a4a3da4c216e1ab4b6c53a9681d8866ddb",
-      "after_sha256": "c62e9cf7b8166563d300eca0aba1249b07fbab8d652dc2c70def394e279d6478"
+      "after_sha256": "d965805fac70c8863a833a56fa7d73cf982486a2576a944e30b5b248169319e8"
     },
     {
       "component": "0x100",
@@ -821,7 +821,7 @@
       "address": "0x613f2ffc",
       "bytes": 4,
       "before_sha256": "ad95131bc0b799c0b1af477fb14fcf26a6a9f76079e48bf090acb7e8367bfd0e",
-      "after_sha256": "a1b522fbba9838e51fad821cbc098ce5a8aff5a9e82c5e0d9d6606789de111b3"
+      "after_sha256": "514805cbfc504a44cef9809170bab4263cb4c80b6ef5b100ac7e37dcc9771653"
     },
     {
       "component": "0x100",
@@ -835,9 +835,9 @@
       "component": "0x100",
       "name": "ext10",
       "address": "0x6169c820",
-      "bytes": 1496,
-      "before_sha256": "60cb312372b3ab02aa60a875cd1c0e5379165c647be9b55db29ad9a54f1ab411",
-      "after_sha256": "8ab2298bb69a09e2a57d851a561ce2a80aca0c3ea4c1622278ea5637c1e6b96d"
+      "bytes": 1862,
+      "before_sha256": "e493c6e3c7c326c91ab8d67a8fa61e2032a6d29dc87a348ad5ee4b1dff6beedc",
+      "after_sha256": "42304745dd1ad8929feea6dec3798d7364695be0c00903f9db89be7ea03d127d"
     },
     {
       "component": "0x100",
@@ -947,9 +947,9 @@
       "component": "0x100",
       "name": "ext2b",
       "address": "0x604ef120",
-      "bytes": 998,
-      "before_sha256": "650bbf69fe3fdf95ee4e5db2d14c6daf5a90cca406ebc2335bbb25844cb4cb13",
-      "after_sha256": "2d72ec2b3cf5349d2aafe65380f90592cd3692d678739eac689e222b7a235491"
+      "bytes": 634,
+      "before_sha256": "489cd8d579a75be9bf0db6f28abb4f5c4f3a7f66887345638938145f432e70d3",
+      "after_sha256": "c95879d7f606b565f8d0b0a17bca2bd0102cb8476af0899dd60afa761ed45f1d"
     },
     {
       "component": "0x100",
@@ -1591,7 +1591,7 @@
   "package": {
     "components": "all",
     "file": "DCOLYMP/E1489999.BIN",
-    "sha256": "9f5a1f69b9b34c7eb7b4b3e1daf4a8a244e1284336e63213066f23520ee941e1",
+    "sha256": "ca72f38b31f55f05064ede099b7a24519063e83edd16e1105410286d2b7825b4",
     "bytes": 90832896,
     "restore_sha256": "9de5d77e1d290fa2ed4ebc7d75cee0ed490befbc89566722467d1d421d66d637"
   },

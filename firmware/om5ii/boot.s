@@ -153,6 +153,12 @@ bt_load:
 bt_end:
  call ext_tsk,[a2],8
 
+bg_name:
+ .asciz "CAD_ARM"
+
+/* ---- Armed only (every section initialised): section 10's tail, so section 2 keeps
+ * its room for code that runs before arming. */
+.section .ext10,"ax"
 /* hsl.s arm_ext: the half-press extension (entered by calls, every
  * half-press once armed). Run the start-up refresh the background arm left
  * pending, then the films' entry as before. */
@@ -291,6 +297,3 @@ cb_path:
  .asciz "C:\\OM5MOD\\CADUCEUS.BIN"
 cb_mode:
  .asciz "rb"
-
-bg_name:
- .asciz "CAD_ARM"
