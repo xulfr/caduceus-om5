@@ -127,6 +127,9 @@ value label on the tint pages.
 
 ### Phase 4: new image controls on the camera-proven R/G/B route
 
+[Scoping note (2026-11-28)](../research/OM5II-PHASE4-SCOPING-2026-11-28.md): flash room is nearly gone, so step 0 is
+moving armed-only UI code into `CADUCEUS.BIN`; then RGB curves, Sharpness, WB row, Color Mix.
+
 1. **RGB curves** row: five points per channel, −7..+7, into the R/G/B tables that tints and Black / White already
    write. It needs per-profile storage for 15 more values. Where they live is a research step: settings storage
    versus the card versus the heap.
