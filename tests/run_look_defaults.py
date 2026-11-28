@@ -30,8 +30,9 @@ HINT = (480, 418, 712, 466)             # x0, y0, x1, y1 of the "Reset OK Hold" 
 # (name, keys, expectation, (step before the change, the change, the reset)): the hint shows after the change only
 CASES = [
     ('wheel-saturation', LOOK + 'down main+1 ' + HOLD, dict(film=0), ('down', 'main+1', HOLD)),
-    ('wheel-hue', LOOK + 'down delete main+1 ' + HOLD, dict(film=0), ('delete', 'main+1', HOLD)),
-    ('wheel-lightness', LOOK + 'down delete delete main+1 ' + HOLD, dict(film=0), None),
+    # INFO steps Saturation -> Lightness -> Hue (OM-3 v0.41 key map, 2026-11-28)
+    ('wheel-hue', LOOK + 'down info info main+1 ' + HOLD, dict(film=0), ('info', 'main+1', HOLD)),
+    ('wheel-lightness', LOOK + 'down info main+1 ' + HOLD, dict(film=0), None),
     ('tone', LOOK + 'down down sub+1 main+1 ' + HOLD, dict(film=0), ('down', 'main+1', HOLD)),
     # The Black / White state: OM's tone IDs write Black / White, which no look holds: 0, tone stays the look's.
     ('tone-black-white', LOOK + 'down down info sub+2 main-3 ' + HOLD, dict(film=0), None),

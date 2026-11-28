@@ -76,9 +76,10 @@ def main():
         results[name] = dict(states=states, ok=ok)
         print(name, 'ok' if ok else 'FAILED', ' '.join(states), flush=True)
     if not a.case or 'axis' in a.case:
-        log = session(a, card, 'axis', OPEN + 'down T+ delete delete delete T-', dict(UI_TIMER='3', UI_PAGE_INVALIDATE='3'))
-        axes = [int(line.split('axis=')[1].split()[0]) for line in log.splitlines() if line.startswith('delete:')]
-        ok = axes == [1, 2, 0]
+        # INFO steps the axis: Saturation -> Lightness -> Hue -> Saturation (OM-3 v0.41 keys, 2026-11-28)
+        log = session(a, card, 'axis', OPEN + 'down T+ info info info T-', dict(UI_TIMER='3', UI_PAGE_INVALIDATE='3'))
+        axes = [int(line.split('axis=')[1].split()[0]) for line in log.splitlines() if line.startswith('info:')]
+        ok = axes == [2, 1, 0]
         results['axis'] = dict(axes=axes, ok=ok)
         print('axis', 'ok' if ok else 'FAILED', axes, flush=True)
     (a.out / 'results.json').write_text(json.dumps(results, indent=2) + '\n')

@@ -35,9 +35,10 @@ ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
  jmp arm_hook
-/* On the colour wheel INFO switches groups and Delete switches axis:
- * the colour-direct screen forwards its native 0x9016 command to the focused
- * widget, and the colour page container consumes it for the colour editor. */
+/* The colour-direct screen forwards its native Delete command (0x9016) to the
+ * focused widget, as it already does for INFO. On the colour wheel INFO steps
+ * the axis (OM-3 v0.41 order) and Delete does nothing (stock drops it); on the
+ * mode strip Delete steps the slot's look (films.s fl_delete). */
 .section .delete_pointer,"a"
  .long hsl_delete_action
 .section .label_hook,"ax"
@@ -76,6 +77,8 @@ ST_MAGIC_VALUE = 0x55444143
  jmp pages_hook
  nop
  nop
+.section .cursor_pointer,"a"
+ .long wheel_cursor
 
 .section .ext7,"ax"
 /* Action-table entry of the SCP direct-setting screen for the Delete press
@@ -102,10 +105,10 @@ hsl_delete_action:
  beq delete_restore
  mov 1,d0
  mov d0,(16,sp)
- /* Forward to the focused widget, as before. The colour editor consumes the
-  * press by switching its axis (hsl_container). When it did not, the press
-  * steps the Color Profile slot's film (Caduceus films, films.s): nothing
-  * unless armed, a film file is loaded and the mode is Color Profile 1-3. */
+ /* Forward to the focused widget, as before. No widget consumes it now (the
+  * colour wheel's Delete is inert since the OM-3 v0.41 key map), so the axis
+  * stays and the press steps the Color Profile slot's film (films.s): nothing
+  * unless armed, on the mode strip, a film file loaded and Color Profile 1-3. */
  call st_axis,[],12
  mov d0,(16,sp)
  mov (4,sp),d1
@@ -141,12 +144,11 @@ delete_stock:
  jmp stock_delete_action
 
 /* Colour page container command method (vtable entry 0). Stock forwards INFO
- * to its focused child but drops 0x9016. Handle either key only when that child
- * is the 13-child colour editor whose cursor is a colour-selection setting. */
+ * to its focused child but drops 0x9016. Handle INFO only when that child is
+ * the 13-child colour editor whose cursor is a colour-selection setting:
+ * INFO steps Hue -> Saturation -> Lightness (OM-3 v0.41). Delete: stock. */
 hsl_container:
  cmp 0x9014,d0
- beq container_check
- cmp 0x9016,d0
  bne container_stock
 container_check:
  add -16,sp
@@ -186,13 +188,8 @@ container_check:
  calls wheel_next_axis
 container_axis:
  movbu d0,(ST_AXIS,a0)
- /* If stock left the wheel on All, restore individual editing with its INFO. */
- movhu (122,a2),d0
- cmp 0,d0
- bne container_refresh
- mov (4,sp),a0
- mov 0x9014,d0
- calls stock_container
+ /* All colours on (Sat. All): back to one colour first (wheel_one). */
+ call wheel_one,[d2,d3,a2,a3],24
 container_refresh:
  call refresh_children,[d2,d3,a2,a3],24
  mov (124,a2),a0
@@ -384,14 +381,7 @@ paint_axis_name:
  mov 16,d1
  mov 199,d2
  call tx_draw,[d2,d3,a2,a3],44
- mov text_switch,a1
- mov (16,sp),d0
- mov 50,d1
- call tx_draw,[d2,d3,a2,a3],44
- mov text_tint,a1
- cmp 3,d3
- bcs paint_hint
- mov text_hsl,a1
+ mov text_hsl,a1                 /* the hint: "H/S/L" [INFO] */
 paint_hint:
  mov 290,d0
  mov 426,d1
@@ -407,10 +397,8 @@ paint_done:
  ret [d2,d3,a2,a3],16
 
 .balign 2
-text_tint:
- .short 'T','i','n','t',0
 text_hsl:
- .short 'H','S','L',0
+ .short 'H','/','S','/','L',0
 .balign 4
 text_style:
  .long 10,15,15
@@ -2047,24 +2035,21 @@ info_done:
  rets
 
 .section .ext8,"ax"
-/* d0 = axis, d3 = key. INFO pairs Saturation/Shadow, Hue/Midtone,
- * Lightness/Highlight. Delete wraps at the end of each group. Armed only. */
+/* d0 = axis -> the next on INFO, as on the OM-3 v0.41: Hue -> Saturation ->
+ * Lightness -> Hue (1 -> 0 -> 2 -> 1). The split-tone tints (3..5) have no key
+ * on the wheel any more (their own row comes later); from one, Hue. Armed only. */
 wheel_next_axis:
- cmp 0x9014,d3
- beq wheel_group
- inc d0
- cmp 3,d0
- beq wheel_wrap
- cmp 6,d0
- bne wheel_axis_done
-wheel_wrap:
- add -3,d0
+ cmp 1,d0
+ beq wheel_sat
+ cmp 0,d0
+ beq wheel_light
+ mov 1,d0
  rets
-wheel_group:
- cmp 3,d0
- bcc wheel_wrap
- add 3,d0
-wheel_axis_done:
+wheel_light:
+ mov 2,d0
+ rets
+wheel_sat:
+ clr d0
  rets
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
@@ -2870,8 +2855,6 @@ text_bw:                         /* the hint; titles are images (owner, 2026-11-
 
 .section .ext6,"ax"
 .balign 2
-text_switch:
- .short 'S','w','i','t','c','h',' ','@','A','0','3','4','@',0
 
 /* Live view (owner, 2026-11-20: Black / White changed live view only after a
  * half-press). E148's gamma stage 0x603e69ae keeps a cache record per
@@ -2969,3 +2952,81 @@ st_unarmed:
  mov d0,d1
  mov (a2),d0
  jmp setter_back
+
+.section .ext2b,"ax"
+/* ---- The colour wheel's keys as on the OM-3 v0.41 (2026-11-28, emulator only) ----
+ * INFO steps Hue -> Saturation -> Lightness (hsl_container, wheel_next_axis).
+ * The colour dial past the first colour gives Sat. All: that is OM's own ring
+ * (13 places, index 0 = all colours, between colour 12 and colour 1; the rear
+ * dial on this body). Delete does nothing on the wheel (stock). */
+
+/* INFO with all colours on: back to colour 1 before the axis step (the OM-3
+ * turns them off and goes on to Lightness). The cursor child (+124, setting
+ * 2201 + p) holds its place at +94; the container commits it (0x900c) after
+ * this. A stored one / all cell (2197 + p) at "all", which OM's own INFO set
+ * in earlier builds, goes back to one. a2 = the colour editor.
+ * call wheel_one,[d2,d3,a2,a3],24 */
+wheel_one:
+ mov (124,a2),a3
+ cmp 0,a3
+ beq wo_done
+ movhu (80,a3),d2
+ add -4,d2                       /* 2197 + p */
+ mov d2,d0
+ call stock_get,[],4
+ cmp 0,d0
+ bne wo_cursor
+ mov d2,d0
+ mov 1,d1
+ mov 1,a0
+ call stock_ui_write,[d2,d3,a2,a3],20
+wo_cursor:
+ movhu (94,a3),d0
+ cmp 0,d0
+ bne wo_done
+ mov 1,d0
+ movhu d0,(94,a3)
+ movhu d0,(122,a2)
+wo_done:
+ ret [d2,d3,a2,a3],24
+
+/* The colour editor's colour-dial method (vtable 0x61211c90 + 100, event
+ * 0x9031; entered by calls, a0 = the editor). On Hue and Lightness (and the
+ * tints) "all colours" is skipped, as on the OM-3 v0.41: a step that lands on
+ * it is made once more, in the same direction. Saturation keeps it (Sat. All).
+ * Unarmed, or another editor using this method: stock only. */
+wheel_cursor:
+ movm [d2,d3,a2,a3],(sp)
+ add -8,sp
+ mov d0,d2
+ mov d1,d3
+ mov a0,a2
+ calls stock_cursor
+ mov d0,(4,sp)
+ call st_ptr,[],8
+ cmp 0,a0
+ beq wc_out
+ movbu (ST_AXIS,a0),d0
+ cmp 0,d0
+ beq wc_out
+ movhu (120,a2),d0
+ cmp 13,d0
+ bne wc_out
+ mov (124,a2),a1
+ cmp 0,a1
+ beq wc_out
+ movhu (80,a1),d0
+ sub 2201,d0
+ cmp 4,d0
+ bcc wc_out
+ movhu (94,a1),d0
+ cmp 0,d0
+ bne wc_out
+ mov d2,d0
+ mov d3,d1
+ mov a2,a0
+ calls stock_cursor
+ mov d0,(4,sp)
+wc_out:
+ mov (4,sp),d0
+ ret [d2,d3,a2,a3],24

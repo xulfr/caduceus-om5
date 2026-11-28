@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Black / White on the tone page and split tone on the colour wheel (v0.2.0-dev): emulator regressions on a strict
+"""Black / White on the tone page and split tone (v0.2.0-dev): emulator regressions on a strict
 decoded E148 build.
 
 Each case drives the Picture Mode screen with the firmware's own GUI. tests/bw_tint_assert.mjs then reads the
-settings, the values the refresh wrote into P and, for split-tone cases, runs tests/st_assert.mjs (delta tables and the
+settings, the values the refresh wrote into P and, for split-tone cases (tint cells set before the keys since the
+OM-3 v0.41 wheel keys), runs tests/st_assert.mjs (delta tables and the
 camera's R/G/B curve setter). Emulator only: OM-Emu develops no photos, so a pass says nothing about pictures and is
 not a camera result.
 
@@ -19,7 +20,6 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 CP1 = 's1 ok ok ' + 'right ' * 8          # Picture Mode, Color Profile 1 highlighted
 TONE, WHEEL = 'down down ', 'down '           # rows 3 (tone curve) and 2 (colour wheel)
-TINT = 'info '                                # Saturation -> Shadow Tint
 DONE = 'ok wait:500'
 # OM-Emu's dials: in the Black/White state sub+2 sets Black -1 and main-3 White -2 (the stock Sh / Hi steps).
 BW = CP1 + TONE + 'info sub+2 main-3 '
@@ -31,29 +31,25 @@ CASES = [
     ('cp2-black', CP1 + 'right ' + TONE + 'info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1,
                                                                    stFlag=1, st=True)),
     ('stock-after-bw', BW + DONE + ' ok ok up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0], stFlag=0)),
-    ('cp1-tints', CP1 + WHEEL + TINT + 'main+3 delete delete sub+2 sub+2 main+2 ' + DONE,
-     dict(pm=54, tint={968: 0x30, 974: 0x19}, stFlag=1, st=True)),
-    ('cp3-midtone', CP1 + 'right right ' + WHEEL + TINT + 'delete main+3 ' + DONE,
-     dict(pm=56, tint={973: 0x30}, stFlag=1, st=True)),
+    # The tints have no key on the wheel since the OM-3 v0.41 key map (2026-11-28; their own row comes later): these
+    # cases set the tint cells before the keys (tests/seed_cells.mjs) and check the refresh, the tables and the setter.
+    ('cp1-tints', CP1 + WHEEL + DONE, dict(pm=54, tint={968: 0x30, 974: 0x19}, stFlag=1, st=True, seed={968: 0x30, 974: 0x19})),
+    ('cp3-midtone', CP1 + 'right right ' + WHEEL + DONE, dict(pm=56, tint={973: 0x30}, stFlag=1, st=True, seed={973: 0x30})),
     # Camera report 2026-11-20: Highlight Tint showed nothing (the zones went by the curve's linear input index).
     # st_assert now checks every output against the delta at its own output level.
-    ('cp1-highlight', CP1 + WHEEL + TINT + 'delete delete main+3 ' + DONE, dict(pm=54, tint={974: 0x30}, stFlag=1, st=True)),
-    # Trash wraps independently within each group. INFO keeps the position in that group.
-    ('cp1-group-wrap', CP1 + WHEEL + 'delete delete delete info delete delete delete main+3 ' + DONE,
-     dict(pm=54, axis=3, tint={968: 0x30}, stFlag=1, st=True)),
-    ('cp1-tint-info', CP1 + WHEEL + 'delete info main+3 delete info ' + DONE,
-     dict(pm=54, axis=2, tint={971: 0x30})),
+    ('cp1-highlight', CP1 + WHEEL + DONE, dict(pm=54, tint={974: 0x30}, stFlag=1, st=True, seed={974: 0x30})),
+    # Retired with the key map: cp1-group-wrap and cp1-tint-info (Delete / INFO within and between the HSL and Tint
+    # groups); tests/run_wheel_keys.py covers the wheel's keys now.
     # Live view (owner 2026-11-20): Black / White changes must reach live view; gs_hook makes each gamma cache miss
     # once after a table rebuild. tests/gs_assert.mjs enters at the patched stock cache test.
     # Same keys without the value changes: GS_GEN from refreshes alone (arming, mode changes), the baseline.
     ('cp1-gs-baseline', CP1 + TONE + 'info ' + DONE, dict(pm=54, gs=True)),
     ('cp1-bw-gamma-cache', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], gs=True, gs_above='cp1-gs-baseline')),
-    # Tints too (owner 2026-11-20: tints also changed live view only after a half-press).
-    ('cp1-wheel-gs-baseline', CP1 + WHEEL + TINT + DONE, dict(pm=54, gs=True)),
-    ('cp1-tint-gamma-cache', CP1 + WHEEL + TINT + 'main+3 ' + DONE,
-     dict(pm=54, tint={968: 0x30}, gs=True, gs_above='cp1-wheel-gs-baseline')),
-    ('stock-after-tint', CP1 + WHEEL + TINT + 'main+3 ' + DONE + ' ok ok up ' + 'left ' * 6 + DONE,
-     dict(pm=5, tint={968: 0x30}, stFlag=0)),
+    # Tints too (owner 2026-11-20): cp1-wheel-gs-baseline / cp1-tint-gamma-cache edited a tint with the dial on the
+    # wheel's Tint group, which the OM-3 v0.41 key map removed. They come back with the Split toning row; gs_hook's
+    # cache miss after a table rebuild is still covered by cp1-bw-gamma-cache.
+    ('stock-after-tint', CP1 + WHEEL + DONE + ' ok ok up ' + 'left ' * 6 + DONE,
+     dict(pm=5, tint={968: 0x30}, stFlag=0, seed={968: 0x30})),
 ]
 
 
@@ -70,7 +66,9 @@ def main():
         if a.case and name not in a.case:
             continue
         folder = a.out.resolve() / name
-        env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tools/dev/mount.mjs'),
+        want = dict(want)
+        seed = want.pop('seed', {})
+        env = dict(os.environ, OM_EMU_MODEL='E148', PRE=str(ROOT / 'tests/seed_cells.mjs'), OM5_SEED=json.dumps(seed),
                    POST=str(ROOT / 'tests/bw_tint_assert.mjs'), OM5_BW_EXPECT=json.dumps(want))
         if want.get('gs'):
             above = gs_seen.get(want.get('gs_above'))
