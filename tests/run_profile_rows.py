@@ -57,7 +57,7 @@ def main():
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
     sessions = {
-        'shading': run(a, 'shading', OPEN + 'down down down down main+1 main+1'),
+        'shading': run(a, 'shading', OPEN + 'down down down down down main+1 main+1'),   # rows: wheel, Split, tone, RGB, Shading
         'grain': run(a, 'grain', MONO + 'down down down down down down main+1 main+1 main+1'),
     }
     frames, faults = {}, []

@@ -50,6 +50,7 @@ SECTIONS {
  .row_match_hook 0x60e377ed : { *(.row_match_hook) }
  .col_icon_ptr 0x611b7bec : { *(.col_icon_ptr) }
  .view_upd_ptr 0x610c1630 : { *(.view_upd_ptr) }
+ .col_icon2_ptr 0x611b7bf4 : { *(.col_icon2_ptr) }
 }
 screen_forward = 0x60ed5c18;
 stock_delete_action = 0x60ed6476;
@@ -57,7 +58,8 @@ stock_container = 0x60e3ca0a;
 row_match_back = 0x60e377f2;    /* column builder: movhu d1,(94,a0), the remembered row */
 row_match_skip = 0x60e377f5;
 col_icon_stock = 0x60e4a3e0;    /* Picture Mode column: item 5374's row (image from the record's +28) */
-col_icon_set = 0x60e417b8;      /* column: d0 = the row's image slot, a1 = descriptor, a0 = panel */
+col_icon_set = 0x60e417b8;
+col_icon_tone = 0x60e4a41a;     /* Picture Mode column: item 5375's row (the tone-shape icon) */      /* column: d0 = the row's image slot, a1 = descriptor, a0 = panel */
 col_next = 0x60e4a517;
 view_upd_stock = 0x60df1217;    /* colour view: data-model handler (labels' images and visibility); calls */          /* column loop: the row is done */    /* column builder: the next row */
 stock_value = 0x60e9c0a2;       /* colour editor vtable 0x61211c90 +96: the value dial (event 0x9032); entered by calls */

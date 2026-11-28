@@ -28,7 +28,7 @@ wb_load:
  beq wb_original
  mov d0,d2
  add -904,d2
- cmp 126,d2
+ cmp 129,d2                      /* 904..1032 (1030..1032: Color Profile 2's RGB curve cells) */
  bcc wb_not_profile
  /* 964..975: Blacks and the split-tone tints (hsl.s bw_ids, tint_ids) */
  add -60,d2
@@ -280,7 +280,7 @@ wb_profile:
  mov d1,d3
  /* Monochrome Profile settings 990..1029 -> 3 + profile (0xff: none) */
  add -985,d0
- cmp 45,d0
+ cmp 48,d0
  bcc wb_profile_color
  mov wb_mono_map,a0
  movbu (d0,a0),d0
@@ -351,13 +351,15 @@ wb_profile_none:
  mov d2,d0
  mov d3,d1
  jmp wb_original
-/* 985..1029: E147 SET1-3 of sharpness 990, contrast 994, grain 999, toning
+/* 985..1032: E147 SET1-3 of sharpness 990, contrast 994, grain 999, toning
  * 1003, filter 1007, level 1012, shading 1017, tone 1021 (three per profile);
- * SET4 and 985..989, 998, 1011, 1016 are not profile settings here. */
+ * SET4 and 985..989, 998, 1011, 1016 are not profile settings here, except
+ * the R / G / B curve cells (hsl.s / rgb.s, 2026-11-28): 985..987 Color
+ * Profile 1, 1030..1032 Profile 2, 1002 / 1006 / 1010 Profile 3. */
 wb_mono_map:
- .byte 0xff,0xff,0xff,0xff,0xff, 3,4,5,0, 3,4,5,1, 0xff, 3,4,5,0xff
- .byte 3,4,5,0xff, 3,4,5,0xff, 0xff, 3,4,5,0xff, 0xff, 3,4,5,2
- .byte 3,3,3,4,4,4,5,5,5
+ .byte 0,0,0,0xff,0xff, 3,4,5,0, 3,4,5,1, 0xff, 3,4,5,2
+ .byte 3,4,5,2, 3,4,5,2, 0xff, 3,4,5,0xff, 0xff, 3,4,5,2
+ .byte 3,3,3,4,4,4,5,5,5, 1,1,1
 
 /* ---- Split tone (v0.2.0-dev): tint the photo's R/G/B curve tables ----
  * Hooks the entry of E148's three-pointer curve setter 0x603e6974 (a0 = the

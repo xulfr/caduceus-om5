@@ -13,6 +13,12 @@ cb_entries:
  .long tint_vis                  /* +12: tint_vis (hsl.s view_upd) */
  .long rgb_any_b                 /* +16: rgb_any (hsl.s tint_refresh, rgb.s) */
  .long rgb_add_b                 /* +20: rgb_add (hsl.s tn_tables, rgb.s) */
+ .long rgb_alias_b               /* +24: rgb_alias (hsl.s ui_alias, rgb_ui.s) */
+ .long rgb_rd_b                  /* +28: rd_get's curve point */
+ .long rgb_wr_b                  /* +32: wr_set's curve point */
+ .long rgb_lbl_b                 /* +36: rgb_lbl (hsl.s tone_labels) */
+ .long rgb_info_b                /* +40: rgb_info_w (the tone editors' INFO) */
+ .long paint_strength_b          /* +44: paint_strength (hsl.s paint_axis) */
 
 /* ---- Colour wheel and tone curve graphics (section 5, armed only) ----
  * OM-3 draws both through its GPU layer: the page controller sends
@@ -282,6 +288,8 @@ gt_hi:
  inc d2
  add -1,d3
  bge gt_read
+ mov sp,a0                       /* the RGB row: the channel's points (rgb_ui.s) */
+ call rgb_gvals,[d2,d3,a2,a3],40
  /* the box with a grid at the quarters */
  mov C_GREY,d0
  mov a2,a0

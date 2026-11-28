@@ -92,6 +92,8 @@ ST_MAGIC_VALUE = 0x55444143
  jmp row_match
 .section .col_icon_ptr,"a"
  .long col_icon                  /* column handler table 0x611b7b28, item 5374's slot (24) */
+.section .col_icon2_ptr,"a"
+ .long col_icon                  /* the same table, item 5375's slot (25) */
 .section .view_upd_ptr,"a"
  .long view_upd                  /* colour view (0x610c14a0) data-model handler, was 0x60df1217 */
 
@@ -476,7 +478,7 @@ ui_read_alias:
  mov d0,d2
 ui_read_stock:
  mov d2,d0
- call stock_get,[],4
+ call rd_get,[],4                /* stock_get, or an RGB curve point (card block) */
  ret [d2,d3,a2,a3],24
 ui_read_tint:
  jmp tint_read
@@ -551,7 +553,7 @@ ui_write_stock:
  mov d2,d0
  mov d3,d1
  mov a2,a0
- call stock_ui_write,[d2,d3,a2,a3],20
+ call wr_set,[d2,d3,a2,a3],20    /* stock_ui_write, or an RGB curve point (card block) */
  ret [d2,d3,a2,a3],24
 
 /* Wheel values: the reader 0x60a339e4, descriptor kind 6 (Color Profile),
@@ -1183,7 +1185,7 @@ ui_alias:
  call st_ptr,[],8
  cmp 0,a0
  beq ua_out
- jmp tone_alias
+ jmp rgb_alias                   /* the RGB row (card block), else tone_alias */
 ua_out:
  ret [d2,d3],12
 
@@ -2100,11 +2102,11 @@ info_done:
  * research/OM5II-SPLIT-TONE-2026-11-19.md, OM5II-BLACKS-WHITES-2026-11-18.md */
 BW_STEP = 20                    /* curve units (0..1023) per Black / White step */
 .section .tone_info_ptr,"a"      /* tone editor types 0x1531..0x1533 (Color Profile 1..3): INFO */
- .long tone_info
+ .long rgb_info_w
 .section .tone_info_ptr2,"a"
- .long tone_info
+ .long rgb_info_w
 .section .tone_info_ptr3,"a"
- .long tone_info
+ .long rgb_info_w
 
 .section .ext5,"ax"
 /* d3 = kind (0..2 Color Profile 1..3), a2 = context: P's Black / White in
@@ -2230,6 +2232,7 @@ tva_out:
 .global bw_ids
 bw_ids:                          /* Blacks of Color Profile 1..3, then Whites */
  .hword 965, 966, 967, 993, 997, 1020
+.global tint_ids
 tint_ids:                        /* zone z of Color Profile p: 3z + p (shadows, midtones, highlights) */
  .hword 968, 969, 970, 971, 972, 973, 974, 975, 964
 /* R, G, B of each wheel colour (Yellow at the top, clockwise; hue 60 - 30k
@@ -2500,6 +2503,7 @@ tw_done:
 /* d0 = setting id -> d0 = the id the UI edits: in the Black/White state on
  * Color Profile p, Shadows 978+3p -> Blacks, Highlights 976+3p -> Whites.
  * call tone_alias,[d2,d3],12 */
+.global tone_alias
 tone_alias:
  mov d0,d2
  call st_ptr,[],8
@@ -2587,6 +2591,7 @@ ti_stock:
 /* a2 = tone editor: its value children (setting at +80, index at +94 of the
  * list +7..-7) take what the page now edits; then the editor's own update
  * (0x900c, its +72) redraws. call tone_refresh,[d2,d3,a2,a3],24 */
+.global tone_refresh
 tone_refresh:
  mov a2,a3
  add 128,a3                      /* children 1..3; child 0 is the Hi/Sh / Mid switch */
@@ -2707,6 +2712,7 @@ tl_t3:
  mov 836,d1                      /* labels 11 / 12 */
  call tl_val,[d2,d3],16
 tl_inval:
+ call rgb_lbl,[d2,d3,a2,a3],24   /* the RGB row's values (card block) */
  mov a2,a0                       /* repaint the view (tone_text) */
  mov 0,a1
  mov 1,d0
@@ -2827,6 +2833,7 @@ tlv_d:
 /* a2 = paint context, a1 = UTF-16 text, d0 = x, d1 = y, d2 = width: the text
  * in OM's font, centred in a box 32 high (as paint_axis).
  * call tx_draw,[d2,d3,a2,a3],44 */
+.global tx_draw
 tx_draw:
  mov a1,(4,sp)
  movhu d0,(8,sp)
@@ -3074,8 +3081,9 @@ wc_out:
  * row, as on the OM-3 v0.41. Both rows open OM's colour editor; P+0 picks what
  * it edits: 0..2 Saturation / Hue / Lightness on the wheel row, 3 / 5 Shadow /
  * Highlight tint on the Split toning row (tint_read / tint_write, unchanged). */
-CP_ROWS = 7
+CP_ROWS = 8
 SPLIT_ROW = 2                    /* the list index of the Split toning row */
+RGB_ROW = 4                      /* the list index of the RGB curves row (the tone editor a second time) */
 
 /* d0 = 1 when the Picture Mode panel's focused row is the Split toning row:
  * the panel ((scr_obj)->+4) keeps a state byte per row at +1068 + index:
@@ -3187,8 +3195,13 @@ row_match:
  cmp d0,d2
  bne rm_no
  cmp SPLIT_ROW,d1
- bne rm_yes
+ bne rm_rgb
  cmp 5374,d2
+ beq rm_no
+rm_rgb:
+ cmp RGB_ROW,d1                  /* and the tone row's item at the RGB row's index */
+ bne rm_yes
+ cmp 5375,d2
  beq rm_no
 rm_yes:
  mov (16,sp),a0
@@ -3259,7 +3272,7 @@ ts_le:
  ret [],4
 .balign 4
 cp_rows:
- .long 111, 5374, 5374, 5375, 5376, 7, 8
+ .long 111, 5374, 5374, 5375, 5375, 5376, 7, 8
 
 .section .ext5,"ax"
 /* The Split toning pages: the strength 0..10 of the colour under the cursor,
@@ -3267,68 +3280,14 @@ cp_rows:
  * shows the editor's own position there (strength - 5); it is not pushed out
  * of its range. a2 = tx_draw's context, d3 = axis.
  * call paint_strength,[d2,d3,a2,a3],24 */
-paint_strength:
- cmp 3,d3
- bcs ps_out
- cmp 6,d3                        /* Balance: OM's label shows it (-5..+5) */
- beq ps_out
- mov 111,d0
- call stock_get,[],4
- add -54,d0
- cmp 3,d0
- bcc ps_out
- mov d0,d2                       /* p */
- mov 2201,d0                     /* the cursor: 928 + 12p + k, else colour 1 */
- add d2,d0
- call stock_get,[],4
- add -928,d0
- mov 12,d1
- mul d2,d1
- sub d1,d0
- cmp 12,d0
- bcs ps_k
- clr d0
-ps_k:
- mov d0,a3                       /* k */
- mov d3,d0                       /* the tint cell: tint_ids[3 (axis - 3) + p] */
- add -3,d0
- mov d0,d1
- add d1,d0
- add d1,d0
- add d2,d0
- add d0,d0
- mov tint_ids,a0
- add d0,a0
- movhu (a0),d0
- call stock_get,[],4
- extbu d0
- mov d0,d1
- and 15,d1
- mov a3,a0
- cmp a0,d1
- bne ps_zero
- lsr 4,d0
- cmp 11,d0
- bcs ps_text
-ps_zero:
- clr d0
-ps_text:
- mov d0,d1                       /* 6 bytes a string */
- add d1,d0
- add d1,d0
- add d0,d0
- mov strength_text,a1
- add d0,a1
- mov 600,d0
- mov 56,d1
- mov 60,d2
- call tx_draw,[d2,d3,a2,a3],44
-ps_out:
+paint_strength:                  /* the body is in the card block (rgb_ui.s, 2026-11-28: room for the RGB row) */
+ mov 44,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq ps_none
+ jmp (a1)
+ps_none:
  ret [d2,d3,a2,a3],24
-.balign 2
-strength_text:
- .short '0',0,0, '1',0,0, '2',0,0, '3',0,0, '4',0,0, '5',0,0
- .short '6',0,0, '7',0,0, '8',0,0, '9',0,0, '1','0',0
 
 .section .ext5,"ax"
 /* ---- Tone Balance (roadmap phase 3b-2, 2026-11-28, emulator only) ----
@@ -3501,41 +3460,6 @@ th_img:
 th_out:
  ret [],8
 
-/* The Split toning row's own icon (2026-11-28, emulator only). The Picture
- * Mode column draws each row through the item's slot in 0x611b7b28; item 5374's
- * handler (0x60e4a3e0, shared with 5373 / 5029 / 662) shows the row record's
- * +28 image (0x2c85 "Color") and, when the row's value is not 0, the value
- * text ("Vivid") under it (mode 5). Both 5374 rows matched one record. On the
- * Split toning row (list index (24,sp) = SPLIT_ROW) this shows IMG_SPLIT,
- * "Split / Tone" from OM's glyphs, without the value text (mode 1). Entered by
- * jmp from the column loop, in its frame: (20,sp) the rows' base, (96,sp) the
- * shown row, (28,sp) the panel. */
-IMG_SPLIT = 0x3e84
-col_icon:
- mov (24,sp),d0
- cmp SPLIT_ROW,d0
- beq ci_split
- jmp col_icon_stock
-ci_split:
- mov (20,sp),a2
- movhu (96,sp),d0
- mov 160,d1
- mul d1,d0
- add d0,a2
- mov 1,d0
- movbu d0,(a2)
- inc4 a2
- mov (28,sp),a0
- mov split_icon,a1
- mov a2,d0
- call col_icon_set,[d2,a2,a3],20
- mov 1,d0                        /* image only */
- movhu d0,(6,a2)
- jmp col_next
-.balign 4
-split_icon:
- .short 3, IMG_SPLIT
- .long 0x611b42ac
 
 /* The colour view's data-model handler (0x60df1217, at 0x610c1630) sets its
  * labels' images and visibility after each command: OM's, then the card
@@ -3573,3 +3497,124 @@ rgb_add:
  jmp (a1)
 rad_none:
  ret [d2,d3,a2,a3],72
+
+.section .ext5,"ax"
+/* ---- The RGB curves row (roadmap phase 4, 2026-11-28, emulator only) ----
+ * OM's tone editor (item 5375) a second time, under the tone row (RGB_ROW).
+ * While it has the focus the tone page's three INFO pages edit one channel's
+ * five points (Hi/Sh: points 3 / 1, Mid: 2, Bl/Wh: 4 / 0) and INFO from Bl/Wh
+ * goes on to the next channel (R -> G -> B -> R). The logic is in the card
+ * block (rgb_ui.s); without it the row edits OM's tone values as the tone row.
+ * The values are the curve cells (rgb.s); a curve point travels through
+ * ui_read / ui_write as a pseudo id >= 0x8000 that only the block makes. */
+
+/* ui_alias's tail (its frame, d0 = id): the block's rgb_alias, else tone_alias. */
+rgb_alias:
+ mov d0,d2
+ mov 24,d1
+ call cb_find,[],12
+ mov d2,d0
+ cmp 0,a1
+ beq rga_tone
+ jmp (a1)
+rga_tone:
+ jmp tone_alias
+
+/* call rd_get,[],4 / call wr_set,[d2,d3,a2,a3],20: OM's getter / writer, or for
+ * a pseudo id (only the block makes them, so it is loaded) its point. */
+rd_get:
+ cmp 0x8000,d0
+ bcs rdg_stock
+ mov 28,d1
+ bra cb_go
+rdg_stock:
+ jmp stock_get
+wr_set:
+ cmp 0x8000,d0
+ bcs wrs_stock
+ mov 32,d1
+ bra cb_go
+wrs_stock:
+ jmp stock_ui_write
+/* d0 = pseudo id, d1 = entry: into the block with a0 = the pseudo id. */
+cb_go:
+ mov d0,a0
+ call cb_find,[],12
+ jmp (a1)
+
+/* tone_labels' tail (a2 = view). call rgb_lbl,[d2,d3,a2,a3],24 */
+rgb_lbl:
+ mov 36,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq rgl_none
+ jmp (a1)
+rgl_none:
+ ret [d2,d3,a2,a3],24
+
+/* The tone editors' INFO (entered by calls, a0 = editor, d0 / d1 the command):
+ * the block steps the RGB row's channel when INFO leaves Bl/Wh, then tone_info. */
+rgb_info_w:
+ movm [d2,d3,a2,a3],(sp)
+ mov a0,a2
+ mov d0,d2
+ mov d1,d3
+ mov 40,d1
+ call cb_find,[],12
+ cmp 0,a1
+ beq riw_go
+ calls (a1)
+riw_go:
+ mov a2,a0
+ mov d2,d0
+ mov d3,d1
+ movm (sp),[d2,d3,a2,a3]
+ jmp tone_info
+
+/* The Picture Mode column draws each row through the item's slot in 0x611b7b28;
+ * items 5374 and 5375 come here (d3 = the item; the loop's frame: (24,sp) the
+ * list index with paging, (96,sp) the shown row, (20,sp) the rows' base,
+ * (28,sp) the panel). The Split toning row (5374 at SPLIT_ROW) shows IMG_SPLIT
+ * "Split / Tone" and the RGB row (5375 at RGB_ROW) IMG_RGB, image only (mode
+ * 1); every other row OM's handler: 5374 0x60e4a3e0 (the record's +28 image
+ * "Color" and the value text), 5375 0x60e4a41a (the tone-shape icon). */
+IMG_SPLIT = 0x3e84
+IMG_RGB = 0x3e86
+col_icon:
+ mov (24,sp),d0
+ cmp 5375,d3
+ beq ci_tone
+ cmp SPLIT_ROW,d0
+ bne ci_stock
+ mov split_icon,a1
+ bra ci_set
+ci_stock:
+ jmp col_icon_stock
+ci_tone:
+ cmp RGB_ROW,d0
+ beq ci_rgb
+ jmp col_icon_tone
+ci_rgb:
+ mov rgb_icon,a1
+ci_set:
+ mov (20,sp),a2
+ movhu (96,sp),d0
+ mov 160,d1
+ mul d1,d0
+ add d0,a2
+ mov 1,d0
+ movbu d0,(a2)
+ inc4 a2
+ mov (28,sp),a0
+ mov a2,d0
+ call col_icon_set,[d2,a2,a3],20
+ mov 1,d0                        /* image only */
+ movhu d0,(6,a2)
+ jmp col_next
+.balign 4
+split_icon:
+ .short 3, IMG_SPLIT
+ .long 0x611b42ac
+rgb_icon:
+ .short 3, IMG_RGB
+ .long 0x611b42ac
