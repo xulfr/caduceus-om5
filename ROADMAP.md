@@ -37,7 +37,8 @@ The owner performs any physical test; development sessions prepare and check fil
 
 ## Next: OM-3 Caduceus parity (owner, 2026-11-28)
 
-Picture Mode controls first, starting with the colour wheel's graphics; Film Rolls out of scope.
+Picture Mode controls first, starting with the colour wheel's graphics; Film Rolls out of scope. Alongside: one look
+format and the shared Control Panel with the other Caduceus projects ([#4](https://github.com/xulfr/caduceus-om5/issues/4)).
 [Parity roadmap](docs/OM3-PARITY-ROADMAP.md).
 
 ## Research: bird detection autofocus (2026-11-28, no build)

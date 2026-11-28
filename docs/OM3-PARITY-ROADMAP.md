@@ -6,6 +6,7 @@ test branch `try/v0.41-beta4`. The OM-5 Mark II side is this repo's `main` after
 project's own reports on the OM-3 (E147). They are **not** evidence for the OM-5 Mark II (E148).
 
 **Scope (owner, 2026-11-28).** Picture Mode controls and UI first, starting with the colour wheel's graphics.
+- Alongside: one look format and one editor with the other Caduceus projects (issue #4).
 - Out of scope: Film Rolls.
 - Out of scope, as the OM-3 itself has done: video features.
 
@@ -111,6 +112,56 @@ before the camera build.
    Its E148 site is not located yet. Static trace first.
 3. **WB Compensation row** in Picture Mode, on top of the existing per-profile WB.
 
+### Alongside: one look format with the other Caduceus projects (issue #4)
+
+**The aim:** a look made or shared for one Caduceus body opens on the others. That means one editor, the shared
+Control Panel in [cakelesscoder/caduceus-ep7](https://github.com/cakelesscoder/caduceus-ep7), with the OM-5 as a
+camera profile and an export target, instead of a third separate LookLab.
+
+**Background:**
+- The owner agreed on #4 on 18 Nov.
+- The study is [SHARED-CONTROL-PANEL](../research/SHARED-CONTROL-PANEL-2026-11-18.md) (PR #10).
+- cakelesscoder answered its five open questions on #4 on 23 Nov:
+  - Contrast and Sharpness come from `advice`, and Shading from `vignette`.
+  - Hue arrays are copied unchanged. The sign is still open for the OM-3 too.
+  - The OM-5 target must refuse leading and trailing spaces in names.
+  - The OM-3 films are already in the panel.
+  - The preview has not been compared with an OM-5 photo.
+- The OM-3 still has its own LookLab. Its roadmap lists one shared panel (its #71) as in progress.
+
+**What the shared look format already has**, read from caduceus-ep7 `6b421a4` (`webapp/src/pack.ts`):
+
+| Our control (this roadmap) | Shared field | In packs and share codes? | OM-5 `LOOKS.BIN` today |
+|---|---|---|---|
+| Hue, Lightness, Saturation ×12 | `hue`, `light`, `sat` | Yes | Yes (v1) |
+| WB shift | `wb` | Yes | Yes |
+| Shadows, Midtones, Highlights | `tone` | Yes | Yes |
+| Black / White | `tone.blacks`, `tone.whites` | Yes | **No**: not part of a look yet |
+| Split toning | `split`: Shadows and Highlights, colour 0..11, strength −5..5 | Yes | **No**. Ours also has a Midtone Tint, which the shared format lacks |
+| Tone Balance | `tone_balance` | **No**: OM-3 bank looks only | No |
+| RGB curves | `rgb` (5 points × R G B, −7..7) | **No**: OM-3 bank looks only | No |
+| Color Mix | `mix` | **No**: OM-3 bank looks only | No |
+| Contrast, Sharpness, Shading | `advice.contrast`, `advice.sharpness`, `vignette` | Yes | Yes |
+
+**Steps:**
+1. **OM-5 target in the shared panel, on today's file (OM5F v1).** This is the study's order:
+   - A PR to caduceus-ep7 adding a `cameras.ts` profile and `targets/om5.ts` at `status: 'soon'`.
+   - Byte-for-byte fixtures from `card/mklooks.py`: the starter looks, no WB, all extremes, a 12-character name, 10 looks.
+   - An optional `LOOKS.BIN` import.
+2. **Owner camera check** of one panel-exported `LOOKS.BIN`, with its SHA-256 recorded. Then the target goes `ready`.
+3. **Point OM-5 users at the shared panel.** Switch the links in README, USING, FAQ and the site. Keep LookLab as a
+   local preview and debug page, and keep `looklab/films.json` and the Python / JavaScript parity tests: release
+   builds and tests depend on them.
+4. **New fields go to the shared format first.** Before any phase 2–4 control is saved in a look:
+   - Use the shared field where one exists: Black / White and split toning.
+   - Open a "Look field" issue on caduceus-ep7 to promote Tone Balance, RGB curves and Color Mix from OM-3-only
+     fields into packs and share codes, with neutral defaults. The OM-3 project should be part of that agreement too.
+   - Then add an **OM5F version 2** record that carries them. The camera must keep accepting version 1 files.
+5. **Shared open question:** the direction of + hue. One same-scene camera test here answers it for this body. The
+   OM-3 and E-P7 projects have the same question open.
+
+PRs and issues on the other projects go out only with the owner's go-ahead.
+
 ### Later (not scheduled)
 
 - Looks kept in the camera's memory, so the card is needed only to bring in new looks.
@@ -122,7 +173,8 @@ before the camera build.
 ## Decisions for the owner
 
 1. **Split toning:** move it to its own row as on the OM-3, which reverses the 2026-11-20 decision? Or keep it on the
-   wheel? And keep the Midtone Tint, which the OM-3 doesn't have?
+   wheel? And keep the Midtone Tint, which the OM-3 doesn't have? The shared look format has Shadows and Highlights
+   only, so a Midtone Tint would need a new shared field, or it would stay out of shared looks.
 2. **Ranges:** OM-3 hue and lightness are −5..+5 on the camera, and its new rows are −7..+7. Keep the current OM-5 Mark II ranges?
 3. **Key map:** take the OM-3's v0.41 keys as they are, including trash doing nothing on the wheel?
 
