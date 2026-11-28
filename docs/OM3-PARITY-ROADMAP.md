@@ -6,7 +6,14 @@ test branch `try/v0.41-beta4`. The OM-5 Mark II side is this repo's `main` after
 project's own reports on the OM-3 (E147). They are **not** evidence for the OM-5 Mark II (E148).
 
 **Scope (owner, 2026-11-28).** Picture Mode controls and UI first, starting with the colour wheel's graphics.
-- Alongside: one look format and one editor with the other Caduceus projects (issue #4).
+- After parity: one look format and one editor with the other Caduceus projects (issue #4).
+
+**Owner decisions (2026-11-28):**
+- Split toning moves to its own row, as on the OM-3. This reverses the 2026-11-20 decision.
+- Ranges match the OM-3.
+- Keys copy the OM-3 v0.41.
+- The Midtone Tint is deferred.
+- Feature parity comes first, look compatibility afterwards.
 - Out of scope: Film Rolls.
 - Out of scope, as the OM-3 itself has done: video features.
 
@@ -18,7 +25,7 @@ project's own reports on the OM-3 (E147). They are **not** evidence for the OM-5
 |---|---|---|
 | **Colour wheel graphic** drawn by the camera's GPU (stock `DRAW_PROFILE` background, various-draw type 11) | Drawn by our code on the CPU with OM's OSD pen, as axis-aligned blocks (`gfx_wheel`, now in `CADUCEUS.BIN`) | E148 has no `DRAW_PROFILE` and no profile kind in c3d. See phase 1 |
 | **H / S / L bar** under the wheel: the selected colour's Hue, Saturation and Lightness together. INFO steps H → S → L. Front dial past the first colour gives "Sat. All". Delete does nothing on the wheel. "H/S/L INFO" hint | Trash steps Saturation → Hue → Lightness (→ tints). INFO switches one colour / all, and HSL ↔ Tint group | New bar graphic and new key map |
-| **Split toning on its own row**: Shadows, Balance, Highlights, with a bar for the tint colour. Strength 0–10 in half steps. Tone Balance −5..+5. "Split Tone INFO" hint | Three tints (Shadow, Midtone, Highlight) on the wheel's Tint group, strength 1..5, no balance. **A separate split-tone row was abandoned here on 2026-11-20 (owner).** | Owner decision needed (see "Decisions") |
+| **Split toning on its own row**: Shadows, Balance, Highlights, with a bar for the tint colour. Strength 0–10 in half steps. Tone Balance −5..+5. "Split Tone INFO" hint | Three tints (Shadow, Midtone, Highlight) on the wheel's Tint group, strength 1..5, no balance. **A separate split-tone row was abandoned here on 2026-11-20 (owner).** | Own row, as on the OM-3 (owner, 2026-11-28). Midtone Tint deferred |
 | **Highlight & Shadow as one five-point curve**: pages Sh / Hi, Mid, Blk / Wht, with all five values in the top line. Reset and "*" follow the film's values | Tone page INFO steps Hi/Sh → Bl/Wh → Mid, −7..+7. The curve graphic shows all five. Hold OK goes to the look's values (emulator only) | Mostly there. Missing: all five values in the top line, and the INFO order |
 | **Color Mix** row: R, G, B dots on a ring, Sat and Hue −7..+7, INFO picks the colour | None | New row and new image-path work |
 | **RGB curves** row: five points per channel, −7..+7 | None. The R/G/B curve route is used inside, by Black / White and the tints | New row. The same route is camera-proven here for tints and Black / White |
@@ -89,19 +96,28 @@ image path.
 1. **H / S / L bar** under the wheel: the selected colour's three values, drawn in `CADUCEUS.BIN`.
 2. **Key map as on the OM-3 v0.41:** INFO steps H → S → L, the front dial past the first colour gives "Sat. All", and
    Delete stops stepping pages on the wheel. Hint "H/S/L INFO" in OM's guide style.
-3. **Tone page:** all five values in the top line. INFO order Sh / Hi → Mid → Blk / Wht, as on the OM-3, if the owner
-   wants that order.
+3. **Tone page:** all five values in the top line. INFO order Sh / Hi → Mid → Blk / Wht, as on the OM-3.
 4. **"*" changed marks** on the profile name and rows, from the look defaults already in place.
 
 Tests: new OM-Emu cases per key path, as `run_bw_tint.py` and `run_look_defaults.py` do. `check.py fast`, then `full`
 before the camera build.
 
-### Phase 3: split toning in the OM-3's shape (after the owner's decision)
+### Phase 3: split toning on its own row, as on the OM-3
 
-- **If moved to its own row:** Shadows / Balance / Highlights with a colour bar, plus Tone Balance. A new Picture Mode
-  row needs a free slot in every 32-slot table. This is the same question that blocked a row on 2026-11-20.
-- **If kept on the wheel:** add Balance as a fourth tint page, and optionally widen the strength to 0–10.
-- Either way, the image path stays the camera-proven R/G/B curve route.
+- **The row:** Split toning, under the colour wheel. INFO steps Shadows → Balance → Highlights. A bar shows the tint's
+  colour. Hint "Split Tone INFO". On Balance only the bar shows, and the rear dial sets Tone Balance (−5..+5).
+- **Ranges as on the OM-3:** strength 0–10 in half steps, 0 = off.
+- **The wheel's Tint group goes away.** INFO on the wheel is then H / S / L only (phase 2).
+- **Midtone Tint (deferred):** not offered on the camera for now. A Midtone value saved by earlier builds is cleared,
+  so nothing applies that can't be seen. The engine code for it can stay if space allows, for when it comes back.
+- **Image path:** unchanged, the camera-proven R/G/B curve route.
+- **Main risk, the row itself.** An earlier row (`claude/split-tone-row`, 2026-11-19) worked in the emulator and was
+  dropped at the owner's call on 2026-11-20. No technical fault is recorded.
+  - An 18 Nov scratch test found that a row needs entries in more than the dispatch table and the row list
+    ([Black / White note](../research/OM5II-BLACKS-WHITES-2026-11-18.md)).
+  - The row record table holds 17 entries
+    ([rows note](../research/OM5II-PICTURE-MODE-ROWS-2026-11-19.md)).
+  - Start from that branch, and settle how rows are added once, because phase 4 adds three more.
 
 ### Phase 4: new image controls on the camera-proven R/G/B route
 
@@ -111,8 +127,16 @@ before the camera build.
 2. **Color Mix** row: needs its own hook. The OM-3 moves R, G and B toward their neighbours while greys stay grey.
    Its E148 site is not located yet. Static trace first.
 3. **WB Compensation row** in Picture Mode, on top of the existing per-profile WB.
+4. **Sharpness −5 (off) .. +2**, as on the OM-3.
 
-### Alongside: one look format with the other Caduceus projects (issue #4)
+During parity these values are kept in the camera, per Color Profile. `LOOKS.BIN` stays version 1 until the
+compatibility work below, so a look does not carry them yet.
+
+### After parity: one look format with the other Caduceus projects (issue #4)
+
+**Why later costs little:** the new controls copy the OM-3's ranges and meanings, and the shared panel already knows
+the OM-3's versions of them (`tone_balance`, `rgb`, `mix`, `split`). Mapping them later should be a translation, not
+a redesign.
 
 **The aim:** a look made or shared for one Caduceus body opens on the others. That means one editor, the shared
 Control Panel in [cakelesscoder/caduceus-ep7](https://github.com/cakelesscoder/caduceus-ep7), with the OM-5 as a
@@ -167,16 +191,16 @@ PRs and issues on the other projects go out only with the owner's go-ahead.
 - Looks kept in the camera's memory, so the card is needed only to bring in new looks.
 - Super control panel dial stepping through the profiles and looks.
 - A photo code in the JPEG, with LookLab reading it.
-- Sharpness −5..+2. Noise Filter and Vignette Correction rows.
+- Noise Filter and Vignette Correction rows.
+- Midtone Tint: bring it back, as a shared field or as an OM-5 extra.
 - Effects: Clarity (blocked on the Soft Focus weight), Glow, Halation, colour grain (shelved).
 
-## Decisions for the owner
+## Decisions (owner, 2026-11-28)
 
-1. **Split toning:** move it to its own row as on the OM-3, which reverses the 2026-11-20 decision? Or keep it on the
-   wheel? And keep the Midtone Tint, which the OM-3 doesn't have? The shared look format has Shadows and Highlights
-   only, so a Midtone Tint would need a new shared field, or it would stay out of shared looks.
-2. **Ranges:** OM-3 hue and lightness are −5..+5 on the camera, and its new rows are −7..+7. Keep the current OM-5 Mark II ranges?
-3. **Key map:** take the OM-3's v0.41 keys as they are, including trash doing nothing on the wheel?
+1. **Split toning:** its own row, as on the OM-3 (phase 3). The Midtone Tint is deferred.
+2. **Ranges:** match the OM-3.
+3. **Key map:** copy the OM-3 v0.41, including trash doing nothing on the wheel.
+4. **Order:** feature parity first, then look compatibility (#4).
 
 ## Enablers already in place
 
