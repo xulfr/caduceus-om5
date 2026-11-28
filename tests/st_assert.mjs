@@ -32,7 +32,11 @@ export default function (g) {
   if (!any) { console.log('ST no tint'); console.log('ASSERTIONS passed'); return; }
   const buf = pb.readUInt32LE(4);
   assert.notEqual(buf, 0, 'buffer allocated');
-  const exp = [0, 1, 2].map(c => Array.from({ length: 256 }, (_, i) => { const u = i - 128, w = u * u, e = u < 0 ? 0 : 2;
+  // Tone Balance b (907 + 4p, -5..+5): the tint weights' u from the hand-over point c = 128 - 16b, scaled to +-128 on
+  // each side (division truncates, as the CPU's div); Black / White keep u = i - 128.
+  const bal = Math.max(-5, Math.min(5, (get(907 + 4 * p) << 24) >> 24)), cc = 128 - 16 * bal;
+  const ut = i => !bal ? i - 128 : i < cc ? Math.trunc((i - cc) * 128 / cc) : Math.trunc((i - cc) * 128 / (256 - cc));
+  const exp = [0, 1, 2].map(c => Array.from({ length: 256 }, (_, i) => { const u = i - 128, v = ut(i), w = v * v, e = v < 0 ? 0 : 2;
     return ((w * T[e][c] + (16384 - w) * T[1][c]) >> 14) - (((u < 0 ? BB : WW) * u) >> 5); }));
   const db = Buffer.from(M.dbgRead(buf + 1552, 1536));
   for (let c = 0; c < 3; c++) for (let i = 0; i < 256; i++) assert.equal(db.readInt16LE(512 * c + 2 * i), exp[c][i], `delta c${c} i${i}`);

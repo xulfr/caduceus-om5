@@ -39,9 +39,14 @@ CASES = [
     # Camera report 2026-11-20: Highlight Tint showed nothing (the zones went by the curve's linear input index).
     # st_assert now checks every output against the delta at its own output level.
     ('cp1-highlight', CP1 + WHEEL + DONE, dict(pm=54, tint={974: 0x30}, stFlag=1, st=True, seed={974: 0x30})),
-    # The Split toning row (phase 3a): it opens on Shadows; INFO goes to Highlights; the colour wheel row is unchanged.
-    ('cp1-split-row', CP1 + SPLIT + 'main+3 info main+2 ' + DONE,
+    # The Split toning row (phase 3a): it opens on Shadows; INFO steps Balance, Highlights; the colour wheel row is unchanged.
+    ('cp1-split-row', CP1 + SPLIT + 'main+3 info info main+2 ' + DONE,   # Shadows, Balance, Highlights
      dict(pm=54, axis=5, tint={968: 0x30, 974: 0x20}, stFlag=1, st=True)),
+    # Tone Balance moves the hand-over point (phase 3b-2): +3 and -5 with both tints set
+    ('cp1-balance-plus', CP1 + SPLIT + DONE, dict(pm=54, tint={968: 0x50, 974: 0x37}, stFlag=1, st=True,
+                                                   seed={968: 0x50, 974: 0x37, 907: 3})),
+    ('cp1-balance-minus', CP1 + SPLIT + DONE, dict(pm=54, tint={968: 0xa2, 974: 0x19}, stFlag=1, st=True,
+                                                    seed={968: 0xa2, 974: 0x19, 907: -5})),
     ('cp1-split-then-wheel', CP1 + SPLIT + 'main+2 up main+1 ' + DONE, dict(pm=54, axis=0, tint={968: 0x20}, stFlag=1, st=True)),
     # Retired with the key map: cp1-group-wrap and cp1-tint-info (Delete / INFO within and between the HSL and Tint
     # groups); tests/run_wheel_keys.py covers the wheel's keys now.

@@ -6,7 +6,7 @@ INFO steps Hue -> Saturation -> Lightness (the wheel opens on Saturation, so S -
 rear dial on this body; OM-Emu's "sub") past the first colour gives Sat. All: OM's own ring, whose place 0 between
 colour 12 and colour 1 is all colours. On Hue and Lightness that place is skipped. INFO with all colours on goes back
 to colour 1 and on to Lightness. Delete does nothing on the wheel. The hint reads "H/S/L [INFO]" on every axis. Split toning (phase 3a): the same editor on the row under the wheel,
-Shadows / Highlights tints, INFO between them; Picture Mode reopens on the wheel row.
+Shadows / Balance / Highlights pages (INFO), strength 0..10, Tone Balance -5..+5; Picture Mode reopens on the wheel row.
 tests/wheel_keys_assert.mjs reads the settings and P after the keys. Emulator only: not a camera result.
 
     python tests/run_wheel_keys.py --emu OM_EMU_DIR --build generated/strict --out generated/wheel-keys
@@ -41,7 +41,10 @@ CASES = [
     # the dial sets the tint of the colour under the cursor; back on the wheel row, Saturation again.
     ('wheel-row', '', dict(row=1, axis=0), None, None),
     ('split-row-opens-on-shadows', 'down main+2', dict(row=2, axis=3, tint=[0x20, 0]), None, None),
-    ('split-row-info', 'down info info info main+1', dict(row=2, axis=5, tint=[255, 0x10]), [5, 3, 5], None),   # 968 untouched: 255 (no tint)
+    ('split-row-info', 'down info info info main+1', dict(row=2, axis=3, tint=[0x10, 0], bal=0), [6, 5, 3], None),
+    # Tone Balance (phase 3b-2): the page between Shadows and Highlights; -5..+5, every colour shows it
+    ('split-balance', 'down info main+1 main+1 main+1 sub-1 main-1', dict(row=2, axis=6, bal=2, tint=[255, 0]), [6], None),
+    ('split-balance-limits', 'down info ' + 'main-1 ' * 7, dict(row=2, axis=6, bal=-5), [6], None),
     ('split-row-and-back', 'down main+1 up main+1', dict(row=1, axis=0, sat={0: 1}, tint=[0x10, 0]), None, None),
     # Strength 0..10 (phase 3b, as the OM-3 v0.28 t2): the editor's -5..+5 is the strength; it stops at 10, and back to
     # 0 takes the tint off. Single clicks: OM-Emu's multi-step dial events are not the camera's.

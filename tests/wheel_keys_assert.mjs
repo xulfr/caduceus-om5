@@ -19,7 +19,7 @@ export default function (g) {
     sat: [...Array(12).keys()].map((k) => G(928 + k)),
     hue: [...Array(12).keys()].map((k) => nib(R(928 + k) & 15, 0)),
     light: [...Array(12).keys()].map((k) => nib(R(928 + k) & 0xf0, 4)),
-    tint: [968, 974].map((id) => G(id) & 0xff),
+    tint: [968, 974].map((id) => G(id) & 0xff), bal: G(907),
   };
   console.log('WHEEL KEYS ' + JSON.stringify(got));
   const want = JSON.parse(process.env.OM5_WHEEL_EXPECT);
@@ -30,6 +30,7 @@ export default function (g) {
   else assert.deepEqual(got.sat, twelve(want.sat), 'saturation');
   assert.deepEqual(got.hue, twelve(want.hue), 'hue');
   assert.deepEqual(got.light, twelve(want.light), 'lightness');
+  if (want.bal !== undefined) assert.equal(got.bal, want.bal, 'Tone Balance of Color Profile 1 (907)');
   if (want.tint) assert.deepEqual(got.tint, want.tint, 'Shadow / Highlight tint cells 968 / 974');
   console.log('ASSERTIONS passed');
 }

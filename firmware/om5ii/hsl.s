@@ -31,6 +31,8 @@ ST_BUF_SIZE = 3088
 CAD_DESC = 1204                 /* 15 x 20: the Black / White and tint descriptors (cad_build) */
 GS_GEN = 1504                   /* u32: +1 at each rebuild of the Black / White and tint tables */
 GS_TAB = 1508                   /* 4 x {gamma cache, GS_GEN it last saw} (gs_hook) */
+ST_BAL = 1540                   /* s8: Tone Balance of the profile the tables are built for (tn_pre) */
+BAL_ID = 907                    /* Tone Balance of Color Profile p: 907 + 4p (the removed CP grain's ids; reset and copy lists, default 0) */
 ST_MAGIC = 60                   /* P+60: 'CADU' once the block is initialised */
 ST_MAGIC_VALUE = 0x55444143
 .section .arm_hook,"ax"
@@ -427,6 +429,7 @@ text_lightness:
  .short 'S','h','a','d','o','w',' ','T','i','n','t',0
  .short 'M','i','d','t','o','n','e',' ','T','i','n','t',0
  .short 'H','i','g','h','l','i','g','h','t',' ','T','i','n','t',0
+ .short 'B','a','l','a','n','c','e',0
 
 .section .ext6,"ax"
 read_hook:
@@ -535,7 +538,7 @@ ui_write_end:
  mov 1,d0
  ret [d2,d3,a2,a3],24
 ui_write_tint:
- jmp tint_write
+ jmp tint_or_balance
 ui_write_alias:
  mov d0,d2
 ui_write_stock:
@@ -2051,33 +2054,6 @@ info_done:
  rets
 
 .section .ext8,"ax"
-/* d0 = axis -> the next on INFO, as on the OM-3 v0.41. The colour wheel row:
- * Hue -> Saturation -> Lightness -> Hue (1 -> 0 -> 2 -> 1). The Split toning
- * row (the same editor, axes 3..5): Shadows <-> Highlights (3 <-> 5); the
- * Midtone tint (4) is deferred. Armed only. */
-wheel_next_axis:
- cmp 3,d0
- bcc wheel_tint
- cmp 1,d0
- beq wheel_sat
- cmp 0,d0
- beq wheel_light
- mov 1,d0
- rets
-wheel_light:
- mov 2,d0
- rets
-wheel_sat:
- clr d0
- rets
-wheel_tint:
- cmp 3,d0
- bne wheel_shadow
- mov 5,d0
- rets
-wheel_shadow:
- mov 3,d0
- rets
 
 /* ---- Blacks / Whites (v0.2.0-dev): image-pipeline side ----
  * Blacks / Whites are added to the split-tone delta tables (tn_tables, ext3), so
@@ -2339,7 +2315,7 @@ tn_ok:
  cmp 0,a2
  beq tn_out
 tn_build:
- jmp tn_tables                     /* ext3: the delta tables */
+ jmp tn_pre                        /* ext5: Tone Balance, then ext3: the delta tables */
 tn_out:
  ret [d2,d3,a2,a3],32
 
@@ -2368,6 +2344,7 @@ tn_bw:
  mul d0,d1
  asr 5,d1
  mov d1,(12,sp)                  /* X * u / 32: X * 4 * (-u) / 128, subtracted below */
+ call tn_bal,[d2,d3],12          /* d0: u for the tint weights (Tone Balance, ext5) */
  mov d0,d1
  mul d0,d1
  mov d1,(8,sp)
@@ -2445,6 +2422,10 @@ tc_p:
 /* From ui_read (its frame): d2 = sector cell, d3 = axis -> d0 = strength
  * on the tint's colour, 0 elsewhere. */
 tint_read:
+ cmp 6,d3
+ bne tr_tint
+ jmp balance_read                /* ext5: the Balance page */
+tr_tint:
  mov d3,a3
  call tint_cell,[],4
  mov d1,d3
@@ -3101,6 +3082,8 @@ pg_rows:
  beq pr_done
  cmp 5,d0
  beq pr_done
+ cmp 6,d0
+ beq pr_done
  mov 3,d0
  bra pr_set
 pr_wheel:
@@ -3249,6 +3232,8 @@ cp_rows:
 paint_strength:
  cmp 3,d3
  bcs ps_out
+ cmp 6,d3                        /* Balance: OM's label shows it (-5..+5) */
+ beq ps_out
  mov 111,d0
  call stock_get,[],4
  add -54,d0
@@ -3306,3 +3291,153 @@ ps_out:
 strength_text:
  .short '0',0,0, '1',0,0, '2',0,0, '3',0,0, '4',0,0, '5',0,0
  .short '6',0,0, '7',0,0, '8',0,0, '9',0,0, '1','0',0
+
+.section .ext5,"ax"
+/* ---- Tone Balance (roadmap phase 3b-2, 2026-11-28, emulator only) ----
+ * As the OM-3 v0.28 t1: Balance b (-5..+5) moves the hand-over point between
+ * the Shadow and Highlight tints, c = 128 - 16b of the 256 output levels
+ * (OM-3: 2048 - 256b of 4096). The tint weights use u measured from c and
+ * scaled to -128..+128 on each side; b = 0 gives u = i - 128 exactly. Black /
+ * White keep their own u. Stored per Color Profile at BAL_ID + 4p. */
+
+/* tint_refresh's tn_build: d3 = the refresh's profile p (3.. none), a3 = P.
+ * P+ST_BAL = its Tone Balance, then the tables (ext3). */
+tn_pre:
+ clr d0
+ cmp 3,d3
+ bcc tp_set
+ mov d3,d0
+ asl 2,d0
+ add BAL_ID,d0
+ mov d0,a0
+ clr d0
+ mov 1,d1
+ call refresh_get,[d2],8
+ extb d0
+ cmp -5,d0
+ bge tp_lo
+ mov -5,d0
+tp_lo:
+ cmp 5,d0
+ ble tp_set
+ mov 5,d0
+tp_set:
+ movbu d0,(ST_BAL,a3)
+ jmp tn_tables
+
+/* d3 = table index i, a3 = P -> d0 = u for the tint weights.
+ * call tn_bal,[d2,d3],12 */
+tn_bal:
+ mov d3,d0
+ add -128,d0
+ movbu (ST_BAL,a3),d1
+ extb d1
+ cmp 0,d1
+ beq tb_out
+ asl 4,d1
+ mov 128,d2
+ sub d1,d2                       /* c: 48..208 */
+ mov d3,d0
+ sub d2,d0                       /* i - c */
+ cmp 0,d0
+ bge tb_hi
+ asl 7,d0
+ ext d0
+ div d2,d0                       /* (i - c) * 128 / c */
+ bra tb_out
+tb_hi:
+ mov 256,d1
+ sub d2,d1
+ asl 7,d0
+ ext d0
+ div d1,d0                       /* (i - c) * 128 / (256 - c) */
+tb_out:
+ ret [d2,d3],12
+
+/* ui_read on the Balance page (tint_read's frame): every colour shows the
+ * profile's Tone Balance. */
+balance_read:
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc br_zero
+ asl 2,d0
+ add BAL_ID,d0
+ call stock_get,[],4
+ extb d0
+ ret [d2,d3,a2,a3],24
+br_zero:
+ clr d0
+ ret [d2,d3,a2,a3],24
+
+/* ui_write on the Split toning pages (its frame; d0 = axis, d2 = cell, d3 =
+ * value, a2 = the writer's a0): Balance -5..+5 (OM's reset: 0), then every
+ * colour follows; the tints: tint_write. */
+tint_or_balance:
+ cmp 6,d0
+ beq balance_write
+ jmp tint_write
+balance_write:
+ mov ST_RESET,d0
+ call st_getb,[],12
+ cmp 0,d0
+ beq bw_nr
+ clr d3
+bw_nr:
+ cmp -5,d3
+ bge bw_lo
+ mov -5,d3
+bw_lo:
+ cmp 5,d3
+ ble bw_hi
+ mov 5,d3
+bw_hi:
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc bw_done
+ asl 2,d0
+ add BAL_ID,d0
+ mov d3,d1
+ mov a2,a0
+ call stock_ui_write,[d2,d3,a2,a3],20
+ call refresh_children,[d2,d3,a2,a3],24
+bw_done:
+ mov 1,d0
+ ret [d2,d3,a2,a3],24
+
+.section .ext5,"ax"
+/* d0 = axis -> the next on INFO, as on the OM-3 v0.41. The colour wheel row:
+ * Hue -> Saturation -> Lightness -> Hue (1 -> 0 -> 2 -> 1). The Split toning
+ * row (the same editor): Shadows -> Balance -> Highlights (3 -> 6 -> 5); the
+ * Midtone tint (4) is deferred. Armed only. */
+wheel_next_axis:
+ cmp 3,d0
+ bcc wheel_tint
+ cmp 1,d0
+ beq wheel_sat
+ cmp 0,d0
+ beq wheel_light
+ mov 1,d0
+ rets
+wheel_light:
+ mov 2,d0
+ rets
+wheel_sat:
+ clr d0
+ rets
+wheel_tint:
+ cmp 3,d0
+ bne wheel_tint2
+ mov 6,d0                        /* Shadows -> Balance */
+ rets
+wheel_tint2:
+ cmp 6,d0
+ bne wheel_shadow
+ mov 5,d0                        /* Balance -> Highlights */
+ rets
+wheel_shadow:
+ mov 3,d0                        /* Highlights (or the Midtone) -> Shadows */
+ rets

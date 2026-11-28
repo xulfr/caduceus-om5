@@ -69,7 +69,23 @@ its pages. Strength 0–10, Tone Balance and the row's own icon are step 3b.
 - Tests: `run_wheel_keys.py` 16 (`split-strength-stops-at-10`, `split-strength-back-to-off`); `st_assert.mjs` checks
   T = ⌊s × colour / 2⌋ for s ≤ 10.
 
+## Step 3b-2: Tone Balance (2026-11-28, emulator only)
+
+- A third page on the Split toning row: INFO steps **Shadows → Balance → Highlights** (axes 3 → 6 → 5). On Balance
+  every colour shows the profile's Tone Balance (−5..+5); the value dial sets it; OM's reset gives 0; OM's own value
+  label shows it (in range). Title "Balance".
+- Stored at **907 / 911 / 915** (Color Profile 1..3): the ids of the removed Color Profile grain, default 0, already in
+  OM's reset and custom-mode copy lists ([Ghidra findings](OM5II-GHIDRA-FINDINGS-2026-11-18.md)). The shelved
+  `claude/cp-grain-experiment` branch uses them too.
+- Image: as the OM-3 v0.28 t1, b moves the hand-over point between the Shadow and Highlight tints, c = 128 − 16b of the
+  256 output levels (OM-3: 2048 − 256b of 4096). The tint weights use u = (i − c) × 128 / c below c and
+  (i − c) × 128 / (256 − c) from c up (truncating division); b = 0 gives u = i − 128. Black / White keep u = i − 128.
+  `tn_pre` reads the profile's b into P+1540 (`ST_BAL`) before the tables; `tn_bal` maps u per index (`.ext5`).
+- OM-Emu: `st_assert.mjs` models it and matched bit for bit at b = +3 (Shadows 5 / Highlights 7) and b = −5 (10 / 1)
+  (`run_bw_tint.py` `cp1-balance-plus` / `-minus`); `run_wheel_keys.py` `split-balance`, `split-balance-limits`.
+- Whether the balance shows as wanted in photos: camera only (OM-Emu develops no photos).
+
 ## Still to do (3b)
 
-Tone Balance −5..+5 as a third page (storage and the OM-3's definition), the row's own icon (both rows show "Color Vivid":
+The row's own icon (both rows show "Color Vivid":
 the icon comes from the item's picture record), hiding OM's value label on the tint pages, and the OM-3's "Split Tone" hint picture.
