@@ -106,14 +106,19 @@
   reopening on the wheel row (hook `0x60e377ed`). [Note](research/OM5II-SPLIT-TONE-ROW-2026-11-28.md).
 - **Phase 3b:** strength 0–10 (`wheel_value` hook `0x61211cf0`), Tone Balance (907 / 911 / 915). New `.ext2c`.
 - **Tone page INFO** Hi/Sh → Mid → Bl/Wh, hint names the next page; `run_tone_icons.py` passes again.
-- Flash tails nearly full (largest: `.ext10` ~90 bytes): further UI code should go to `CADUCEUS.BIN`.
-- Open: the Split toning row's own icon, hiding OM's value label on the tint pages, phase 4.
+- **Phase 3c** (`32fef09`): the Split toning row's own icon `0x3e84` "Split / Tone" (`col_icon`, column slot
+  `0x611b7bec`); OM's value group hidden on Shadows / Highlights (`view_upd` at the colour view's handler slot
+  `0x610c1630`, then the card block's `tint_vis`); hint `0x3e85` "Split Tone [INFO]" in OM's hint font, 180 px as OM's
+  "Color Select INFO", frame hidden. `run_page_graphics` 16/16. [Note](research/OM5II-SPLIT-TONE-ROW-2026-11-28.md#step-3c-the-rows-icon-oms-value-group-the-hint-2026-11-28-emulator-only).
+- Flash room after 3c: `.ext10` 12, `.ext6` 15, `.ext7` 36, `.ext5` 56, `.ext2c` 52 bytes. New code goes to `CADUCEUS.BIN`.
+- **Phase 4 storage (research only):** [note](research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md). Leading lead: part 1 of
+  the tone cells 976–984 (3 per profile). Open: C1–C5 copy, power-off, the store-save override table.
 - **`check.py full` on `8ab96f2` (2026-11-28): passed** — Python tests (1 E144-only skip), strict build, 19/19
   emulator cases, build audit. Also passing on that code: `run_wheel_keys` 18, `run_bw_tint` 14, `run_look_defaults`
   6, `run_page_graphics` 13, `run_tone_icons`, `run_boot_arm` 11 (3a), `run_profile_rows`, `run_profile_icons`,
   `run_mono_filter` (3a). `run_ui_activity` `idle` fails as on `main`. Emulator only; no package built for the camera.
-- Next: phase 4 ([scoping](research/OM5II-PHASE4-SCOPING-2026-11-28.md)), starting with moving armed-only UI code
-  into `CADUCEUS.BIN`.
+- Next: settle RGB-curve storage (C1–C5 / override table in OM-Emu), then the engine in `CADUCEUS.BIN`
+  ([scoping](research/OM5II-PHASE4-SCOPING-2026-11-28.md)).
 - Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
 
 ## Look defaults (merged, PR #14; emulator only)

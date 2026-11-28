@@ -89,3 +89,33 @@ its pages. Strength 0–10, Tone Balance and the row's own icon are step 3b.
 
 The row's own icon (both rows show "Color Vivid":
 the icon comes from the item's picture record), hiding OM's value label on the tint pages, and the OM-3's "Split Tone" hint picture.
+
+## Step 3c: the row's icon, OM's value group, the hint (2026-11-28, emulator only)
+
+- **Icon.** The Picture Mode column draws each row through the item's slot in `0x611b7b28` (`(item − 6) & 31`); item
+  5374's handler `0x60e4a3e0` (shared with 5373 / 5029 / 662) shows the row record's `+28` image (`0x2c85` "Color") and,
+  when the row's value is not 0, the value text under it ("Vivid", mode 5 at `(6, slot)`). Its loop keeps the list
+  index at `(24,sp)` (with paging), the shown row at `(96,sp)`, the rows' base at `(20,sp)`, the panel at `(28,sp)`.
+  `col_icon` (`.ext10`, slot 24's word at `0x611b7bec`) shows the new image **`0x3e84` "Split / Tone"** on list index 2,
+  image only (mode 1); every other row goes to the stock handler.
+- **OM's value group.** The colour view (`0x610c14a0`) has labels at `+792 + 4i`: 1 / 2 the arcs, 3 "Color", 4 the
+  swatch, 5 "Vivid", 6 the value (OM's −5..+5 pictures), 7 an alternative to 6 (hidden on every page seen), 10 the hint
+  frame, 11 the hint. Its data-model handler **`0x60df1217`** (vtable slot `0x610c1630`, once per command) re-sets every
+  label's image and visibility through `0x60df124a`, so a hide made earlier in the command (first tried from
+  `pg_axis`) is undone. `view_upd` (`.ext10`) now takes that slot: OM's handler, then the card block's `tint_vis`
+  (stub in `.ext6`): on Shadows / Highlights labels 2, 5, 6, 7 are hidden; elsewhere, when label 2 (never hidden by OM)
+  is off, 2 / 5 / 6 are shown and 7 hidden again. Balance keeps OM's value (in range).
+- **Hint.** OM's own hint for this editor is `0x3f7d` "Color Select [INFO]", 180 px (label 11's record,
+  `0x610c103c`; `0x3f7c` "Color All [INFO]" is 175): the 128 px "limit" was only our tool's. **`0x3e85` "Split Tone
+  [INFO]"** is composed in that font from OM's glyphs (S, l, t, o, e from `0x3f7d`; i from "Mid"; p = "Mid"'s d turned
+  180°; n = the lower part of "Sh"'s h; T = l's stem and t's crossbar) with OM's INFO key copied as is, and outlined as
+  OM's (rings 7, 9). Label 10's frame (about 142 px, narrower than the hint) is hidden on the three Split toning pages.
+- **Tool.** `oly_ui_bitmap.compose_glyphs` (sprite `"glyphs"`): glyph cores (value ≥ `core`) placed on a canvas,
+  turned 180° on request, raw places copied as they are, then outlined. `oly_resource_recipe.py --glyphs`.
+- **Room** after this step (to the next range or the loaded section's end): `.ext10` 12 bytes, `.ext6` 15, `.ext7` 36,
+  `.ext5` 56, `.ext2c` 52, `.ext3` 36, `.ext8` 26, `.ext9` 10, `.ext2` 1 (`.ext2b`'s figure is the dead table's, ~31).
+- **Without the card block** the icon and the hint image still show (flashed / resource); OM's value group stays and
+  the frame shows behind the wider hint.
+- Tests: `run_page_graphics.py` 16 (new: `split-row-icon`, `split-value-group`, `split-hint`).
+- Seen, not changed: after INFO to Highlights and back up to the wheel row, the Saturation page's value label read
+  "Vivid −5" (OM-Emu) until the next command; it was the same before this step.
