@@ -19,6 +19,11 @@ Based on:
   xulfr/oly_fw_analysis (a fork of fishcu/oly_fw_analysis) by xulfr; the E144 donor builder, resource packing and transplant audit also originate in that work.
   fishcu's PEN-F research showed the way.
   No file of fishcu's is included here.
+- OMKit (necrostaz/omkit, OMKit, Copyright 2026 The OMKit Authors): its documentation (CC BY 4.0) of the OM-5 Mark II
+  firmware 1.1 is the source of facts used in research/ and in the firmware: the FastEndCb start-up site, the tested
+  free DRAM gap used for CADUCEUS.BIN, and the Color Creator drawing path studied in
+  research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md. No OMKit code is included yet; code taken from it later (Apache-2.0)
+  keeps its copyright headers and is listed here.
 
 Sample photos in looklab/samples are public domain (CC0 1.0); see looklab/samples/CREDITS.md.
 

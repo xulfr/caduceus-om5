@@ -1,5 +1,9 @@
 # Can the GPU (c3d) draw our wheel and curve? (2026-11-27)
 
+> **Superseded on 2026-11-28** by [Borrowing Color Creator's GPU drawing, as OMKit does](OM5II-OMKIT-GPU-EDITORS-2026-11-28.md):
+> one panel write after the stock item handler makes our pages order the Color Creator drawing (OM-Emu, GUI half).
+> The recommendation below (keep CPU drawing) no longer stands; the static findings do.
+
 **Static analysis of the stock E148 1.1 image, plus a review of third-party tooling. Nothing was run on a camera, and
 the GPU probe was not run in OM-Emu (see "Emulator probe").** Addresses are runtime addresses of the expanded main
 program, base `0x60021020`.

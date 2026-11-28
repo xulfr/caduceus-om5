@@ -23,8 +23,8 @@ project's own reports on the OM-3 (E147). They are **not** evidence for the OM-5
 
 | OM-3 (v0.41-beta4) | OM-5 Mark II now | Gap |
 |---|---|---|
-| **Colour wheel graphic** drawn by the camera's GPU (stock `DRAW_PROFILE` background, various-draw type 11) | Drawn by our code on the CPU with OM's OSD pen, as axis-aligned blocks (`gfx_wheel`, now in `CADUCEUS.BIN`) | E148 has no `DRAW_PROFILE` and no profile kind in c3d. See phase 1 |
-| **H / S / L bar** under the wheel: the selected colour's Hue, Saturation and Lightness together. INFO steps H → S → L. Front dial past the first colour gives "Sat. All". Delete does nothing on the wheel. "H/S/L INFO" hint | Trash steps Saturation → Hue → Lightness (→ tints). INFO switches one colour / all, and HSL ↔ Tint group | New bar graphic and new key map |
+| **Colour wheel graphic** drawn by the camera's GPU (stock `DRAW_PROFILE` background, various-draw type 11) | Drawn by our code on the CPU with OM's OSD pen, as axis-aligned blocks (`gfx_wheel`, now in `CADUCEUS.BIN`) | E148 has no `DRAW_PROFILE`, but OMKit borrows the Color Creator drawing on E148. See phase 1 |
+| **H / S / L bar** under the wheel: the selected colour's Hue, Saturation and Lightness together. INFO steps H → S → L. Front dial past the first colour gives "Sat. All". Delete does nothing on the wheel. "H/S/L INFO" hint | Key map and hint as the OM-3 v0.41 since 2026-11-28 (emulator only; the colour dial is the rear one on this body) | Bar graphic |
 | **Split toning on its own row**: Shadows, Balance, Highlights, with a bar for the tint colour. Strength 0–10 in half steps. Tone Balance −5..+5. "Split Tone INFO" hint | Three tints (Shadow, Midtone, Highlight) on the wheel's Tint group, strength 1..5, no balance. **A separate split-tone row was abandoned here on 2026-11-20 (owner).** | Own row, as on the OM-3 (owner, 2026-11-28). Midtone Tint deferred |
 | **Highlight & Shadow as one five-point curve**: pages Sh / Hi, Mid, Blk / Wht, with all five values in the top line. Reset and "*" follow the film's values | Tone page INFO steps Hi/Sh → Bl/Wh → Mid, −7..+7. The curve graphic shows all five. Hold OK goes to the look's values (emulator only) | Mostly there. Missing: all five values in the top line, and the INFO order |
 | **Color Mix** row: R, G, B dots on a ring, Sat and Hue −7..+7, INFO picks the colour | None | New row and new image-path work |
@@ -56,37 +56,34 @@ project's own reports on the OM-3 (E147). They are **not** evidence for the OM-5
 - So a GPU wheel here means **putting a renderer back** that E148 no longer has. It is new code on the second CPU,
   on a GPU path OM-Emu cannot run, and only a camera test can prove it. This is the riskiest item on this page, not
   the easiest.
+- **New, 2026-11-28:** OMKit (necrostaz/omkit) does exactly that on E148 1.1, camera-measured for OMKit: it makes the
+  GUI order the **Color Creator** drawing for the profile items and draws its own editors in Color Creator's renderer
+  on CPU 1. In OM-Emu our pages reach the same sites and order that drawing after one panel write.
+  [Study and probe plan](../research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md).
 
 ## Phases
 
 Each phase ends with an emulator-checked build, the owner's camera test and a camera report with the package
 SHA-256, before the next phase builds on it.
 
-### Phase 1: the colour wheel's graphic (research first, with a go / no-go)
+### Phase 1: the colour wheel's graphic (research done 2026-11-28: go, as a switchable probe)
 
-1. **Static trace, no build.**
-   - Trace E148's Color Creator kind (2): its GUI request (view `0x60df1605`, data block 278), its START / DRAW / END
-     sequence and its renderer on the second CPU.
-   - Trace E147's profile renderer behind `DRAW_PROFILE` (type 11) to see how much code and data it is, and what it
-     takes as input.
-   - Output: a research note answering two questions. Could E147's profile renderer be carried into E148's c3d and
-     started from our restored pages? Or could the Color Creator kind be borrowed while a Color Profile page is open?
-     The note also estimates size, the second-CPU risk and what the emulator can and cannot show.
-2. **Emulator tooling, only if step 1 says go.** Port the E-M5 III notes' c3d runner (`c3drun.mjs`, `c3dvg.mjs`) to
-   E148 addresses on `xulfr/om-emu`. The c3d note estimates days of work. It runs the camera's own c3d code against
-   a software OpenVG stand-in, which is not GPU emulation.
-3. **Probe build**: the GPU wheel on one page only, behind a card-file switch, so removing the file goes back to the
-   CPU wheel. Camera test by the owner.
+1. **Static trace and study: done.** [OMKit GPU editors note](../research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md):
+   borrow the Color Creator kind as OMKit does. No clash with our hooks; hooks static in flash rather than OMKit's run-time
+   writes; the renderer in C from OMKit's `editor.c`, compiled with OMKit's GCC and committed as assembly, in
+   `CADUCEUS.BIN`; the H / S / L bar on the OSD; the curve sampled on CPU 0.
+2. **Emulator tooling: not needed for the probe.** OM-Emu tests the GUI half; a host bench tests the renderer's
+   geometry. The `c3drun` port stays optional.
+3. **Probe g1**: a calibration picture on the wheel page, only with `OM5MOD/GPU.ON` on the card; without it, today's
+   CPU drawing exactly. Camera test by the owner (where the surface lands, entering and leaving, stock Color Creator).
+   Then g2 (the wheel with values) and g3 (tone curve, filter ring). Build plan in the note, §9.
 
-**Fallback, if step 1 says no-go:** make the CPU wheel look closer to OM's.
+**Fallback, if the probe fails on the camera:** make the CPU wheel look closer to OM's.
 - The card block gives the drawing code room now. The limit is OM's OSD command buffer, about 1,000 commands per
   repaint.
 - Options: filled colour sectors in the screen's palette, a ring as stacked spans instead of dots, the H / S / L bar
   from phase 2.
 - This needs no second CPU and no GPU, and OM-Emu shows the result.
-
-**Recommendation:** do step 1 now. Start phase 2 alongside it rather than waiting for it. Phase 2 does not depend on how
-the wheel is drawn.
 
 ### Phase 2: the v0.41 colour wheel and tone page controls (CPU drawing)
 
@@ -94,8 +91,11 @@ Everything here is UI over values the OM-5 Mark II already has. The risk is in P
 image path.
 
 1. **H / S / L bar** under the wheel: the selected colour's three values, drawn in `CADUCEUS.BIN`.
-2. **Key map as on the OM-3 v0.41:** INFO steps H → S → L, the front dial past the first colour gives "Sat. All", and
-   Delete stops stepping pages on the wheel. Hint "H/S/L INFO" in OM's guide style.
+2. **Key map as on the OM-3 v0.41: done 2026-11-28 (emulator only).** INFO steps H → S → L; the colour dial past the
+   first colour gives "Sat. All" (OM's own ring; the colour dial is the **rear** dial on this body, the front on the
+   OM-3), skipped on Hue and Lightness; Delete does nothing on the wheel; hint "H/S/L [INFO]". Test
+   `tests/run_wheel_keys.py`. **The tints have no key until phase 3**: stored tints still apply. Phase 2 should not
+   go to the camera without phase 3.
 3. **Tone page:** all five values in the top line. INFO order Sh / Hi → Mid → Blk / Wht, as on the OM-3.
 4. **"*" changed marks** on the profile name and rows, from the look defaults already in place.
 

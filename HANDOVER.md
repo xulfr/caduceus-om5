@@ -95,6 +95,16 @@
   `patch.py` / `mkrelease.py` ship it. [Note](research/OM5II-CARD-BLOCK-2026-11-27.md).
 - **Tests:** `tests/run_boot_arm.py` 11/11, page graphics 11/11, mono filter pass (OM-Emu).
 
+## OM-3 parity, phases 1–2 (branch `ccr-6992778b-4fybdu`, 2026-11-28, emulator only)
+
+- **Phase 1 research:** borrow Color Creator's GPU drawing as OMKit does; go as a switchable probe (g1: a calibration
+  picture behind `OM5MOD/GPU.ON`). OM-Emu shows our pages order the drawing after one panel write.
+  [Note and build plan](research/OM5II-OMKIT-GPU-EDITORS-2026-11-28.md). Supersedes the c3d note's "keep CPU drawing".
+- **Phase 2 keys:** INFO steps H → S → L, Sat. All on the colour (rear) dial past colour 1, skipped on Hue / Lightness,
+  Delete inert on the wheel, "H/S/L [INFO]" hint. New pointer site `0x61211cf4`. `tests/run_wheel_keys.py` 9/9.
+  **The tints have no key until phase 3** (stored tints still apply): do not flash phase 2 without phase 3.
+- Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
+
 ## Look defaults (merged, PR #14; emulator only)
 
 - Hold OK returns a look slot's values to the look, and the Reset OK Hold hint follows the look
@@ -107,8 +117,7 @@
    section 8 before checking readiness. The candidate keeps the unarmed gamma path in section 2 and the tone-view
    gate in section 7. The cause of the physical reset remains unconfirmed.
    [Comparison and boot evidence](research/OM5II-DEV0565-CAMERA-2026-11-20.md#startup-comparison-and-wheel-fix-2026-11-20-emulator-only).
-2. Wheel INFO now switches HSL ↔ Tint, preserving axis position. Trash cycles within the active group.
-   The hint names the destination group. Emulator only.
+2. Wheel keys: superseded 2026-11-28 by the OM-3 v0.41 key map (see above).
 3. Colour grain is shelved. The separate split-tone row is abandoned. Keep this work on
    `claude/wizardly-feynman-wejd65`. Main is the alpha12 donor for the original OM-5.
 
