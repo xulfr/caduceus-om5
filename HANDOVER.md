@@ -108,6 +108,12 @@
 - **Tone page INFO** Hi/Sh → Mid → Bl/Wh, hint names the next page; `run_tone_icons.py` passes again.
 - Flash tails nearly full (largest: `.ext10` ~90 bytes): further UI code should go to `CADUCEUS.BIN`.
 - Open: the Split toning row's own icon, hiding OM's value label on the tint pages, phase 4.
+- **`check.py full` on `8ab96f2` (2026-11-28): passed** — Python tests (1 E144-only skip), strict build, 19/19
+  emulator cases, build audit. Also passing on that code: `run_wheel_keys` 18, `run_bw_tint` 14, `run_look_defaults`
+  6, `run_page_graphics` 13, `run_tone_icons`, `run_boot_arm` 11 (3a), `run_profile_rows`, `run_profile_icons`,
+  `run_mono_filter` (3a). `run_ui_activity` `idle` fails as on `main`. Emulator only; no package built for the camera.
+- Next: phase 4 ([scoping](research/OM5II-PHASE4-SCOPING-2026-11-28.md)), starting with moving armed-only UI code
+  into `CADUCEUS.BIN`.
 - Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
 
 ## Look defaults (merged, PR #14; emulator only)
