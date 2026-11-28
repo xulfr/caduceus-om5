@@ -22,13 +22,13 @@ CP1 = 's1 ok ok ' + 'right ' * 8          # Picture Mode, Color Profile 1 highli
 TONE, WHEEL, SPLIT = 'down down down ', 'down ', 'down down '   # rows: colour wheel, Split toning (since phase 3a), tone curve
 DONE = 'ok wait:500'
 # OM-Emu's dials: in the Black/White state sub+2 sets Black -1 and main-3 White -2 (the stock Sh / Hi steps).
-BW = CP1 + TONE + 'info sub+2 main-3 '
+BW = CP1 + TONE + 'info info sub+2 main-3 '   # INFO: Hi/Sh -> Mid -> Black/White (OM-3 v0.41)
 CASES = [
     ('cp1-black-white', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=1, tone3=[0, 0, 0], stFlag=1, st=True)),
-    ('cp1-info-cycle', BW + 'info info sub+1 ' + DONE,
+    ('cp1-info-cycle', BW + 'info sub+1 ' + DONE,
      dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], p=[-20, 40], tm=0, tone3=[-1, 0, 0])),
     # a lone main-3 moves OM's Sh by -3 (checked on stock Hi/Sh), so here Black of Color Profile 2
-    ('cp2-black', CP1 + 'right ' + TONE + 'info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1,
+    ('cp2-black', CP1 + 'right ' + TONE + 'info info main-3 ' + DONE, dict(pm=55, bw=[0, -3, 0, 0, 0, 0], p=[-60, 0], tm=1,
                                                                    stFlag=1, st=True)),
     ('stock-after-bw', BW + DONE + ' ok ok up up up ' + 'left ' * 6 + DONE, dict(pm=5, bw=[-1, 0, 0, -2, 0, 0], p=[0, 0], stFlag=0)),
     # The tints have no key on the wheel since the OM-3 v0.41 key map (2026-11-28; their own row comes later): these
@@ -53,7 +53,7 @@ CASES = [
     # Live view (owner 2026-11-20): Black / White changes must reach live view; gs_hook makes each gamma cache miss
     # once after a table rebuild. tests/gs_assert.mjs enters at the patched stock cache test.
     # Same keys without the value changes: GS_GEN from refreshes alone (arming, mode changes), the baseline.
-    ('cp1-gs-baseline', CP1 + TONE + 'info ' + DONE, dict(pm=54, gs=True)),
+    ('cp1-gs-baseline', CP1 + TONE + 'info info ' + DONE, dict(pm=54, gs=True)),
     ('cp1-bw-gamma-cache', BW + DONE, dict(pm=54, bw=[-1, 0, 0, -2, 0, 0], gs=True, gs_above='cp1-gs-baseline')),
     # Tints too (owner 2026-11-20): cp1-wheel-gs-baseline / cp1-tint-gamma-cache edited a tint with the dial on the
     # wheel's Tint group, which the OM-3 v0.41 key map removed. They come back with the Split toning row; gs_hook's

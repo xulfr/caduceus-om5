@@ -41,8 +41,9 @@ def walk():
             step(key, part, by)
 
     plane()
-    step('info'); step('main+1', 2, 1); step('info'); plane()
-    step('info'); step('main-1', 2, -1); step('main-1', 2, -1); step('info'); plane()
+    # INFO: Hi/Sh -> Mid -> Black/White -> Hi/Sh (OM-3 v0.41); Black/White leaves the icon's three values alone
+    step('info'); step('main+1', 2, 1); step('info'); step('info'); plane()
+    step('info'); step('main-1', 2, -1); step('main-1', 2, -1); step('info'); step('info'); plane()
     return keys, states
 
 

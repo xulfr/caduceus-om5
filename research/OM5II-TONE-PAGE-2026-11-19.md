@@ -106,3 +106,16 @@ Findings so far (emulator and static, not fixed):
   indices like `0x60df89bd` after each update (`label_index` `0x60f04d34`).
 - Hint: `0x3e82` = OM's "Mid INFO" (`0x3f7e` crop 58..124) with 62 blank columns (bitmaps are at most 128 wide);
   `tone_text` writes "Bl/Wh" there in the Hi/Sh state.
+
+## 2026-11-28: INFO order as the OM-3 v0.41 (emulator only)
+
+- INFO now steps **Hi/Sh → Mid → Black/White → Hi/Sh** (was Hi/Sh → Black/White → Mid). `tone_info`: Hi/Sh → OM's own
+  step to Mid; Mid → OM's step back to Hi/Sh, then the Black/White state (P+ST_TM = 1, which shares OM's Hi/Sh state);
+  Black/White → Hi/Sh (consumed).
+- The hint names the next page. Hi/Sh: OM's "Mid INFO" (label 16, slot 0, picture `0x3f7f`). Mid: slot 1 (OM's "Hi/Sh
+  INFO", picture `0x3f80`, from the tone view's records at `0x610d5e60`) gets the blank IMG_HINT and `tone_text` writes
+  "Bl/Wh". Black/White: slot 0 gets IMG_HINT and "Sh/Hi". `tl_hint1` (`.ext10`) sets slot 1.
+- `run_tone_icons.py` passes again (27 states, 27 icons). It had failed on `main`: its walk takes INFO to Mid and back,
+  and the old order put the second INFO on Black/White.
+- Tests changed: `run_bw_tint.py` (Black/White by `info info`), `run_look_defaults.py` `tone-black-white`, the tone
+  icon walk.

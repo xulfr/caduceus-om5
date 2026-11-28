@@ -2516,8 +2516,9 @@ ta_out:
 /* Tone editor INFO (types 0x1531..0x1533, slots 0x61210790 / 0x612107c8 /
  * 0x61210800 of the type records at 0x6120e9dc, stock 0x60e9e8ff; entered
  * by calls from 0x60e9c10e: a0 = editor, d0 / d1 the command) -> d0. On
- * Color Profile 1-3 once armed: Hi/Sh -> Black/White (consumed, OM's state
- * stays Hi/Sh), Black/White -> Mid (OM's own step), Mid -> Hi/Sh (OM's). */
+ * Color Profile 1-3 once armed, as the OM-3 v0.41: Hi/Sh -> Mid (OM's own
+ * step), Mid -> Black/White (OM's step back to Hi/Sh, whose state Black/White
+ * shares), Black/White -> Hi/Sh (consumed). */
 tone_info:
  movm [d2,d3,a2,a3],(sp)
  add -8,sp
@@ -2538,16 +2539,22 @@ tone_info:
  bne ti_from_bw
  movhu (122,a2),d0
  cmp 0,d0
- bne ti_stock
+ beq ti_stock                    /* Hi/Sh -> Mid: OM's own step */
+ mov a2,a0                       /* Mid: OM's step back to Hi/Sh, then Black/White */
+ mov d2,d0
+ mov d3,d1
+ calls tone_info_stock
  mov 1,d0
  movbu d0,(ST_TM,a3)
  call tone_refresh,[d2,d3,a2,a3],24
  mov 1,d0
  ret [d2,d3,a2,a3],24
-ti_from_bw:
+ti_from_bw:                      /* Black/White -> Hi/Sh (OM's state is Hi/Sh) */
  clr d0
  movbu d0,(ST_TM,a3)
  call tone_refresh,[d2,d3,a2,a3],24
+ mov 1,d0
+ ret [d2,d3,a2,a3],24
 ti_stock:
  mov a2,a0
  mov d2,d0
@@ -2592,9 +2599,10 @@ trf_next:
 /* a0 = the tone page (child 2) -> its view; a2 = the view. The title and
  * hint labels follow the state: Black/White (Color Profile, P+ST_TM = 1):
  * titles "Bl" / "Wh" (IMG_BL / IMG_WH, OM's glyphs) instead of "Sh" / "Hi";
- * OM's value labels (sign, digit) get Blacks / Whites (tl_val). Hi/Sh on a Color Profile: the hint is OM's "Mid INFO" with
- * "Mid" left blank (IMG_HINT), tone_text writes "Bl/Wh" there. Otherwise
- * (Mid, other modes) OM's images. Each label's image slot 0 is set through
+ * OM's value labels (sign, digit) get Blacks / Whites (tl_val). The hint
+ * names the next page (INFO: Hi/Sh -> Mid -> Black/White, OM-3 v0.41): Hi/Sh
+ * OM's "Mid INFO"; Mid (label slot 1) and Black/White (slot 0) the blank
+ * IMG_HINT with tone_text's "Bl/Wh" / "Sh/Hi". Other modes OM's images. Each label's image slot 0 is set through
  * OM's label_img (no-op when unchanged); OM's own update never resets it, so
  * every state writes all three. Runs at each layout (pg_tone) and after OM's
  * view update (tv_upd). call tone_labels,[d2,d3,a2,a3],24 */
@@ -2624,20 +2632,21 @@ tl_cp:
  mov d0,(4,sp)                   /* profile 0..2 */
  cmp 0,d3
  bne tl_set                      /* 1: Black/White */
- mov 2,d3                        /* Hi/Sh: our hint. Which hint OM shows */
+ clr d3                          /* Hi/Sh: OM's. Which hint OM shows */
  mov (856,a2),a0                 /* (label 16's index: 0 "Mid INFO", 1 "Hi/Sh */
  cmp 0,a0                        /* INFO") decides, not setting 2189: on the */
  beq tl_set                      /* camera Bl/Wh was drawn over "Hi/Sh INFO" */
  movbu (132,a0),d0
  cmp 0,d0
  beq tl_set
- clr d3                          /* Mid: OM's */
-tl_set:                          /* d3: 0 OM, 1 Black/White, 2 Hi/Sh */
+ mov 2,d3                        /* Mid: our hint, "Bl/Wh" next */
+tl_set:                          /* d3: 0 OM, 1 Black/White, 2 Mid */
  call st_ptr,[],8
- clr d0
- cmp 2,d3
- bne tl_h0
- mov 1,d0
+ clr d0                          /* ST_HINT: 1 "Bl/Wh" (Mid), 2 "Sh/Hi" (Black/White) */
+ cmp 0,d3
+ beq tl_h0
+ mov 3,d0
+ sub d3,d0
 tl_h0:
  movbu d0,(ST_HINT,a0)           /* for tone_text */
  mov IMG_SH,d1
@@ -2655,12 +2664,13 @@ tl_t2:
  mov 832,d0                      /* label 10 */
  call tl_img,[],8
  mov IMG_MIDINFO,d1
- cmp 2,d3
+ cmp 1,d3
  bne tl_t3
  mov IMG_HINT,d1
 tl_t3:
- mov 856,d0                      /* label 16, the hint */
+ mov 856,d0                      /* label 16, the hint: slot 0 (Hi/Sh, Black/White) */
  call tl_img,[],8
+ call tl_hint1,[],8              /* slot 1 (Mid), ext10 */
  cmp 1,d3
  bne tl_inval
  mov (4,sp),d2                   /* Black/White: OM's view shows its data model's */
@@ -2841,6 +2851,10 @@ tone_text:
  cmp 0,d0
  beq tt_out
  mov text_bw,a1
+ cmp 1,d0
+ beq tt_draw
+ mov text_shhi,a1
+tt_draw:
  mov 290,d0                      /* the blank 62 px of IMG_HINT start at 296 */
  mov 426,d1
  mov 68,d2
@@ -2851,6 +2865,8 @@ tt_out:
 .balign 2
 text_bw:                         /* the hint; titles are images (owner, 2026-11-20) */
  .short 'B','l','/','W','h',0
+text_shhi:
+ .short 'S','h','/','H','i',0
 
 .section .ext6,"ax"
 .balign 2
@@ -3441,3 +3457,23 @@ wheel_tint2:
 wheel_shadow:
  mov 3,d0                        /* Highlights (or the Midtone) -> Shadows */
  rets
+
+.section .ext10,"ax"
+/* tone_labels (d3 = its state, a2 = the view): the hint label's slot 1, which
+ * OM shows on Mid ("Hi/Sh INFO", 0x3f80): our blank IMG_HINT on a Color
+ * Profile's Mid (tone_text writes "Bl/Wh", the next page), else OM's.
+ * call tl_hint1,[],8 */
+IMG_HSINFO = 0x3f80
+tl_hint1:
+ mov IMG_HSINFO,d1
+ cmp 2,d3
+ bne th_img
+ mov IMG_HINT,d1
+th_img:
+ mov (856,a2),a0
+ cmp 0,a0
+ beq th_out
+ mov 1,d0
+ call label_img,[d2,a2],12
+th_out:
+ ret [],8

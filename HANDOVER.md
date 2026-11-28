@@ -104,7 +104,10 @@
   Delete inert on the wheel, "H/S/L [INFO]" hint. New pointer site `0x61211cf4`. `tests/run_wheel_keys.py` 9/9.
 - **Phase 3a:** Split toning row under the wheel (5374 listed twice), Shadows ↔ Highlights, Midtone cleared at arming,
   reopening on the wheel row (hook `0x60e377ed`). [Note](research/OM5II-SPLIT-TONE-ROW-2026-11-28.md).
-  Next: 3b (strength 0–10, Tone Balance, row icon). Not a camera candidate before 3b.
+- **Phase 3b:** strength 0–10 (`wheel_value` hook `0x61211cf0`), Tone Balance (907 / 911 / 915). New `.ext2c`.
+- **Tone page INFO** Hi/Sh → Mid → Bl/Wh, hint names the next page; `run_tone_icons.py` passes again.
+- Flash tails nearly full (largest: `.ext10` ~90 bytes): further UI code should go to `CADUCEUS.BIN`.
+- Open: the Split toning row's own icon, hiding OM's value label on the tint pages, phase 4.
 - Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
 
 ## Look defaults (merged, PR #14; emulator only)

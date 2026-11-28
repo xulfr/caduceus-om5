@@ -35,7 +35,7 @@ CASES = [
     ('wheel-lightness', LOOK + 'down info main+1 ' + HOLD, dict(film=0), None),
     ('tone', LOOK + 'down down down sub+1 main+1 ' + HOLD, dict(film=0), ('down', 'main+1', HOLD)),
     # The Black / White state: OM's tone IDs write Black / White, which no look holds: 0, tone stays the look's.
-    ('tone-black-white', LOOK + 'down down down info sub+2 main-3 ' + HOLD, dict(film=0), None),
+    ('tone-black-white', LOOK + 'down down down info info sub+2 main-3 ' + HOLD, dict(film=0), None),
     # No look on the slot: OM's default, 0, as before (the wheel's colour 0 keeps the +1 set on it).
     ('no-look', CP1 + 'down main+1 down down sub+1 ' + HOLD, dict(film=None, sat0=1), None),
 ]

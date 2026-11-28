@@ -96,7 +96,8 @@ image path.
    OM-3), skipped on Hue and Lightness; Delete does nothing on the wheel; hint "H/S/L [INFO]". Test
    `tests/run_wheel_keys.py`. **The tints have no key until phase 3**: stored tints still apply. Phase 2 should not
    go to the camera without phase 3.
-3. **Tone page:** all five values in the top line. INFO order Sh / Hi → Mid → Blk / Wht, as on the OM-3.
+3. **Tone page:** INFO order Sh / Hi → Mid → Blk / Wht, as on the OM-3: **done 2026-11-28 (emulator only)**; the
+   hint names the next page ("Mid", "Bl/Wh", "Sh/Hi"). Still open: all five values in the top line.
 4. **"*" changed marks** on the profile name and rows, from the look defaults already in place.
 
 Tests: new OM-Emu cases per key path, as `run_bw_tint.py` and `run_look_defaults.py` do. `check.py fast`, then `full`
