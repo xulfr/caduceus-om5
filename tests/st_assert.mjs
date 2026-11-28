@@ -24,7 +24,7 @@ export default function (g) {
   const p = get(111) - 54;
   assert.ok(p >= 0 && p < 3, 'a Color Profile is selected');
   const T = [0, 1, 2].map(z => { const v = get(TINT_IDS[3 * z + p]) & 0xff, k = v & 15, s = v >> 4;
-    return k < 12 && s < 6 ? RGB[k].map(x => s * x) : [0, 0, 0]; });
+    return k < 12 && s < 11 ? RGB[k].map(x => Math.floor(s * x / 2)) : [0, 0, 0]; });   // strength 0..10, half steps
   const bw = Buffer.from(M.dbgRead(P + 1172, 4)), BB = bw.readInt16LE(0), WW = bw.readInt16LE(2);   // Blacks, Whites
   const any = T.some(t => t.some(x => x)) || BB !== 0 || WW !== 0;
   const pb = Buffer.from(M.dbgRead(P + ST_A, 8));

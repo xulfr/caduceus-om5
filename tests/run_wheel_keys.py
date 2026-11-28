@@ -43,6 +43,10 @@ CASES = [
     ('split-row-opens-on-shadows', 'down main+2', dict(row=2, axis=3, tint=[0x20, 0]), None, None),
     ('split-row-info', 'down info info info main+1', dict(row=2, axis=5, tint=[255, 0x10]), [5, 3, 5], None),   # 968 untouched: 255 (no tint)
     ('split-row-and-back', 'down main+1 up main+1', dict(row=1, axis=0, sat={0: 1}, tint=[0x10, 0]), None, None),
+    # Strength 0..10 (phase 3b, as the OM-3 v0.28 t2): the editor's -5..+5 is the strength; it stops at 10, and back to
+    # 0 takes the tint off. Single clicks: OM-Emu's multi-step dial events are not the camera's.
+    ('split-strength-stops-at-10', 'down ' + 'main+1 ' * 12, dict(row=2, axis=3, tint=[0xa0, 0]), None, None),
+    ('split-strength-back-to-off', 'down main+1 main+1 main-1 main-1 main-1', dict(row=2, axis=3, tint=[0, 0]), None, None),
     # OM reopens Picture Mode on the remembered item's row: the wheel row, not Split toning
     ('reopen-on-wheel-row', 'down main+1 ok wait:500 ok ok', dict(row=1, axis=0, tint=[0x10, 0]), None, None),
 ]

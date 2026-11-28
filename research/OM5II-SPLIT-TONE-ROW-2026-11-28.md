@@ -49,8 +49,27 @@ its pages. Strength 0–10, Tone Balance and the row's own icon are step 3b.
 - Rows below the wheel moved down one in `run_emulator.py`, `run_look_defaults.py`, `run_page_graphics.py`,
   `run_profile_rows.py`, `run_profile_icons.py`, `run_tone_icons.py`, `run_ui_activity.py`.
 
+## Step 3b-1: strength 0–10 (2026-11-28, emulator only)
+
+- As the OM-3 v0.28 t2: the editor's own −5..+5 **is** the strength, s = w + 5. `tint_read` gives s − 5 on the tint's
+  colour and −5 on the others; `tint_write` (via `tw_strength`) stores s, 0..10; OM's reset gives 0. The tables use
+  T = s × colour >> 1, so 10 is the earlier 5 (a strength stored by earlier builds now applies at half).
+- **The start of the count.** OM makes the editor's children through its own getter (Saturation values) and keeps the
+  editor between the two rows, so the first value step on a tint page counted from the Saturation value (3 clicks →
+  8). `wheel_value` wraps the editor's value-dial method (vtable `0x61211c90` + 96, pointer site `0x61211cf0`, stock
+  `0x60e9c0a2`): off Saturation it re-reads the children before the step. This also covers Hue / Lightness after the
+  focus comes back. The "short count" seen in 3a came from this.
+- **The value label.** OM's value label has pictures for −5..+5 only: strengths 6..10 drew nothing in OM-Emu. Rather
+  than push it past its range (an out-of-range picture lookup is the leading suspect for alpha10's restart), it shows
+  the editor's position (s − 5), and `paint_strength` (`.ext5`) writes the strength 0..10 under the title. Hiding OM's
+  label on these pages is a follow-up.
+- **Room.** `.ext2b` and `.ext9` are full. `.ext2c` (`0x604ef064..0x604ef120`, the rest of setting 111's dead record
+  table, set aside before for the shelved colour-grain row list, which `cp_rows` replaces) holds `tw_strength`,
+  `wheel_value` and `cp_rows`.
+- Tests: `run_wheel_keys.py` 16 (`split-strength-stops-at-10`, `split-strength-back-to-off`); `st_assert.mjs` checks
+  T = ⌊s × colour / 2⌋ for s ≤ 10.
+
 ## Still to do (3b)
 
-Strength 0–10 in half steps (the editor's −5..+5 list read as 0..10, OM's value label shown as the strength), Tone
-Balance −5..+5 as a third page (storage and the OM-3's definition), the row's own icon (both rows show "Color Vivid":
-the icon comes from the item's picture record), the short-count quirk above, and the OM-3's "Split Tone" hint picture.
+Tone Balance −5..+5 as a third page (storage and the OM-3's definition), the row's own icon (both rows show "Color Vivid":
+the icon comes from the item's picture record), hiding OM's value label on the tint pages, and the OM-3's "Split Tone" hint picture.

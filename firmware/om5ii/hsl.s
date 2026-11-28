@@ -79,6 +79,8 @@ ST_MAGIC_VALUE = 0x55444143
  nop
 .section .cursor_pointer,"a"
  .long wheel_cursor
+.section .value_pointer,"a"
+ .long wheel_value
 .section .cp_rows_ptr,"a"
  .long cp_rows
 .section .cp_rows_count,"a"
@@ -396,6 +398,7 @@ paint_hint:
  mov 426,d1
  mov 68,d2
  call tx_draw,[d2,d3,a2,a3],44
+ call paint_strength,[d2,d3,a2,a3],24
  mov a3,a0
  call gfx_wheel,[d2,d3,a2,a3],48
  mov (4,sp),a2
@@ -2256,7 +2259,7 @@ tint_rgb:
  .byte 0,55,-55
 
 .section .ext8,"ax"
-/* z = 0..2 (shadows, midtones, highlights): T[z] = strength * tint_rgb[colour]
+/* z = 0..2 (shadows, midtones, highlights): T[z] = strength * tint_rgb[colour] >> 1 (strength 0..10)
  * into P+TINT_T; then, when any is set, deltas for table index i (u = i - 128,
  * w = u * u): edge zone (shadows below the middle, highlights above) * w plus
  * midtones * (16384 - w), / 16384, into the buffer's delta tables, and
@@ -2290,7 +2293,7 @@ tn_have:
  and 15,d0                       /* colour */
  cmp 12,d0
  bcc tn_off
- cmp 6,d1
+ cmp 11,d1                       /* strength 0..10, half steps (10 = the earlier 5) */
  bcs tn_ok
 tn_off:
  clr d0
@@ -2313,6 +2316,7 @@ tn_ok:
  movbu (a0),d0
  extb d0
  mul d1,d0
+ asr 1,d0
  movhu d0,(TINT_T,a1)
  inc a0
  add 2,a1
@@ -2450,30 +2454,20 @@ tint_read:
  cmp d3,d1
  bne tint_zero
  lsr 4,d0
+ add -5,d0                       /* strength 0..10 shown on the editor's -5..+5 */
  ret [d2,d3,a2,a3],24
 tint_zero:
- clr d0
+ mov -5,d0                       /* another colour: strength 0 */
  ret [d2,d3,a2,a3],24
 
 .section .ext9,"ax"
 /* From ui_write (its frame): d0 = axis, d2 = sector cell, d3 = value,
- * a2 = the writer's a0. Strength 1..5 puts the tint on this colour, 0 clears
- * it if it is here; then the editor's children follow. */
+ * a2 = the writer's a0. The value -5..+5 is the strength 0..10 (half steps of
+ * the earlier 0..5, as the OM-3): 1..10 puts the tint on this colour, 0
+ * clears it if it is here; then the editor's children follow. */
 tint_write:
  mov d0,a3
- mov ST_RESET,d0
- call st_getb,[],12
- cmp 0,d0
- beq tw_nr
- clr d3
-tw_nr:
- cmp 0,d3
- bge tw_pos
- clr d3
-tw_pos:
- cmp 5,d3
- ble tw_le
- mov 5,d3
+ call tw_strength,[],4           /* d3: the value -> the strength 0..10 (.ext2b) */
 tw_le:
  call tint_cell,[],4
  mov d1,(4,sp)
@@ -3063,9 +3057,6 @@ wc_out:
  * Highlight tint on the Split toning row (tint_read / tint_write, unchanged). */
 CP_ROWS = 7
 SPLIT_ROW = 2                    /* the list index of the Split toning row */
-.balign 4
-cp_rows:
- .long 111, 5374, 5374, 5375, 5376, 7, 8
 
 /* d0 = 1 when the Picture Mode panel's focused row is the Split toning row:
  * the panel ((scr_obj)->+4) keeps a state byte per row at +1068 + index:
@@ -3183,3 +3174,135 @@ rm_yes:
  jmp row_match_back
 rm_no:
  jmp row_match_skip
+
+.section .ext2c,"ax"
+/* 0x604ef064..0x604ef120 (section 2), the rest of setting 111's dead record
+ * table. Set aside earlier for cp_grain_rows (colour grain, shelved); the Split
+ * toning row list cp_rows replaces that list, so the gap is used here. */
+/* The colour editor's value-dial method (vtable 0x61211c90 + 96, event
+ * 0x9032; entered by calls, a0 = the editor). OM makes the editor's children
+ * from the cells through its own getter, which reads the Saturation, and keeps
+ * the editor when the focus moves between the wheel and Split toning rows. Off
+ * Saturation (Hue, Lightness, the tints) the children are re-read for the page
+ * shown before the step, so it starts from the value on screen. */
+wheel_value:
+ movm [d2,d3,a2,a3],(sp)
+ add -8,sp
+ mov d0,d2
+ mov d1,d3
+ mov a0,a2
+ call st_ptr,[],8
+ cmp 0,a0
+ beq wv_stock
+ movbu (ST_AXIS,a0),d0
+ cmp 0,d0
+ beq wv_stock
+ movhu (120,a2),d0
+ cmp 13,d0
+ bne wv_stock
+ mov (124,a2),a1
+ cmp 0,a1
+ beq wv_stock
+ movhu (80,a1),d0
+ sub 2201,d0
+ cmp 4,d0
+ bcc wv_stock
+ mov a2,(ST_EDITOR,a0)
+ call refresh_children,[d2,d3,a2,a3],24
+wv_stock:
+ mov d2,d0
+ mov d3,d1
+ mov a2,a0
+ calls stock_value
+ ret [d2,d3,a2,a3],24
+
+/* tint_write: d3 = the editor's value -5..+5 -> the strength 0..10 (as the
+ * OM-3 v0.28 t2: the editor's own range is the strength, no hidden count);
+ * during OM's reset 0. call tw_strength,[],4 */
+tw_strength:
+ mov ST_RESET,d0
+ call st_getb,[],12
+ cmp 0,d0
+ beq ts_nr
+ mov -5,d3
+ts_nr:
+ add 5,d3
+ cmp 0,d3
+ bge ts_pos
+ clr d3
+ts_pos:
+ cmp 10,d3
+ ble ts_le
+ mov 10,d3
+ts_le:
+ ret [],4
+.balign 4
+cp_rows:
+ .long 111, 5374, 5374, 5375, 5376, 7, 8
+
+.section .ext5,"ax"
+/* The Split toning pages: the strength 0..10 of the colour under the cursor,
+ * as text under the title. OM's value label has pictures for -5..+5 only and
+ * shows the editor's own position there (strength - 5); it is not pushed out
+ * of its range. a2 = tx_draw's context, d3 = axis.
+ * call paint_strength,[d2,d3,a2,a3],24 */
+paint_strength:
+ cmp 3,d3
+ bcs ps_out
+ mov 111,d0
+ call stock_get,[],4
+ add -54,d0
+ cmp 3,d0
+ bcc ps_out
+ mov d0,d2                       /* p */
+ mov 2201,d0                     /* the cursor: 928 + 12p + k, else colour 1 */
+ add d2,d0
+ call stock_get,[],4
+ add -928,d0
+ mov 12,d1
+ mul d2,d1
+ sub d1,d0
+ cmp 12,d0
+ bcs ps_k
+ clr d0
+ps_k:
+ mov d0,a3                       /* k */
+ mov d3,d0                       /* the tint cell: tint_ids[3 (axis - 3) + p] */
+ add -3,d0
+ mov d0,d1
+ add d1,d0
+ add d1,d0
+ add d2,d0
+ add d0,d0
+ mov tint_ids,a0
+ add d0,a0
+ movhu (a0),d0
+ call stock_get,[],4
+ extbu d0
+ mov d0,d1
+ and 15,d1
+ mov a3,a0
+ cmp a0,d1
+ bne ps_zero
+ lsr 4,d0
+ cmp 11,d0
+ bcs ps_text
+ps_zero:
+ clr d0
+ps_text:
+ mov d0,d1                       /* 6 bytes a string */
+ add d1,d0
+ add d1,d0
+ add d0,d0
+ mov strength_text,a1
+ add d0,a1
+ mov 600,d0
+ mov 56,d1
+ mov 60,d2
+ call tx_draw,[d2,d3,a2,a3],44
+ps_out:
+ ret [d2,d3,a2,a3],24
+.balign 2
+strength_text:
+ .short '0',0,0, '1',0,0, '2',0,0, '3',0,0, '4',0,0, '5',0,0
+ .short '6',0,0, '7',0,0, '8',0,0, '9',0,0, '1','0',0

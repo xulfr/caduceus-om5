@@ -40,9 +40,11 @@ SECTIONS {
  .ext3 0x60621e80 : { *(.ext3) }
  .ext9 0x615ee5c8 : { *(.ext9) }
  .ext2b 0x604ef120 : { *(.ext2b) }
+ .ext2c 0x604ef064 : { *(.ext2c) }
  .bg_site 0x601b1362 : { *(.bg_site) }
  .def_pointer 0x60bb6b68 : { *(.def_pointer) }
  .cursor_pointer 0x61211cf4 : { *(.cursor_pointer) }
+ .value_pointer 0x61211cf0 : { *(.value_pointer) }
  .cp_rows_ptr 0x60e376c5 : { *(.cp_rows_ptr) }
  .cp_rows_count 0x60e376ca : { *(.cp_rows_count) }
  .row_match_hook 0x60e377ed : { *(.row_match_hook) }
@@ -52,6 +54,7 @@ stock_delete_action = 0x60ed6476;
 stock_container = 0x60e3ca0a;
 row_match_back = 0x60e377f2;    /* column builder: movhu d1,(94,a0), the remembered row */
 row_match_skip = 0x60e377f5;    /* column builder: the next row */
+stock_value = 0x60e9c0a2;       /* colour editor vtable 0x61211c90 +96: the value dial (event 0x9032); entered by calls */
 stock_cursor = 0x60e9c0d8;      /* colour editor vtable 0x61211c90 +100: the colour dial (event 0x9031); entered by calls */
 label_resume = 0x60e4adf3;
 row_table = 0x611b50f8;         /* 17 Picture Mode row records x 40 */
@@ -153,6 +156,7 @@ ASSERT(ADDR(.ext10) + SIZEOF(.ext10) <= 0x6169d000, ".ext10 leaves section 10")
 ASSERT(ADDR(.ext3) + SIZEOF(.ext3) <= 0x60622000, ".ext3 leaves section 3")
 ASSERT(ADDR(.ext9) + SIZEOF(.ext9) <= 0x615ee800, ".ext9 leaves section 9")
 ASSERT(ADDR(.ext2b) + SIZEOF(.ext2b) <= 0x604ef520, ".ext2b leaves the old 111 record table (color_profiles.py OLD_REC)")
+ASSERT(ADDR(.ext2c) + SIZEOF(.ext2c) <= 0x604ef120, ".ext2c runs into .ext2b")
 ASSERT(st_ptr == 0x605af4b0, "wb.ld binds st_ptr")
 ASSERT(ADDR(.ext2) + SIZEOF(.ext2) <= 0x605af780, ".ext2 runs into the WB gate")
 ASSERT(ADDR(.ext8) + SIZEOF(.ext8) <= 0x613f2f20, ".ext8 runs into the WB profile helper")
