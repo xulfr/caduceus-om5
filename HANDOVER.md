@@ -111,15 +111,15 @@
   `0x610c1630`, then the card block's `tint_vis`); hint `0x3e85` "Split Tone [INFO]" in OM's hint font, 180 px as OM's
   "Color Select INFO", frame hidden. `run_page_graphics` 16/16. [Note](research/OM5II-SPLIT-TONE-ROW-2026-11-28.md#step-3c-the-rows-icon-oms-value-group-the-hint-2026-11-28-emulator-only).
 - Flash room after 3c: `.ext10` 12, `.ext6` 15, `.ext7` 36, `.ext5` 56, `.ext2c` 52 bytes. New code goes to `CADUCEUS.BIN`.
-- **Phase 4 RGB curves engine** (card block `rgb.s`, the OM-3 model, bit-exact in `run_bw_tint` 6 cases and
-  `test_rgb_curves`): cells 985–987 / 1030–1032 / 1002, 1006, 1010 (slot-4 ids, in OM's save / C-mode / reset lists;
-  [storage note](research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md)). No row yet.
-- **`check.py full` on `8ab96f2` (2026-11-28): passed** — Python tests (1 E144-only skip), strict build, 19/19
-  emulator cases, build audit. Also passing on that code: `run_wheel_keys` 18, `run_bw_tint` 14, `run_look_defaults`
-  6, `run_page_graphics` 13, `run_tone_icons`, `run_boot_arm` 11 (3a), `run_profile_rows`, `run_profile_icons`,
-  `run_mono_filter` (3a). `run_ui_activity` `idle` fails as on `main`. Emulator only; no package built for the camera.
-- Next: the RGB curves row, then the static traces (Sharpness, Color Mix)
-  ([scoping](research/OM5II-PHASE4-SCOPING-2026-11-28.md)).
+- **Phase 4 RGB curves** (emulator only): engine in the card block (`rgb.s`, the OM-3 model, bit-exact:
+  `run_bw_tint` 6 cases, `test_rgb_curves`); cells 985–987 / 1030–1032 / 1002, 1006, 1010 (slot-4 ids in OM's save /
+  C-mode / reset lists; [storage note](research/OM5II-RGB-CURVES-STORAGE-2026-11-28.md)). **Row** (`44f77a0`): OM's tone
+  editor a second time under the tone row (8 rows), the tone page's pages edit one channel, INFO from Bl/Wh steps
+  R → G → B; logic in `rgb_ui.s`. `run_rgb_row.py` 9/9. `paint_strength` moved into the block.
+- **Static traces** ([note](research/OM5II-SHARPNESS-COLORMIX-TRACE-2026-11-28.md)): Sharpness via key `0x8119`
+  (`0x6034138d`) → `B+1795` → detail block; Color Mix at the matrix build call `0x603e8ff3`.
+- Next: Sharpness −5..+2 (find E148's "off" value behind `B+1795`), WB Compensation row, Color Mix; g1 only when
+  the owner says ([scoping](research/OM5II-PHASE4-SCOPING-2026-11-28.md)).
 - Pre-existing: `run_ui_activity.py` case `idle` fails on `main` too (the screen stays open past 17.5 s).
 
 ## Look defaults (merged, PR #14; emulator only)
